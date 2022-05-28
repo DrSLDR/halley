@@ -4,7 +4,15 @@ An offsite backup manager, using [restic](https://restic.net/)
 
 ## ToDo
 
-There's a lot left to write here, yes.
+First plan of action:
+
+* [ ] Wrapper around Restic
+* [ ] Scaffolding to talk to S3
+
+Later on:
+* [ ] A CLI
+* [ ] Configuration file handling
+* [ ] Scheduling (or whatever we'll call that)
 
 ## License
 
