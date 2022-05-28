@@ -1,6 +1,11 @@
 [package]
 name = "halley"
 version = "0.1.0"
+authors = ["Jonas A. Hultén <jonas@sldr.se>"]
+repository = "https://github.com/DrSLDR/halley"
+homepage = "https://github.com/DrSLDR/halley"
+license = "Apache-2.0 OR MIT"
+description = "Offsite backup manager using restic"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
