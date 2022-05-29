@@ -1,6 +1,31 @@
 use anyhow;
 use std::process::{Command, Output};
-use tracing::{trace, debug_span, info_span};
+use tracing::{debug, debug_span, info_span, trace};
+
+#[derive(Debug)]
+pub(crate) struct AWSKey {
+    id: String,
+    secret: String,
+}
+
+#[derive(Debug)]
+pub(crate) enum Repo {
+    Local {
+        path: String,
+    },
+    SFTP {
+        user: String,
+        host: String,
+    },
+    REST,
+    S3 {
+        key: AWSKey,
+        region: String,
+        url: String,
+        port: Option<u32>,
+        bucket: String,
+    },
+}
 
 fn invoke(mut cmd: Command) -> Result<Output, std::io::Error> {
     trace!("Invoking {:?}", &cmd);
@@ -16,10 +41,13 @@ pub(crate) fn present() -> anyhow::Result<()> {
     Ok(())
 }
 
-pub(crate) fn init() -> anyhow::Result<()> {
+pub(crate) fn init(repo: Repo) -> anyhow::Result<()> {
     let span = info_span!("repo init");
     let _enter = span.enter();
     assert!(present().is_ok());
+
+    debug!("Initializing repo with {:?}", repo);
+
     todo!("Init function not yet written");
 }
 
@@ -44,6 +72,7 @@ mod tests {
     #[test]
     fn test_init() {
         log_init();
-        assert!(init().is_ok());
+        let repo = Repo::Local { path: "/tmp/restic/foo".to_string() };
+        assert!(init(repo).is_ok());
     }
 }
