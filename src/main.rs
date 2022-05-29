@@ -1,5 +1,3 @@
-mod restic;
-
 use tracing::Level;
 use tracing_subscriber;
 
