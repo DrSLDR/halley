@@ -14,6 +14,13 @@ pub(crate) fn present() -> anyhow::Result<()> {
     Ok(())
 }
 
+fn is_present() -> bool {
+    match present() {
+        Ok(_) => true,
+        Err(_) => false,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -28,9 +35,6 @@ mod tests {
     #[test]
     fn presence() {
         init();
-        assert!(match present() {
-            Ok(_) => true,
-            Err(_) => false,
-        });
+        assert!(is_present());
     }
 }
