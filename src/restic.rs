@@ -1,6 +1,6 @@
 use anyhow;
 use std::process::{Command, Output};
-use tracing::{trace, span, Level};
+use tracing::{trace, debug_span};
 
 fn invoke(mut cmd: Command) -> Result<Output, std::io::Error> {
     trace!("Invoking {:?}", &cmd);
@@ -8,7 +8,7 @@ fn invoke(mut cmd: Command) -> Result<Output, std::io::Error> {
 }
 
 pub(crate) fn present() -> anyhow::Result<()> {
-    let span = span!(Level::DEBUG, "restic presence");
+    let span = debug_span!("restic presence");
     let _enter = span.enter();
     let mut cmd = Command::new("restic");
     cmd.arg("version");
@@ -19,10 +19,12 @@ pub(crate) fn present() -> anyhow::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tracing::Level;
 
     fn init() {
         let _ = tracing_subscriber::fmt()
             .with_max_level(Level::TRACE)
+            .with_test_writer()
             .try_init();
     }
 
