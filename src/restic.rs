@@ -1,6 +1,6 @@
 use anyhow;
 use std::process::{Command, Output};
-use tracing::{trace, debug_span};
+use tracing::{trace, debug_span, info_span};
 
 fn invoke(mut cmd: Command) -> Result<Output, std::io::Error> {
     trace!("Invoking {:?}", &cmd);
@@ -16,12 +16,19 @@ pub(crate) fn present() -> anyhow::Result<()> {
     Ok(())
 }
 
+pub(crate) fn init() -> anyhow::Result<()> {
+    let span = info_span!("repo init");
+    let _enter = span.enter();
+    assert!(present().is_ok());
+    todo!("Init function not yet written");
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use tracing::Level;
 
-    fn init() {
+    fn log_init() {
         let _ = tracing_subscriber::fmt()
             .with_max_level(Level::TRACE)
             .with_test_writer()
@@ -30,7 +37,13 @@ mod tests {
 
     #[test]
     fn presence() {
-        init();
+        log_init();
         assert!(present().is_ok());
+    }
+
+    #[test]
+    fn test_init() {
+        log_init();
+        assert!(init().is_ok());
     }
 }
