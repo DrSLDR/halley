@@ -1,10 +1,16 @@
 mod restic;
 
+use tracing::Level;
+use tracing_subscriber;
+
 fn main() {
     #[cfg(debug_assertions)]
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("trace")).init();
+    tracing_subscriber::fmt()
+        .pretty()
+        .with_max_level(Level::TRACE)
+        .init();
     #[cfg(not(debug_assertions))]
-    env_logger::init();
+    tracing_subscriber::fmt().compact().init();
 
     println!("Hello, world!");
 }
