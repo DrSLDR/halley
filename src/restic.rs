@@ -81,15 +81,15 @@ pub(crate) fn present() -> anyhow::Result<()> {
     Ok(())
 }
 
-pub(crate) fn init(repo: Repo) -> anyhow::Result<()> {
-    let span = info_span!("repo init");
-    let _enter = span.enter();
-    assert!(present().is_ok());
+// pub(crate) fn init(repo: Repo) -> anyhow::Result<()> {
+//     let span = info_span!("repo init");
+//     let _enter = span.enter();
+//     assert!(present().is_ok());
 
-    debug!("Initializing repo with {:?}", repo);
+//     debug!("Initializing repo with {:?}", repo);
 
-    todo!("Init function not yet written");
-}
+//     todo!("Init function not yet written");
+// }
 
 #[cfg(test)]
 mod tests {
@@ -109,10 +109,10 @@ mod tests {
         assert!(present().is_ok());
     }
 
-    #[test]
-    fn test_init() {
-        log_init();
-        let repo = Repo::Local { path: "/tmp/restic/foo".to_string() };
-        assert!(init(repo).is_ok());
-    }
+    // #[test]
+    // fn test_init() {
+    //     log_init();
+    //     let repo = Repo::Local { path: "/tmp/restic/foo".to_string() };
+    //     assert!(init(repo).is_ok());
+    // }
 }
