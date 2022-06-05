@@ -1,5 +1,6 @@
 use anyhow;
 use std::process::{Command, Output};
+use std::ffi::OsStr;
 use tracing::{debug, debug_span, info_span, trace};
 
 #[cfg(test)]
@@ -7,7 +8,8 @@ use mockall::{automock, mock, predicate::*};
 
 #[cfg_attr(test, automock)]
 trait MockableCall {
-    fn invoke(&self) -> Result<Output, std::io::Error>;
+    fn invoke(&mut self) -> Result<Output, std::io::Error>;
+    fn arg<S: AsRef<OsStr>>(&mut self, arg: S) -> &mut Self;
 }
 
 #[derive(Debug)]
@@ -20,6 +22,17 @@ impl ResticCall {
         ResticCall {
             cmd: Command::new("restic")
         }
+    }
+}
+
+impl MockableCall for ResticCall {
+    fn invoke(&mut self) -> Result<Output, std::io::Error> {
+        trace!("Invoking {:?}", self.cmd);
+        self.cmd.output()
+    }
+    fn arg<S:AsRef<OsStr>>(&mut self,arg:S) -> &mut Self {
+        self.cmd.arg(arg);
+        self
     }
 }
 
