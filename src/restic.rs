@@ -7,7 +7,7 @@ use tracing::{debug, debug_span, info_span, trace};
 use mockall::{automock, mock, predicate::*};
 
 #[cfg_attr(test, automock)]
-trait MockableCall {
+trait WrappedCall {
     fn invoke(&mut self) -> Result<Output, std::io::Error>;
     fn arg<S: AsRef<OsStr>>(&mut self, arg: S) -> &mut Self;
 }
@@ -25,7 +25,7 @@ impl ResticCall {
     }
 }
 
-impl MockableCall for ResticCall {
+impl WrappedCall for ResticCall {
     fn invoke(&mut self) -> Result<Output, std::io::Error> {
         trace!("Invoking {:?}", self.cmd);
         self.cmd.output()
@@ -72,13 +72,10 @@ fn invoke(mut cmd: Command) -> Result<Output, std::io::Error> {
     cmd.output()
 }
 
-pub(crate) fn present() -> anyhow::Result<()> {
+pub(crate) fn prepare_present<'a>(&mut rc: ResticCall) -> &'a mut ResticCall {
     let span = debug_span!("restic presence");
     let _enter = span.enter();
-    let mut cmd = Command::new("restic");
-    cmd.arg("version");
-    invoke(cmd).expect("Restic is not on path");
-    Ok(())
+    rc.arg("version")
 }
 
 // pub(crate) fn init(repo: Repo) -> anyhow::Result<()> {
@@ -106,7 +103,9 @@ mod tests {
     #[test]
     fn presence() {
         log_init();
-        assert!(present().is_ok());
+        let mut mock = MockWrappedCall::new();
+        mock.expect_arg().with(predicate::eq("versiont")).times(1);
+        prepare_present(&mock)
     }
 
     // #[test]
