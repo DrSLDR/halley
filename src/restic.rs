@@ -1,5 +1,4 @@
 use anyhow;
-use std::ffi::OsStr;
 use std::process::{Command, Output};
 use tracing::{debug, debug_span, info_span, trace};
 
@@ -9,7 +8,7 @@ use mockall::{automock, predicate};
 #[cfg_attr(test, automock)]
 trait WrappedCall {
     fn invoke(&mut self) -> Result<Output, std::io::Error>;
-    fn arg<S: AsRef<OsStr>>(&mut self, arg: S) -> &mut Self;
+    fn arg(&mut self, arg: &str) -> &mut Self;
 }
 
 #[derive(Debug)]
@@ -30,7 +29,7 @@ impl WrappedCall for ResticCall {
         trace!("Invoking {:?}", self.cmd);
         self.cmd.output()
     }
-    fn arg<S: AsRef<OsStr>>(&mut self, arg: S) -> &mut Self {
+    fn arg(&mut self, arg: &str) -> &mut Self {
         self.cmd.arg(arg);
         self
     }
@@ -72,7 +71,7 @@ fn invoke(mut cmd: Command) -> Result<Output, std::io::Error> {
     cmd.output()
 }
 
-fn prepare_present<'a>(rc: &'a mut ResticCall) -> &'a mut ResticCall {
+fn prepare_present<'a>(rc: &mut impl WrappedCall) -> &mut impl WrappedCall {
     let span = debug_span!("restic presence");
     let _enter = span.enter();
     rc.arg("version")
@@ -105,7 +104,7 @@ mod tests {
         log_init();
         let mut mock = MockWrappedCall::new();
         mock.expect_arg().with(predicate::eq("versiont")).times(1);
-        prepare_present(&mock)
+        prepare_present(&mut mock);
     }
 
     // #[test]
