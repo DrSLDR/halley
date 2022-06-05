@@ -4,7 +4,7 @@ use std::process::{Command, Output};
 use tracing::{debug, debug_span, info_span, trace};
 
 #[cfg(test)]
-use mockall::{automock, mock, predicate};
+use mockall::{automock, predicate};
 
 #[cfg_attr(test, automock)]
 trait WrappedCall {
