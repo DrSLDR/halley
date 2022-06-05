@@ -2,6 +2,33 @@ use anyhow;
 use std::process::{Command, Output};
 use tracing::{debug, debug_span, info_span, trace};
 
+#[cfg(test)]
+use mockall::{automock, mock, predicate::*};
+
+#[cfg_attr(test, automock)]
+trait MockableCall {
+    fn invoke(&self) -> Result<Output, std::io::Error>;
+}
+
+#[derive(Debug)]
+struct ResticCall {
+    cmd: Command,
+}
+
+impl ResticCall {
+    fn new() -> ResticCall {
+        ResticCall {
+            cmd: Command::new("restic")
+        }
+    }
+}
+
+impl Default for ResticCall {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug)]
 pub(crate) struct AWSKey {
     id: String,
