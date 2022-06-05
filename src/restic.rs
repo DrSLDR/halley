@@ -103,7 +103,10 @@ mod tests {
     fn presence() {
         log_init();
         let mut mock = MockWrappedCall::new();
-        mock.expect_arg().with(predicate::eq("versiont")).times(1);
+        mock.expect_arg()
+            .with(predicate::eq("version"))
+            .times(1)
+            .returning(|_| MockWrappedCall::new());
         prepare_present(&mut mock);
     }
 
