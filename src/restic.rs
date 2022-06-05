@@ -72,7 +72,7 @@ fn invoke(mut cmd: Command) -> Result<Output, std::io::Error> {
     cmd.output()
 }
 
-pub(crate) fn prepare_present<'a>(&mut rc: ResticCall) -> &'a mut ResticCall {
+fn prepare_present<'a>(rc: &'a mut ResticCall) -> &'a mut ResticCall {
     let span = debug_span!("restic presence");
     let _enter = span.enter();
     rc.arg("version")
