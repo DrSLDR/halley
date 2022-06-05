@@ -1,10 +1,10 @@
 use anyhow;
-use std::process::{Command, Output};
 use std::ffi::OsStr;
+use std::process::{Command, Output};
 use tracing::{debug, debug_span, info_span, trace};
 
 #[cfg(test)]
-use mockall::{automock, mock, predicate::*};
+use mockall::{automock, mock, predicate};
 
 #[cfg_attr(test, automock)]
 trait WrappedCall {
@@ -20,7 +20,7 @@ struct ResticCall {
 impl ResticCall {
     fn new() -> ResticCall {
         ResticCall {
-            cmd: Command::new("restic")
+            cmd: Command::new("restic"),
         }
     }
 }
@@ -30,7 +30,7 @@ impl WrappedCall for ResticCall {
         trace!("Invoking {:?}", self.cmd);
         self.cmd.output()
     }
-    fn arg<S:AsRef<OsStr>>(&mut self,arg:S) -> &mut Self {
+    fn arg<S: AsRef<OsStr>>(&mut self, arg: S) -> &mut Self {
         self.cmd.arg(arg);
         self
     }
