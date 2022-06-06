@@ -158,6 +158,8 @@ mod tests {
         let mut mock = MockWrappedCall::new();
         eenv!(mock, "RESTIC_PASSWORD", "test", 1);
         earg!(mock, "init", 1);
+        earg!(mock, "--repo", 1);
+        earg!(mock, "/tmp/restic/foo", 1);
         prepare_init(&mut mock, repo);
         panic!();
     }
