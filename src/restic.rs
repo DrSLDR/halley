@@ -47,6 +47,17 @@ fn prepare_present<C: WrappedCall>(wc: &mut C) -> &mut C {
     wc.arg("version")
 }
 
+#[derive(Debug)]
+pub(crate) struct RepoBase {
+    passwd: String,
+}
+
+#[derive(Debug)]
+pub(crate) struct LocalRepo {
+    path: String,
+    base: RepoBase,
+}
+
 // #[derive(Debug)]
 // pub(crate) struct AWSKey {
 //     id: String,
@@ -55,9 +66,7 @@ fn prepare_present<C: WrappedCall>(wc: &mut C) -> &mut C {
 
 #[derive(Debug)]
 pub(crate) enum Repo {
-    Local {
-        path: String,
-    },
+    Local { data: LocalRepo },
 }
 
 // pub(crate) fn init(repo: Repo) -> anyhow::Result<()> {
