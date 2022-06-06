@@ -66,11 +66,6 @@ pub(crate) enum Repo {
     },
 }
 
-fn invoke(mut cmd: Command) -> Result<Output, std::io::Error> {
-    trace!("Invoking {:?}", &cmd);
-    cmd.output()
-}
-
 fn prepare_present<C: WrappedCall>(wc: &mut C) -> &mut C {
     let span = debug_span!("restic presence");
     let _enter = span.enter();
