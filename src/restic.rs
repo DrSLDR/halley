@@ -102,10 +102,20 @@ mod tests {
         prepare_present(&mut mock);
     }
 
-    // #[test]
-    // fn test_init() {
-    //     log_init();
-    //     let repo = Repo::Local { path: "/tmp/restic/foo".to_string() };
-    //     assert!(init(repo).is_ok());
-    // }
+    #[test]
+    fn test_init_local() {
+        log_init();
+        let base = RepoBase {
+            passwd: "test".to_string(),
+        };
+        let repo = Repo::Local {
+            data: LocalRepo {
+                path: "/tmp/restic/foo".to_string(),
+                base: base,
+            },
+        };
+        let mut mock = MockWrappedCall::new();
+        prepare_init(&mut mock, repo);
+        panic!();
+    }
 }
