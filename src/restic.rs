@@ -8,6 +8,7 @@ use mockall::{automock, predicate};
 #[cfg_attr(test, automock)]
 trait WrappedCall {
     fn invoke(&mut self) -> Result<Output, std::io::Error>;
+    fn _inspect(&self) -> &Command;
     fn arg(&mut self, arg: &str) -> &mut Self;
     fn env(&mut self, key: &str, value: &str) -> &mut Self;
 }
@@ -29,6 +30,9 @@ impl WrappedCall for ResticCall {
     fn invoke(&mut self) -> Result<Output, std::io::Error> {
         trace!("Invoking {:?}", self.cmd);
         self.cmd.output()
+    }
+    fn _inspect(&self) -> &Command {
+        &self.cmd
     }
     fn arg(&mut self, arg: &str) -> &mut Self {
         self.cmd.arg(arg);
@@ -102,9 +106,12 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
     match repo {
         Repo::Local { data } => {
             info!("Initializing local repo at {}", data.path);
-            let wc = prepare_init_base(wc, data.base);
-            wc.arg("init").arg("--repo").arg(data.path.as_str());
-            return wc
+            let wc = prepare_init_base(wc, data.base)
+                .arg("init")
+                .arg("--repo");
+            debug!("{:?}", wc._inspect());
+                // .arg(data.path.as_str());
+            return wc;
         }
     }
 }
@@ -174,7 +181,7 @@ mod tests {
         eenv!(mock, "RESTIC_PASSWORD", "test", 1);
         earg!(mock, "init", 1);
         earg!(mock, "--repo", 1);
-        earg!(mock, "/tmp/restic/foo", 1);
+        // earg!(mock, "/tmp/restic/foo", 1);
         prepare_init(&mut mock, repo);
     }
 }
