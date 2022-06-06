@@ -69,15 +69,15 @@ pub(crate) enum Repo {
     Local { data: LocalRepo },
 }
 
-// pub(crate) fn init(repo: Repo) -> anyhow::Result<()> {
-//     let span = info_span!("repo init");
-//     let _enter = span.enter();
-//     assert!(present().is_ok());
+fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
+    let span = info_span!("repo init");
+    let _enter = span.enter();
+    // assert!(present().is_ok());
 
-//     debug!("Initializing repo with {:?}", repo);
+    debug!("Initializing repo with {:?}", repo);
 
-//     todo!("Init function not yet written");
-// }
+    todo!("Init function not yet written");
+}
 
 #[cfg(test)]
 mod tests {
