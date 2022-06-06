@@ -128,22 +128,13 @@ mod tests {
             .try_init();
     }
 
-    macro_rules! mwc {
-        (1) => {
-            |_| MockWrappedCall::new()
-        };
-        (2) => {
-            |_, _| MockWrappedCall::new()
-        };
-    }
-
     macro_rules! earg {
         ($mock:tt, $arg:literal, $count:literal) => {
             $mock
                 .expect_arg()
                 .with(predicate::eq($arg))
                 .times($count)
-                .returning(mwc!(1))
+                .return_var(MockWrappedCall::new());
         };
     }
 
@@ -153,7 +144,7 @@ mod tests {
                 .expect_env()
                 .with(predicate::eq($key), predicate::eq($val))
                 .times($count)
-                .returning(mwc!(2))
+                .return_var(MockWrappedCall::new())
         };
     }
 
@@ -174,7 +165,7 @@ mod tests {
         let repo = Repo::Local {
             data: LocalRepo {
                 path: "/tmp/restic/foo".to_string(),
-                base: base,
+                base,
             },
         };
         let mut mock = MockWrappedCall::new();
