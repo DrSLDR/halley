@@ -106,6 +106,15 @@ mod tests {
             .try_init();
     }
 
+    macro_rules! mwc {
+        (1) => {
+            |_| MockWrappedCall::new()
+        };
+        (2) => {
+            |_, _| MockWrappedCall::new()
+        };
+    }
+
     #[test]
     fn presence() {
         log_init();
@@ -130,6 +139,14 @@ mod tests {
             },
         };
         let mut mock = MockWrappedCall::new();
+        mock.expect_env()
+            .with(predicate::eq("RESTIC_PASSWORD"), predicate::eq("test"))
+            .times(1)
+            .returning(mwc!(2));
+        mock.expect_arg()
+            .with(predicate::eq("init"))
+            .times(1)
+            .returning(mwc!(1));
         prepare_init(&mut mock, repo);
         panic!();
     }
