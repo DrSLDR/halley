@@ -41,35 +41,23 @@ impl Default for ResticCall {
     }
 }
 
-#[derive(Debug)]
-pub(crate) struct AWSKey {
-    id: String,
-    secret: String,
+fn prepare_present<C: WrappedCall>(wc: &mut C) -> &mut C {
+    let span = debug_span!("restic presence");
+    let _enter = span.enter();
+    wc.arg("version")
 }
+
+// #[derive(Debug)]
+// pub(crate) struct AWSKey {
+//     id: String,
+//     secret: String,
+// }
 
 #[derive(Debug)]
 pub(crate) enum Repo {
     Local {
         path: String,
     },
-    SFTP {
-        user: String,
-        host: String,
-    },
-    REST,
-    S3 {
-        key: AWSKey,
-        region: String,
-        url: String,
-        port: Option<u32>,
-        bucket: String,
-    },
-}
-
-fn prepare_present<C: WrappedCall>(wc: &mut C) -> &mut C {
-    let span = debug_span!("restic presence");
-    let _enter = span.enter();
-    wc.arg("version")
 }
 
 // pub(crate) fn init(repo: Repo) -> anyhow::Result<()> {
