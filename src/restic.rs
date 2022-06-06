@@ -1,6 +1,6 @@
 use anyhow;
 use std::process::{Command, Output};
-use tracing::{debug, debug_span, info_span, trace};
+use tracing::{debug, debug_span, info, info_span, trace};
 
 #[cfg(test)]
 use mockall::{automock, predicate};
@@ -83,7 +83,10 @@ pub(crate) enum Repo {
 }
 
 fn prepare_init_base<C: WrappedCall>(wc: &mut C, data: RepoBase) -> &mut C {
-    wc.env("RESTIC_PASSWD", data.passwd.as_str());
+    let span = info_span!("repo base config");
+    let _enter = span.enter();
+    debug!("Setting repo base config as {:?}", data);
+    wc.env("RESTIC_PASSWORD", data.passwd.as_str());
     wc
 }
 
@@ -98,7 +101,7 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
 
     match repo {
         Repo::Local { data } => {
-            debug!("Initializing local repo");
+            info!("Initializing local repo at {}", data.path);
             let wc = prepare_init_base(wc, data.base);
             wc.arg("init").arg("--repo").arg(data.path.as_str());
             return wc
@@ -173,6 +176,5 @@ mod tests {
         earg!(mock, "--repo", 1);
         earg!(mock, "/tmp/restic/foo", 1);
         prepare_init(&mut mock, repo);
-        panic!();
     }
 }
