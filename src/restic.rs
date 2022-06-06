@@ -9,6 +9,7 @@ use mockall::{automock, predicate};
 trait WrappedCall {
     fn invoke(&mut self) -> Result<Output, std::io::Error>;
     fn arg(&mut self, arg: &str) -> &mut Self;
+    fn env(&mut self, key: &str, value: &str) -> &mut Self;
 }
 
 #[derive(Debug)]
@@ -31,6 +32,10 @@ impl WrappedCall for ResticCall {
     }
     fn arg(&mut self, arg: &str) -> &mut Self {
         self.cmd.arg(arg);
+        self
+    }
+    fn env(&mut self, key: &str, value: &str) -> &mut Self {
+        self.cmd.env(key, value);
         self
     }
 }
