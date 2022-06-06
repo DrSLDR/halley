@@ -82,6 +82,11 @@ pub(crate) enum Repo {
     Local { data: LocalRepo },
 }
 
+fn prepare_init_base<C: WrappedCall>(wc: &mut C, data: RepoBase) -> &mut C {
+    wc.env("RESTIC_PASSWD", data.passwd.as_str());
+    wc
+}
+
 fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
     let span = info_span!("repo init");
     let _enter = span.enter();
@@ -91,7 +96,14 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
 
     debug!("Initializing repo with {:?}", repo);
 
-    todo!("Init function not yet written");
+    match repo {
+        Repo::Local { data } => {
+            debug!("Initializing local repo");
+            let wc = prepare_init_base(wc, data.base);
+            wc.arg("init").arg("--repo").arg(data.path.as_str());
+            return wc
+        }
+    }
 }
 
 #[cfg(test)]
