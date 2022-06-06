@@ -47,6 +47,14 @@ fn prepare_present<C: WrappedCall>(wc: &mut C) -> &mut C {
     wc.arg("version")
 }
 
+fn assert_present() -> bool {
+    let mut rc = ResticCall::new();
+    let rc = prepare_present(&mut rc);
+    rc.invoke()
+        .expect("restic is not installed (or not on path)");
+    true
+}
+
 #[derive(Debug)]
 pub(crate) struct RepoBase {
     passwd: String,
@@ -72,7 +80,9 @@ pub(crate) enum Repo {
 fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
     let span = info_span!("repo init");
     let _enter = span.enter();
-    // assert!(present().is_ok());
+
+    #[cfg(not(test))]
+    assert!(assert_present());
 
     debug!("Initializing repo with {:?}", repo);
 
