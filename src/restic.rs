@@ -115,14 +115,31 @@ mod tests {
         };
     }
 
+    macro_rules! earg {
+        ($mock:tt, $arg:literal, $count:literal) => {
+            $mock
+                .expect_arg()
+                .with(predicate::eq($arg))
+                .times($count)
+                .returning(mwc!(1))
+        };
+    }
+
+    macro_rules! eenv {
+        ($mock:tt, $key:literal, $val:literal, $count:literal) => {
+            $mock
+                .expect_env()
+                .with(predicate::eq($key), predicate::eq($val))
+                .times($count)
+                .returning(mwc!(2))
+        };
+    }
+
     #[test]
     fn presence() {
         log_init();
         let mut mock = MockWrappedCall::new();
-        mock.expect_arg()
-            .with(predicate::eq("version"))
-            .times(1)
-            .returning(|_| MockWrappedCall::new());
+        earg!(mock, "version", 1);
         prepare_present(&mut mock);
     }
 
@@ -139,14 +156,8 @@ mod tests {
             },
         };
         let mut mock = MockWrappedCall::new();
-        mock.expect_env()
-            .with(predicate::eq("RESTIC_PASSWORD"), predicate::eq("test"))
-            .times(1)
-            .returning(mwc!(2));
-        mock.expect_arg()
-            .with(predicate::eq("init"))
-            .times(1)
-            .returning(mwc!(1));
+        eenv!(mock, "RESTIC_PASSWORD", "test", 1);
+        earg!(mock, "init", 1);
         prepare_init(&mut mock, repo);
         panic!();
     }
