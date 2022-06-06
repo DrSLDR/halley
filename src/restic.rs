@@ -71,10 +71,10 @@ fn invoke(mut cmd: Command) -> Result<Output, std::io::Error> {
     cmd.output()
 }
 
-fn prepare_present(rc: &mut impl WrappedCall) -> &mut impl WrappedCall {
+fn prepare_present<C: WrappedCall>(wc: &mut C) -> &mut C {
     let span = debug_span!("restic presence");
     let _enter = span.enter();
-    rc.arg("version")
+    wc.arg("version")
 }
 
 // pub(crate) fn init(repo: Repo) -> anyhow::Result<()> {
