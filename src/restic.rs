@@ -71,7 +71,7 @@ fn invoke(mut cmd: Command) -> Result<Output, std::io::Error> {
     cmd.output()
 }
 
-fn prepare_present<'a>(rc: &mut impl WrappedCall) -> &mut impl WrappedCall {
+fn prepare_present(rc: &mut impl WrappedCall) -> &mut impl WrappedCall {
     let span = debug_span!("restic presence");
     let _enter = span.enter();
     rc.arg("version")
