@@ -143,14 +143,6 @@ mod tests {
         }
     }
 
-    // impl WrappedCallMock {
-    //     pub fn new() -> Self {
-    //         Self {
-    //             e: sim::Expectations::new()
-    //         }
-    //     }
-    // }
-
     fn log_init() {
         let _ = tracing_subscriber::fmt()
             .with_max_level(Level::TRACE)
@@ -170,13 +162,14 @@ mod tests {
         };
     }
 
-    // #[test]
-    // fn presence() {
-    //     log_init();
-    //     let mut mock = MockWrappedCall::new();
-    //     // earg!(mock, "version", 1);
-    //     prepare_present(&mut mock);
-    // }
+    #[test]
+    fn presence() {
+        log_init();
+        let mut mock = WrappedCallMock::new();
+        earg!(mock, "version".to_string());
+        prepare_present(&mut mock);
+    }
+
     #[test]
     fn test_init_local() {
         log_init();
@@ -189,14 +182,11 @@ mod tests {
                 base,
             },
         };
-        // let mut mock = MockWrappedCall::new();
         let mut mock = WrappedCallMock::new();
         eenv!(mock, "RESTIC_PASSWORD".to_string(), "test".to_string());
         earg!(mock, "init".to_string());
-        // eenv!(mock, ("RESTIC_PASSWORD".to_string()), ("test".to_string()), 1);
-        // earg!(mock, "init".to_string(), 1);
-        // earg!(mock, "--repo", 1);
-        // earg!(mock, "/tmp/restic/foo", 1);
+        earg!(mock, "--repo".to_string());
+        earg!(mock, "/tmp/restic/foo".to_string());
         prepare_init(&mut mock, repo);
     }
 }
