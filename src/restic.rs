@@ -4,12 +4,14 @@ use tracing::{debug, debug_span, info, info_span, trace};
 
 #[cfg(test)]
 use mockall::{automock, predicate};
+#[cfg(test)]
+use simulacrum as sim;
 
 #[cfg_attr(test, automock)]
 trait WrappedCall {
     fn invoke(&mut self) -> Result<Output, std::io::Error>;
-    fn arg(&mut self, arg: &str) -> &mut Self;
-    fn env(&mut self, key: &str, value: &str) -> &mut Self;
+    fn arg(&mut self, arg: String) -> &mut Self;
+    fn env(&mut self, key: String, value: String) -> &mut Self;
 }
 
 #[derive(Debug)]
@@ -30,11 +32,11 @@ impl WrappedCall for ResticCall {
         trace!("Invoking {:?}", self.cmd);
         self.cmd.output()
     }
-    fn arg(&mut self, arg: &str) -> &mut Self {
+    fn arg(&mut self, arg: String) -> &mut Self {
         self.cmd.arg(arg);
         self
     }
-    fn env(&mut self, key: &str, value: &str) -> &mut Self {
+    fn env(&mut self, key: String, value: String) -> &mut Self {
         self.cmd.env(key, value);
         self
     }
@@ -49,7 +51,7 @@ impl Default for ResticCall {
 fn prepare_present<C: WrappedCall>(wc: &mut C) -> &mut C {
     let span = debug_span!("restic presence");
     let _enter = span.enter();
-    wc.arg("version")
+    wc.arg("version".to_string())
 }
 
 fn assert_present() -> bool {
@@ -86,7 +88,7 @@ fn prepare_init_base<C: WrappedCall>(wc: &mut C, data: RepoBase) -> &mut C {
     let span = info_span!("repo base config");
     let _enter = span.enter();
     debug!("Setting repo base config as {:?}", data);
-    wc.env("RESTIC_PASSWORD", data.passwd.as_str());
+    wc.env("RESTIC_PASSWORD".to_string(), data.passwd);
     wc
 }
 
@@ -102,7 +104,7 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
     match repo {
         Repo::Local { data } => {
             info!("Initializing local repo at {}", data.path);
-            let wc = prepare_init_base(wc, data.base).arg("init");
+            let wc = prepare_init_base(wc, data.base).arg("init".to_string());
             // .arg("--repo");
             // .arg(data.path.as_str());
             return wc;
