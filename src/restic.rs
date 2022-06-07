@@ -133,10 +133,13 @@ mod tests {
             ))
         }
         fn arg(&mut self, arg: String) -> &mut Self {
-            self.e.was_called_returning("arg", arg)
+            self.e.was_called::<String, Self>("arg", arg);
+            self
         }
         fn env(&mut self, key: String, value: String) -> &mut Self {
-            self.e.was_called_returning("env", (key, value))
+            self.e
+                .was_called::<(String, String), Self>("env", (key, value));
+            self
         }
     }
 
