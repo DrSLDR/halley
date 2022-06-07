@@ -58,6 +58,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "debugit"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "63c2f7e3034df2b09f750327e23c1adfe33301e6b7388f05bb4fcc0fa46825e3"
+dependencies = [
+ "version_check 0.1.5",
+]
+
+[[package]]
 name = "difflib"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -117,7 +126,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd48d33ec7f05fbfa152300fdad764757cbded343c1aa1cff2fbaf4134851803"
 dependencies = [
  "typenum",
- "version_check",
+ "version_check 0.9.4",
 ]
 
 [[package]]
@@ -127,9 +136,16 @@ dependencies = [
  "anyhow",
  "directory-hasher",
  "mockall",
+ "simulacrum",
  "tracing",
  "tracing-subscriber",
 ]
+
+[[package]]
+name = "handlebox"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4726136a7636c738124814f1275dd59a709f4cf4dd7b4b670df95b6bf6c4a0ae"
 
 [[package]]
 name = "itertools"
@@ -315,6 +331,56 @@ dependencies = [
 ]
 
 [[package]]
+name = "simulacrum"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fc6cbc16111f66b2f6e0d5c523221fefbfbc5db82fe53a1797bd0840d20958ce"
+dependencies = [
+ "simulacrum_macros",
+ "simulacrum_mock",
+ "simulacrum_user",
+]
+
+[[package]]
+name = "simulacrum_macros"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dfdc5aa67bc316dca41675f669d544aea393f6319dd8bf921b03dc113d09adca"
+dependencies = [
+ "simulacrum_mock",
+]
+
+[[package]]
+name = "simulacrum_mock"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0a3be81ab017d792fee7be1faa37f3949ebde8f85351951fa1758ae95baec4a"
+dependencies = [
+ "debugit",
+ "handlebox",
+ "simulacrum_shared",
+]
+
+[[package]]
+name = "simulacrum_shared"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f784fd3a3691ec375a713ee20dff673a45ca221002e7b4e69c7940320b7e316a"
+dependencies = [
+ "debugit",
+]
+
+[[package]]
+name = "simulacrum_user"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db58f8fdfe08b9b95bf3ebce8d92091a5d65107da1afdeeb9004e1f6ed2ae81f"
+dependencies = [
+ "debugit",
+ "simulacrum_shared",
+]
+
+[[package]]
 name = "smallvec"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -441,6 +507,12 @@ name = "valuable"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "830b7e5d4d90034032940e4ace0d9a9a057e7a45cd94e6c007832e39edb82f6d"
+
+[[package]]
+name = "version_check"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "914b1a6776c4c929a602fafd8bc742e06365d4bcbe48c30f9cca5824f70dc9dd"
 
 [[package]]
 name = "version_check"
