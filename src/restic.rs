@@ -115,7 +115,38 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use simulacrum::*;
     use tracing::Level;
+
+    create_mock_struct! {
+        struct WrappedCallMock: {
+            expect_arg("arg") String => Self;
+            expect_env("env") (String, String) => Self;
+        }
+    }
+
+    impl WrappedCall for WrappedCallMock {
+        fn invoke(&mut self) -> Result<Output, std::io::Error> {
+            Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "not allowed to do that",
+            ))
+        }
+        fn arg(&mut self, arg: String) -> &mut Self {
+            self.e.was_called_returning("arg", arg)
+        }
+        fn env(&mut self, key: String, value: String) -> &mut Self {
+            self.e.was_called_returning("env", (key, value))
+        }
+    }
+
+    // impl WrappedCallMock {
+    //     pub fn new() -> Self {
+    //         Self {
+    //             e: sim::Expectations::new()
+    //         }
+    //     }
+    // }
 
     fn log_init() {
         let _ = tracing_subscriber::fmt()
@@ -124,25 +155,25 @@ mod tests {
             .try_init();
     }
 
-    macro_rules! earg {
-        ($mock:tt, $arg:literal, $count:literal) => {
-            $mock
-                .expect_arg()
-                .with(predicate::eq($arg))
-                .times($count)
-                .return_var(MockWrappedCall::new());
-        };
-    }
+    // macro_rules! earg {
+    //     ($mock:tt, $arg:tt, $count:literal) => {
+    //         $mock
+    //             .expect_arg()
+    //             .with(predicate::eq($arg))
+    //             .times($count)
+    //             .return_var(MockWrappedCall::new());
+    //     };
+    // }
 
-    macro_rules! eenv {
-        ($mock:tt, $key:literal, $val:literal, $count:literal) => {
-            $mock
-                .expect_env()
-                .with(predicate::eq($key), predicate::eq($val))
-                .times($count)
-                .return_var(MockWrappedCall::new())
-        };
-    }
+    // macro_rules! eenv {
+    //     ($mock:tt, $key:literal, $val:literal, $count:literal) => {
+    //         $mock
+    //             .expect_env()
+    //             .with(predicate::eq($key), predicate::eq($val))
+    //             .times($count)
+    //             .return_var(MockWrappedCall::new())
+    //     };
+    // }
 
     #[test]
     fn presence() {
@@ -165,8 +196,8 @@ mod tests {
             },
         };
         let mut mock = MockWrappedCall::new();
-        eenv!(mock, "RESTIC_PASSWORD", "test", 1);
-        earg!(mock, "init", 1);
+        // eenv!(mock, ("RESTIC_PASSWORD".to_string()), ("test".to_string()), 1);
+        // earg!(mock, "init".to_string(), 1);
         // earg!(mock, "--repo", 1);
         // earg!(mock, "/tmp/restic/foo", 1);
         prepare_init(&mut mock, repo);
