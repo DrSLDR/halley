@@ -158,27 +158,19 @@ mod tests {
             .try_init();
     }
 
-    // macro_rules! earg {
-    //     ($mock:tt, $arg:tt, $count:literal) => {
-    //         $mock
-    //             .expect_arg()
-    //             .with(predicate::eq($arg))
-    //             .times($count)
-    //             .return_var(MockWrappedCall::new());
-    //     };
-    // }
+    macro_rules! earg {
+        ($mock:tt, $arg:expr) => {
+            $mock.expect_arg().called_once().with($arg)
+        };
+    }
 
-    // macro_rules! eenv {
-    //     ($mock:tt, $key:literal, $val:literal, $count:literal) => {
-    //         $mock
-    //             .expect_env()
-    //             .with(predicate::eq($key), predicate::eq($val))
-    //             .times($count)
-    //             .return_var(MockWrappedCall::new())
-    //     };
-    // }
+    macro_rules! eenv {
+        ($mock:tt, $key:expr, $val:expr) => {
+            $mock.expect_env().called_once().with(params!($key, $val))
+        };
+    }
 
-    #[test]
+    // #[test]
     // fn presence() {
     //     log_init();
     //     let mut mock = MockWrappedCall::new();
@@ -199,10 +191,8 @@ mod tests {
         };
         // let mut mock = MockWrappedCall::new();
         let mut mock = WrappedCallMock::new();
-        mock.expect_env()
-            .called_once()
-            .with(params!("RESTIC_PASSWORD".to_string(), "test".to_string()));
-        mock.expect_arg().called_once().with("init".to_string());
+        eenv!(mock, "RESTIC_PASSWORD".to_string(), "test".to_string());
+        earg!(mock, "init".to_string());
         // eenv!(mock, ("RESTIC_PASSWORD".to_string()), ("test".to_string()), 1);
         // earg!(mock, "init".to_string(), 1);
         // earg!(mock, "--repo", 1);
