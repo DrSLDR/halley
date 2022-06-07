@@ -153,8 +153,11 @@ mod tests {
 
     macro_rules! earg {
         ($mock:tt, $arg:expr) => {
-            $mock.expect_arg().called_once().with($arg)
+            $mock.then().expect_arg().called_once().with($arg)
         };
+        ($mock:tt, $arg:expr, $($first:literal)?) => {
+            $mock.expect_arg().called_once().with($arg)
+        }
     }
 
     macro_rules! eenv {
@@ -185,7 +188,7 @@ mod tests {
         };
         let mut mock = WrappedCallMock::new();
         eenv!(mock, "RESTIC_PASSWORD".to_string(), "test".to_string());
-        earg!(mock, "init".to_string());
+        earg!(mock, "init".to_string(), true);
         earg!(mock, "--repo".to_string());
         earg!(mock, "/tmp/restic/foo".to_string());
         prepare_init(&mut mock, repo);
