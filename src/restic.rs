@@ -104,9 +104,10 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
     match repo {
         Repo::Local { data } => {
             info!("Initializing local repo at {}", data.path);
-            let wc = prepare_init_base(wc, data.base).arg("init".to_string());
-            // .arg("--repo");
-            // .arg(data.path.as_str());
+            let wc = prepare_init_base(wc, data.base)
+                .arg("init".to_string())
+                .arg("--repo".to_string())
+                .arg(data.path);
             return wc;
         }
     }
