@@ -2,12 +2,6 @@ use anyhow;
 use std::process::{Command, Output};
 use tracing::{debug, debug_span, info, info_span, trace};
 
-#[cfg(test)]
-use mockall::{automock, predicate};
-#[cfg(test)]
-use simulacrum as sim;
-
-#[cfg_attr(test, automock)]
 trait WrappedCall {
     fn invoke(&mut self) -> Result<Output, std::io::Error>;
     fn arg(&mut self, arg: String) -> &mut Self;
@@ -36,8 +30,8 @@ impl WrappedCall for ResticCall {
         self.cmd.arg(arg);
         self
     }
-    fn env(&mut self, key: String, value: String) -> &mut Self {
-        self.cmd.env(key, value);
+    fn env(&mut self, key: String, val: String) -> &mut Self {
+        self.cmd.env(key, val);
         self
     }
 }
