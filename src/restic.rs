@@ -2,14 +2,10 @@ use anyhow;
 use std::process::{Command, Output};
 use tracing::{debug, debug_span, info, info_span, trace};
 
-#[cfg(test)]
-use mockall::{automock, predicate};
-
-#[cfg_attr(test, automock)]
 trait WrappedCall {
     fn invoke(&mut self) -> Result<Output, std::io::Error>;
-    fn arg(&mut self, arg: &str) -> &mut Self;
-    fn env(&mut self, key: &str, value: &str) -> &mut Self;
+    fn arg(&mut self, arg: String) -> &mut Self;
+    fn env(&mut self, key: String, value: String) -> &mut Self;
 }
 
 #[derive(Debug)]
@@ -30,12 +26,12 @@ impl WrappedCall for ResticCall {
         trace!("Invoking {:?}", self.cmd);
         self.cmd.output()
     }
-    fn arg(&mut self, arg: &str) -> &mut Self {
+    fn arg(&mut self, arg: String) -> &mut Self {
         self.cmd.arg(arg);
         self
     }
-    fn env(&mut self, key: &str, value: &str) -> &mut Self {
-        self.cmd.env(key, value);
+    fn env(&mut self, key: String, val: String) -> &mut Self {
+        self.cmd.env(key, val);
         self
     }
 }
@@ -49,7 +45,7 @@ impl Default for ResticCall {
 fn prepare_present<C: WrappedCall>(wc: &mut C) -> &mut C {
     let span = debug_span!("restic presence");
     let _enter = span.enter();
-    wc.arg("version")
+    wc.arg("version".to_string())
 }
 
 fn assert_present() -> bool {
@@ -86,7 +82,7 @@ fn prepare_init_base<C: WrappedCall>(wc: &mut C, data: RepoBase) -> &mut C {
     let span = info_span!("repo base config");
     let _enter = span.enter();
     debug!("Setting repo base config as {:?}", data);
-    wc.env("RESTIC_PASSWORD", data.passwd.as_str());
+    wc.env("RESTIC_PASSWORD".to_string(), data.passwd);
     wc
 }
 
@@ -102,9 +98,10 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
     match repo {
         Repo::Local { data } => {
             info!("Initializing local repo at {}", data.path);
-            let wc = prepare_init_base(wc, data.base).arg("init");
-            // .arg("--repo");
-            // .arg(data.path.as_str());
+            let wc = prepare_init_base(wc, data.base)
+                .arg("init".to_string())
+                .arg("--repo".to_string())
+                .arg(data.path);
             return wc;
         }
     }
@@ -113,7 +110,33 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use simulacrum::*;
     use tracing::Level;
+
+    create_mock_struct! {
+        struct WrappedCallMock: {
+            expect_arg("arg") String => Self;
+            expect_env("env") (String, String) => Self;
+        }
+    }
+
+    impl WrappedCall for WrappedCallMock {
+        fn invoke(&mut self) -> Result<Output, std::io::Error> {
+            Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "not allowed to do that",
+            ))
+        }
+        fn arg(&mut self, arg: String) -> &mut Self {
+            self.e.was_called::<String, Self>("arg", arg);
+            self
+        }
+        fn env(&mut self, key: String, value: String) -> &mut Self {
+            self.e
+                .was_called::<(String, String), Self>("env", (key, value));
+            self
+        }
+    }
 
     fn log_init() {
         let _ = tracing_subscriber::fmt()
@@ -123,30 +146,32 @@ mod tests {
     }
 
     macro_rules! earg {
-        ($mock:tt, $arg:literal, $count:literal) => {
-            $mock
-                .expect_arg()
-                .with(predicate::eq($arg))
-                .times($count)
-                .return_var(MockWrappedCall::new());
+        ($mock:tt, $arg:expr) => {
+            $mock.then().expect_arg().called_once().with($arg)
+        };
+        ($mock:tt, $arg:expr, $($first:literal)?) => {
+            $mock.expect_arg().called_once().with($arg)
         };
     }
 
     macro_rules! eenv {
-        ($mock:tt, $key:literal, $val:literal, $count:literal) => {
+        ($mock:tt, $key:expr, $val:expr) => {
             $mock
+                .then()
                 .expect_env()
-                .with(predicate::eq($key), predicate::eq($val))
-                .times($count)
-                .return_var(MockWrappedCall::new())
+                .called_once()
+                .with(params!($key, $val))
+        };
+        ($mock:tt, $key:expr, $val:expr, $($first:literal)?) => {
+            $mock.expect_env().called_once().with(params!($key, $val))
         };
     }
 
     #[test]
     fn presence() {
         log_init();
-        let mut mock = MockWrappedCall::new();
-        earg!(mock, "version", 1);
+        let mut mock = WrappedCallMock::new();
+        earg!(mock, "version".to_string());
         prepare_present(&mut mock);
     }
 
@@ -162,11 +187,16 @@ mod tests {
                 base,
             },
         };
-        let mut mock = MockWrappedCall::new();
-        eenv!(mock, "RESTIC_PASSWORD", "test", 1);
-        earg!(mock, "init", 1);
-        // earg!(mock, "--repo", 1);
-        // earg!(mock, "/tmp/restic/foo", 1);
+        let mut mock = WrappedCallMock::new();
+        eenv!(
+            mock,
+            "RESTIC_PASSWORD".to_string(),
+            "test".to_string(),
+            true
+        );
+        earg!(mock, "init".to_string(), true);
+        earg!(mock, "--repo".to_string());
+        earg!(mock, "/tmp/restic/foo".to_string());
         prepare_init(&mut mock, repo);
     }
 }
