@@ -179,13 +179,12 @@ mod tests {
     // }
 
     #[test]
-    fn presence() {
-        log_init();
-        let mut mock = MockWrappedCall::new();
-        earg!(mock, "version", 1);
-        prepare_present(&mut mock);
-    }
-
+    // fn presence() {
+    //     log_init();
+    //     let mut mock = MockWrappedCall::new();
+    //     // earg!(mock, "version", 1);
+    //     prepare_present(&mut mock);
+    // }
     #[test]
     fn test_init_local() {
         log_init();
@@ -198,7 +197,12 @@ mod tests {
                 base,
             },
         };
-        let mut mock = MockWrappedCall::new();
+        // let mut mock = MockWrappedCall::new();
+        let mut mock = WrappedCallMock::new();
+        mock.expect_env()
+            .called_once()
+            .with(params!("RESTIC_PASSWORD".to_string(), "test".to_string()));
+        mock.expect_arg().called_once().with("init".to_string());
         // eenv!(mock, ("RESTIC_PASSWORD".to_string()), ("test".to_string()), 1);
         // earg!(mock, "init".to_string(), 1);
         // earg!(mock, "--repo", 1);
