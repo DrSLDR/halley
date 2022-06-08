@@ -48,7 +48,7 @@ fn prepare_present<C: WrappedCall>(wc: &mut C) -> &mut C {
     wc.arg("version".to_string())
 }
 
-fn assert_present() -> bool {
+fn presence() -> bool {
     let mut rc = ResticCall::new();
     let rc = prepare_present(&mut rc);
     rc.invoke()
@@ -91,7 +91,7 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
     let _enter = span.enter();
 
     #[cfg(not(test))]
-    assert!(assert_present());
+    assert!(presence());
 
     debug!("Initializing repo with {:?}", repo);
 
