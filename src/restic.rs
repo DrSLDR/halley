@@ -199,4 +199,11 @@ mod tests {
         earg!(mock, "/tmp/restic/foo".to_string());
         prepare_init(&mut mock, repo);
     }
+
+    #[test]
+    #[ignore]
+    fn integration_init() {
+        log_init();
+        // Will actually invoke restic locally and verify filesystem changes
+    }
 }
