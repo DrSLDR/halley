@@ -176,7 +176,7 @@ mod tests {
     }
 
     #[test]
-    fn test_init_local() {
+    fn init_local() {
         log_init();
         let base = RepoBase {
             passwd: "test".to_string(),
