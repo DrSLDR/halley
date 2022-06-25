@@ -18,3 +18,5 @@ tracing-subscriber = "0.3.11"
 
 [dev-dependencies]
 simulacrum = "0.3.1"
+assert_fs = "1.0.7"
+predicates = "2.1.1"
