@@ -110,6 +110,8 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use assert_fs::prelude::*;
+    use predicates::prelude::*;
     use simulacrum::*;
     use tracing::Level;
 
@@ -182,10 +184,20 @@ mod tests {
                     path: "/tmp/restic/foo".to_string(),
                     base: RepoBase {
                         passwd: "test".to_string(),
-                    }
-                }
+                    },
+                },
             }
-        }
+        };
+        ($name:expr) => {
+            Repo::Local {
+                data: LocalRepo {
+                    path: $name.to_string(),
+                    base: RepoBase {
+                        passwd: "test".to_string(),
+                    },
+                },
+            }
+        };
     }
 
     #[test]
@@ -209,6 +221,13 @@ mod tests {
     #[ignore]
     fn integration_init() {
         log_init();
-        // Will actually invoke restic locally and verify filesystem changes
+        let temp = assert_fs::TempDir::new().unwrap();
+        let repo = local_repo_def!(temp.path().to_string_lossy());
+        let mut com = ResticCall::new();
+        prepare_init(&mut com, repo);
+        debug!("Call: {:?}", com);
+        com.invoke()
+            .expect("Failed to invoke restic to init a repo");
+        temp.child("config").assert(predicate::path::is_file());
     }
 }
