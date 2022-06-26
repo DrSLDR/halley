@@ -1,6 +1,6 @@
 use anyhow;
 use std::process::{Command, Output};
-use tracing::{debug, debug_span, info, info_span, trace};
+use tracing::{debug, debug_span, error, info, info_span, trace};
 
 trait WrappedCall {
     fn invoke(&mut self) -> Result<Output, std::io::Error>;
@@ -146,15 +146,34 @@ mod tests {
     use simulacrum::*;
     use tracing::Level;
 
-    create_mock_struct! {
-        struct WrappedCallMock: {
-            expect_arg("arg") String => Self;
-            expect_env("env") (String, String) => Self;
+    struct WrappedCallMock {
+        e: Expectations,
+    }
+
+    impl WrappedCallMock {
+        fn new() -> Self {
+            Self {
+                e: Expectations::new(),
+            }
+        }
+
+        fn then(&mut self) -> &mut Self {
+            self.e.then();
+            self
+        }
+
+        fn expect_arg(&mut self) -> Method<String, Self> {
+            self.e.expect::<String, Self>("arg")
+        }
+
+        fn expect_env(&mut self) -> Method<(String, String), Self> {
+            self.e.expect::<(String, String), Self>("env")
         }
     }
 
     impl WrappedCall for WrappedCallMock {
         fn invoke(&mut self) -> Result<Output, std::io::Error> {
+            error!("Something tried to invoke the mock!");
             Err(std::io::Error::new(
                 std::io::ErrorKind::Other,
                 "not allowed to do that",
@@ -162,12 +181,13 @@ mod tests {
         }
         fn arg(&mut self, arg: String) -> &mut Self {
             trace!("Adding argument {:?}", arg);
-            was_called!(self, "arg", (arg: String) -> &mut Self);
+            self.e.was_called::<String, Self>("arg", arg);
             self
         }
         fn env(&mut self, key: String, value: String) -> &mut Self {
             trace!("Adding envvar {:?} = {:?}", key, value);
-            was_called!(self, "env", (key: String, value: String) -> &mut Self);
+            self.e
+                .was_called::<(String, String), Self>("env", (key, value));
             self
         }
     }
@@ -227,11 +247,7 @@ mod tests {
         log_init();
         let repo = local_repo_def!("/tmp/restic/foo");
         let mut mock = WrappedCallMock::new();
-        eenv!(
-            mock,
-            "RESTIC_PASSWORD".to_string(),
-            "test".to_string()
-        );
+        eenv!(mock, "RESTIC_PASSWORD".to_string(), "test".to_string());
         earg!(mock, "init".to_string());
         earg!(mock, "--repo".to_string());
         earg!(mock, "/tmp/restic/foo".to_string());
@@ -255,11 +271,7 @@ mod tests {
             },
         };
         let mut mock = WrappedCallMock::new();
-        eenv!(
-            mock,
-            "RESTIC_PASSWORD".to_string(),
-            "test".to_string()
-        );
+        eenv!(mock, "RESTIC_PASSWORD".to_string(), "test".to_string());
         eenv!(mock, "AWS_ACCESS_KEY_ID".to_string(), "the_id".to_string());
         eenv!(
             mock,
