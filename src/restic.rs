@@ -78,7 +78,7 @@ pub(crate) struct S3Repo {
     url: String,
     bucket: String,
     region: String,
-    path: String,
+    path: Option<String>,
     key: AWSKey,
     common: RepoCommon,
 }
@@ -233,7 +233,7 @@ mod tests {
                 url: "example.org".to_string(),
                 bucket: "foo".to_string(),
                 region: "eu-west-1".to_string(),
-                path: "bar".to_string(),
+                path: Some("bar".to_string()),
                 key: AWSKey {
                     id: "the_id".to_string(),
                     secret: "the_secret".to_string(),
