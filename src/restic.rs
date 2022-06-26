@@ -180,9 +180,6 @@ mod tests {
         ($mock:tt, $arg:expr) => {
             $mock.then().expect_arg().called_once().with($arg)
         };
-        ($mock:tt, $arg:expr, $($first:literal)?) => {
-            $mock.expect_arg().called_once().with($arg)
-        };
     }
 
     macro_rules! eenv {
@@ -192,9 +189,6 @@ mod tests {
                 .expect_env()
                 .called_once()
                 .with(params!($key, $val))
-        };
-        ($mock:tt, $key:expr, $val:expr, $($first:literal)?) => {
-            $mock.expect_env().called_once().with(params!($key, $val))
         };
     }
 
@@ -233,10 +227,9 @@ mod tests {
         eenv!(
             mock,
             "RESTIC_PASSWORD".to_string(),
-            "test".to_string(),
-            true
+            "test".to_string()
         );
-        earg!(mock, "init".to_string(), true);
+        earg!(mock, "init".to_string());
         earg!(mock, "--repo".to_string());
         earg!(mock, "/tmp/restic/foo".to_string());
         prepare_init(&mut mock, repo);
@@ -262,8 +255,7 @@ mod tests {
         eenv!(
             mock,
             "RESTIC_PASSWORD".to_string(),
-            "test".to_string(),
-            true
+            "test".to_string()
         );
         eenv!(mock, "AWS_ACCESS_KEY_ID".to_string(), "the_id".to_string());
         eenv!(
@@ -271,7 +263,7 @@ mod tests {
             "AWS_SECRET_ACCESS_KEY".to_string(),
             "the_secret".to_string()
         );
-        earg!(mock, "--repo".to_string(), true);
+        earg!(mock, "--repo".to_string());
         earg!(
             mock,
             format!(
