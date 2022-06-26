@@ -57,14 +57,14 @@ fn presence() -> bool {
 }
 
 #[derive(Debug)]
-pub(crate) struct RepoBase {
+pub(crate) struct RepoCommon {
     passwd: String,
 }
 
 #[derive(Debug)]
 pub(crate) struct LocalRepo {
     path: String,
-    base: RepoBase,
+    common: RepoCommon,
 }
 
 // #[derive(Debug)]
@@ -78,7 +78,7 @@ pub(crate) enum Repo {
     Local { data: LocalRepo },
 }
 
-fn prepare_init_base<C: WrappedCall>(wc: &mut C, data: RepoBase) -> &mut C {
+fn prepare_init_base<C: WrappedCall>(wc: &mut C, data: RepoCommon) -> &mut C {
     let span = info_span!("repo base config");
     let _enter = span.enter();
     debug!("Setting repo base config as {:?}", data);
@@ -98,7 +98,7 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
     match repo {
         Repo::Local { data } => {
             info!("Initializing local repo at {}", data.path);
-            prepare_init_base(wc, data.base)
+            prepare_init_base(wc, data.common)
                 .arg("init".to_string())
                 .arg("--repo".to_string())
                 .arg(data.path);
@@ -182,7 +182,7 @@ mod tests {
             Repo::Local {
                 data: LocalRepo {
                     path: $name.to_string(),
-                    base: RepoBase {
+                    common: RepoCommon {
                         passwd: "test".to_string(),
                     },
                 },
