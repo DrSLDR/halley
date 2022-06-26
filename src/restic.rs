@@ -114,6 +114,7 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
                 .arg("--repo".to_string())
                 .arg(data.path);
         }
+        Repo::S3 { data } => todo!(),
     }
     wc
 }
@@ -188,14 +189,20 @@ mod tests {
         prepare_present(&mut mock);
     }
 
+    macro_rules! common_repo_def {
+        () => {
+            RepoCommon {
+                passwd: "test".to_string(),
+            }
+        };
+    }
+
     macro_rules! local_repo_def {
         ($name:expr) => {
             Repo::Local {
                 data: LocalRepo {
                     path: $name.to_string(),
-                    common: RepoCommon {
-                        passwd: "test".to_string(),
-                    },
+                    common: common_repo_def!(),
                 },
             }
         };
@@ -215,6 +222,49 @@ mod tests {
         earg!(mock, "init".to_string(), true);
         earg!(mock, "--repo".to_string());
         earg!(mock, "/tmp/restic/foo".to_string());
+        prepare_init(&mut mock, repo);
+    }
+
+    #[test]
+    fn init_s3() {
+        log_init();
+        let repo = Repo::S3 {
+            data: S3Repo {
+                url: "example.org".to_string(),
+                bucket: "foo".to_string(),
+                region: "eu-west-1".to_string(),
+                path: "bar".to_string(),
+                key: AWSKey {
+                    id: "the_id".to_string(),
+                    secret: "the_secret".to_string(),
+                },
+                common: common_repo_def!(),
+            },
+        };
+        let mut mock = WrappedCallMock::new();
+        eenv!(
+            mock,
+            "RESTIC_PASSWORD".to_string(),
+            "test".to_string(),
+            true
+        );
+        eenv!(mock, "AWS_ACCESS_KEY_ID".to_string(), "the_id".to_string());
+        eenv!(
+            mock,
+            "AWS_SECRET_ACCESS_KEY".to_string(),
+            "the_secret".to_string()
+        );
+        earg!(mock, "--repo".to_string(), true);
+        earg!(
+            mock,
+            format!(
+                "s3:{url}/{bucket}/{path}",
+                url = "example.org",
+                bucket = "foo",
+                path = "bar"
+            )
+        );
+        earg!(mock, "init".to_string());
         prepare_init(&mut mock, repo);
     }
 
