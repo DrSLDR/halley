@@ -178,16 +178,6 @@ mod tests {
     }
 
     macro_rules! local_repo_def {
-        () => {
-            Repo::Local {
-                data: LocalRepo {
-                    path: "/tmp/restic/foo".to_string(),
-                    base: RepoBase {
-                        passwd: "test".to_string(),
-                    },
-                },
-            }
-        };
         ($name:expr) => {
             Repo::Local {
                 data: LocalRepo {
@@ -203,7 +193,7 @@ mod tests {
     #[test]
     fn init_local() {
         log_init();
-        let repo = local_repo_def!();
+        let repo = local_repo_def!("/tmp/restic/foo");
         let mut mock = WrappedCallMock::new();
         eenv!(
             mock,
