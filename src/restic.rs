@@ -62,20 +62,31 @@ pub(crate) struct RepoCommon {
 }
 
 #[derive(Debug)]
+pub(crate) struct AWSKey {
+    id: String,
+    secret: String,
+}
+
+#[derive(Debug)]
 pub(crate) struct LocalRepo {
     path: String,
     common: RepoCommon,
 }
 
-// #[derive(Debug)]
-// pub(crate) struct AWSKey {
-//     id: String,
-//     secret: String,
-// }
+#[derive(Debug)]
+pub(crate) struct S3Repo {
+    url: String,
+    bucket: String,
+    region: String,
+    path: String,
+    key: AWSKey,
+    common: RepoCommon,
+}
 
 #[derive(Debug)]
 pub(crate) enum Repo {
     Local { data: LocalRepo },
+    S3 { data: S3Repo },
 }
 
 fn prepare_init_base<C: WrappedCall>(wc: &mut C, data: RepoCommon) -> &mut C {
