@@ -90,9 +90,9 @@ pub(crate) enum Repo {
 }
 
 fn prepare_init_common<C: WrappedCall>(wc: &mut C, data: RepoCommon) -> &mut C {
-    let span = info_span!("repo base config");
+    let span = info_span!("repo common config");
     let _enter = span.enter();
-    debug!("Setting repo base config as {:?}", data);
+    debug!("Setting repo common config as {:?}", data);
     wc.env("RESTIC_PASSWORD".to_string(), data.passwd);
     wc
 }
