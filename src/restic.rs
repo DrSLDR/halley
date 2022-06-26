@@ -114,7 +114,24 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
                 .arg("--repo".to_string())
                 .arg(data.path);
         }
-        Repo::S3 { data } => todo!(),
+        Repo::S3 { data } => {
+            let url = match data.path {
+                Some(path) => format!(
+                    "{url}/{bucket}/{path}",
+                    url = data.url,
+                    bucket = data.bucket,
+                    path = path
+                ),
+                None => format!("{url}/{bucket}", url = data.url, bucket = data.bucket),
+            };
+            info!("Initializing S3 repo at {}", url);
+            prepare_init_common(wc, data.common)
+                .env("AWS_ACCESS_KEY_ID".to_string(), data.key.id)
+                .env("AWS_SECRET_ACCESS_KEY".to_string(), data.key.secret)
+                .arg("init".to_string())
+                .arg("--repo".to_string())
+                .arg(format!("s3:{url}"));
+        }
     }
     wc
 }
