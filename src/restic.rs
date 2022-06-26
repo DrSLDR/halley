@@ -89,7 +89,7 @@ pub(crate) enum Repo {
     S3 { data: S3Repo },
 }
 
-fn prepare_init_base<C: WrappedCall>(wc: &mut C, data: RepoCommon) -> &mut C {
+fn prepare_init_common<C: WrappedCall>(wc: &mut C, data: RepoCommon) -> &mut C {
     let span = info_span!("repo base config");
     let _enter = span.enter();
     debug!("Setting repo base config as {:?}", data);
@@ -109,7 +109,7 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
     match repo {
         Repo::Local { data } => {
             info!("Initializing local repo at {}", data.path);
-            prepare_init_base(wc, data.common)
+            prepare_init_common(wc, data.common)
                 .arg("init".to_string())
                 .arg("--repo".to_string())
                 .arg(data.path);
