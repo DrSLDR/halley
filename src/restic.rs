@@ -27,10 +27,12 @@ impl WrappedCall for ResticCall {
         self.cmd.output()
     }
     fn arg(&mut self, arg: String) -> &mut Self {
+        trace!("Adding argument {:?}", arg);
         self.cmd.arg(arg);
         self
     }
     fn env(&mut self, key: String, val: String) -> &mut Self {
+        trace!("Adding envvar {:?} = {:?}", key, val);
         self.cmd.env(key, val);
         self
     }
@@ -159,12 +161,13 @@ mod tests {
             ))
         }
         fn arg(&mut self, arg: String) -> &mut Self {
-            self.e.was_called::<String, Self>("arg", arg);
+            trace!("Adding argument {:?}", arg);
+            was_called!(self, "arg", (arg: String) -> &mut Self);
             self
         }
         fn env(&mut self, key: String, value: String) -> &mut Self {
-            self.e
-                .was_called::<(String, String), Self>("env", (key, value));
+            trace!("Adding envvar {:?} = {:?}", key, value);
+            was_called!(self, "env", (key: String, value: String) -> &mut Self);
             self
         }
     }
