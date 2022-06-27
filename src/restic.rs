@@ -145,6 +145,8 @@ mod tests {
     use predicates::prelude::*;
     use simulacrum::*;
     use tracing::Level;
+    use mockall::*;
+    use mockall::predicate::*;
 
     struct WrappedCallMock {
         e: Expectations,
