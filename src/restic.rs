@@ -231,13 +231,11 @@ mod tests {
     #[test]
     fn presence() {
         log_init();
-        // let mut mock = WrappedCallMock::new();
         let mut mock = MockWCall::new();
         mock.expect_arg()
             .once()
             .with(predicate::eq("version".to_string()))
-            .returning(|_| MockWCall::new());
-        // let _mock = mallarg!(mock, "version".to_string());
+            .return_var(MockWCall::new());
         prepare_present(&mut mock);
     }
 
