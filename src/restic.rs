@@ -142,11 +142,22 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
 mod tests {
     use super::*;
     use assert_fs::prelude::*;
+    use mockall::predicate::*;
+    use mockall::*;
     use predicates::prelude::*;
     use simulacrum::*;
     use tracing::Level;
-    use mockall::*;
-    use mockall::predicate::*;
+
+    struct WCall {}
+
+    mock! {
+        WCall {}
+        impl WrappedCall for WCall {
+            fn invoke(&mut self) -> Result<Output, std::io::Error>;
+            fn arg(&mut self, arg: String) -> &mut Self;
+            fn env(&mut self, key: String, value: String) -> &mut Self;
+        }
+    }
 
     struct WrappedCallMock {
         e: Expectations,
@@ -220,8 +231,13 @@ mod tests {
     #[test]
     fn presence() {
         log_init();
-        let mut mock = WrappedCallMock::new();
-        earg!(mock, "version".to_string());
+        // let mut mock = WrappedCallMock::new();
+        let mut mock = MockWCall::new();
+        mock.expect_arg()
+            .once()
+            .with(predicate::eq("version".to_string()))
+            .returning(|_| MockWCall::new());
+        // let _mock = mallarg!(mock, "version".to_string());
         prepare_present(&mut mock);
     }
 
