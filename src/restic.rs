@@ -157,6 +157,28 @@ mod tests {
         }
     }
 
+    #[derive(Debug)]
+    struct ArgCall {
+        arg: String
+    }
+
+    #[derive(Debug)]
+    struct EnvCall {
+        key: String,
+        value: String,
+    }
+
+    #[derive(Debug)]
+    enum CallChainLink {
+        Arg { data: ArgCall },
+        Env { data: EnvCall },
+    }
+
+    struct ExpectationStore {
+        top: MockWCall,
+        store: Vec<MockWCall>,
+    }
+
     fn log_init() {
         let _ = tracing_subscriber::fmt()
             .with_max_level(Level::TRACE)
