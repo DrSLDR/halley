@@ -190,9 +190,9 @@ mod tests {
                 data: EnvCall {
                     key: $key.to_string(),
                     value: $value.to_string(),
-                }
+                },
             }
-        }
+        };
     }
 
     fn construct_call_chain(ops: Vec<CallChainLink>) -> MockWCall {
@@ -202,12 +202,17 @@ mod tests {
                 let mut mock = MockWCall::new();
                 match op {
                     CallChainLink::Arg { data } => {
+                        debug!("Adding an arg to the call chain (arg: {:?})", &data.arg);
                         mock.expect_arg()
                             .once()
                             .with(predicate::eq(data.arg))
                             .return_var(chain_link);
                     }
                     CallChainLink::Env { data } => {
+                        debug!(
+                            "Adding an env to the call chain (key: {:?}, val: {:?})",
+                            &data.key, &data.value
+                        );
                         mock.expect_env()
                             .once()
                             .with(predicate::eq(data.key), predicate::eq(data.value))
