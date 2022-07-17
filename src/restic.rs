@@ -184,6 +184,17 @@ mod tests {
         };
     }
 
+    macro_rules! chain_env {
+        ($key:expr, $value:expr) => {
+            CallChainLink::Env {
+                data: EnvCall {
+                    key: $key.to_string(),
+                    value: $value.to_string(),
+                }
+            }
+        }
+    }
+
     fn construct_call_chain(ops: Vec<CallChainLink>) -> MockWCall {
         let mut chain_link = MockWCall::new();
         for op in ops.into_iter().rev() {
