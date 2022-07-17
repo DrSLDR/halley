@@ -174,13 +174,32 @@ mod tests {
         Env { data: EnvCall },
     }
 
-    struct CallChain {
-        head: MockWCall,
-        chain: Vec<MockWCall>,
-    }
-
-    fn construct_call_chain(mut ops: Vec<CallChainLink>) -> CallChain {
-        unimplemented!();
+    fn construct_call_chain(mut ops: Vec<CallChainLink>) -> MockWCall {
+        let mut tmp_link: Option<MockWCall> = None;
+        loop {
+            match ops.pop() {
+                None => break tmp_link.unwrap(),
+                Some(op) => {
+                    tmp_link = Some({
+                        let mut mock = MockWCall::new();
+                        let _e = match op {
+                            CallChainLink::Arg { data } => {
+                                mock.expect_arg().once().with(predicate::eq(data.arg))
+                            }
+                            CallChainLink::Env { data } => {
+                                unimplemented!();
+                            }
+                        };
+                        if tmp_link.is_none() {
+                            _e.return_var(MockWCall::new());
+                        } else {
+                            _e.return_var(tmp_link.unwrap());
+                        }
+                        mock
+                    });
+                }
+            }
+        }
     }
 
     fn log_init() {
@@ -216,7 +235,7 @@ mod tests {
             },
         });
         let mut cc = construct_call_chain(ops);
-        prepare_present(&mut cc.head);
+        prepare_present(&mut cc);
     }
 
     macro_rules! common_repo_def {
