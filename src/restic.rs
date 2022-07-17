@@ -260,18 +260,23 @@ mod tests {
         };
     }
 
-    // #[test]
-    // fn init_local() {
-    //     log_init();
-    //     let repo = local_repo_def!("/tmp/restic/foo");
-    //     let mut mock_init = MockWCall::new();
-    //     mock_init.expect_arg().once().with(predicate::eq("init".to_string())).return_var(MockWCall::new());
-    //     // eenv!(mock, "RESTIC_PASSWORD".to_string(), "test".to_string());
-    //     // mallarg!(mock, "init".to_string());
-    //     // mallarg!(mock, "--repo".to_string());
-    //     // mallarg!(mock, "/tmp/restic/foo".to_string());
-    //     prepare_init(&mut mock_init, repo);
-    // }
+    #[test]
+    fn init_local() {
+        log_init();
+        let repo = local_repo_def!("/tmp/restic/foo");
+        let ops = vec![
+            chain_env!("RESTIC_PASSWORD", "test"),
+            chain_arg!("init"),
+            chain_arg!("--repo"),
+            chain_arg!("/tmp/restic/foo"),
+        ];
+        let mut cc = construct_call_chain(ops);
+        // eenv!(mock, "RESTIC_PASSWORD".to_string(), "test".to_string());
+        // mallarg!(mock, "init".to_string());
+        // mallarg!(mock, "--repo".to_string());
+        // mallarg!(mock, "/tmp/restic/foo".to_string());
+        prepare_init(&mut cc, repo);
+    }
 
     // #[test]
     // fn init_s3() {
