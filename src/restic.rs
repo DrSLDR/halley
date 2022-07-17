@@ -195,10 +195,10 @@ mod tests {
         };
     }
 
-    fn construct_call_chain(ops: Vec<CallChainLink>) -> MockWCall {
-        let mut chain_link = MockWCall::new();
-        for op in ops.into_iter().rev() {
-            chain_link = {
+    fn construct_chain_link(mut op_iter: std::vec::IntoIter<CallChainLink>) -> MockWCall {
+        match op_iter.next() {
+            None => MockWCall::new(),
+            Some(op) => {
                 let mut mock = MockWCall::new();
                 match op {
                     CallChainLink::Arg { data } => {
@@ -206,7 +206,7 @@ mod tests {
                         mock.expect_arg()
                             .once()
                             .with(predicate::eq(data.arg))
-                            .return_var(chain_link);
+                            .return_var(construct_chain_link(op_iter));
                     }
                     CallChainLink::Env { data } => {
                         debug!(
@@ -216,13 +216,16 @@ mod tests {
                         mock.expect_env()
                             .once()
                             .with(predicate::eq(data.key), predicate::eq(data.value))
-                            .return_var(chain_link);
+                            .return_var(construct_chain_link(op_iter));
                     }
                 };
                 mock
             }
         }
-        chain_link
+    }
+
+    fn construct_call_chain(ops: Vec<CallChainLink>) -> MockWCall {
+        construct_chain_link(ops.into_iter())
     }
 
     fn log_init() {
