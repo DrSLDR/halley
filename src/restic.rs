@@ -174,6 +174,16 @@ mod tests {
         Env { data: EnvCall },
     }
 
+    macro_rules! chain_arg {
+        ($arg:expr) => {
+            CallChainLink::Arg {
+                data: ArgCall {
+                    arg: $arg.to_string(),
+                },
+            }
+        };
+    }
+
     fn construct_call_chain(ops: Vec<CallChainLink>) -> MockWCall {
         let mut chain_link = MockWCall::new();
         for op in ops.into_iter().rev() {
@@ -226,11 +236,7 @@ mod tests {
     fn presence() {
         log_init();
         let mut ops: Vec<CallChainLink> = Vec::new();
-        ops.push(CallChainLink::Arg {
-            data: ArgCall {
-                arg: "version".to_string(),
-            },
-        });
+        ops.push(chain_arg!("version"));
         let mut cc = construct_call_chain(ops);
         prepare_present(&mut cc);
     }
