@@ -174,32 +174,29 @@ mod tests {
         Env { data: EnvCall },
     }
 
-    fn construct_call_chain(mut ops: Vec<CallChainLink>) -> MockWCall {
-        let mut tmp_link: Option<MockWCall> = None;
-        loop {
-            match ops.pop() {
-                None => break tmp_link.unwrap(),
-                Some(op) => {
-                    tmp_link = Some({
-                        let mut mock = MockWCall::new();
-                        let _e = match op {
-                            CallChainLink::Arg { data } => {
-                                mock.expect_arg().once().with(predicate::eq(data.arg))
-                            }
-                            CallChainLink::Env { data } => {
-                                unimplemented!();
-                            }
-                        };
-                        if tmp_link.is_none() {
-                            _e.return_var(MockWCall::new());
-                        } else {
-                            _e.return_var(tmp_link.unwrap());
-                        }
-                        mock
-                    });
-                }
+    fn construct_call_chain(ops: Vec<CallChainLink>) -> MockWCall {
+        let mut chain_link = MockWCall::new();
+        for op in ops.into_iter().rev() {
+            chain_link = {
+                let mut mock = MockWCall::new();
+                match op {
+                    CallChainLink::Arg { data } => {
+                        mock.expect_arg()
+                            .once()
+                            .with(predicate::eq(data.arg))
+                            .return_var(chain_link);
+                    }
+                    CallChainLink::Env { data } => {
+                        mock.expect_env()
+                            .once()
+                            .with(predicate::eq(data.key), predicate::eq(data.value))
+                            .return_var(chain_link);
+                    }
+                };
+                mock
             }
         }
+        chain_link
     }
 
     fn log_init() {
