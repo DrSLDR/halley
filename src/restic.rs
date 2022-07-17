@@ -159,7 +159,7 @@ mod tests {
 
     #[derive(Debug)]
     struct ArgCall {
-        arg: String
+        arg: String,
     }
 
     #[derive(Debug)]
