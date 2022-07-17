@@ -216,22 +216,6 @@ mod tests {
             .try_init();
     }
 
-    macro_rules! earg {
-        ($mock:tt, $arg:expr) => {
-            $mock.then().expect_arg().called_once().with($arg)
-        };
-    }
-
-    macro_rules! eenv {
-        ($mock:tt, $key:expr, $val:expr) => {
-            $mock
-                .then()
-                .expect_env()
-                .called_once()
-                .with(params!($key, $val))
-        };
-    }
-
     #[test]
     fn presence() {
         log_init();
