@@ -174,9 +174,13 @@ mod tests {
         Env { data: EnvCall },
     }
 
-    struct ExpectationStore {
-        top: MockWCall,
-        store: Vec<MockWCall>,
+    struct CallChain {
+        head: MockWCall,
+        chain: Vec<MockWCall>,
+    }
+
+    fn construct_call_chain(mut ops: Vec<CallChainLink>) -> CallChain {
+        unimplemented!();
     }
 
     fn log_init() {
@@ -205,12 +209,14 @@ mod tests {
     #[test]
     fn presence() {
         log_init();
-        let mut mock = MockWCall::new();
-        mock.expect_arg()
-            .once()
-            .with(predicate::eq("version".to_string()))
-            .return_var(MockWCall::new());
-        prepare_present(&mut mock);
+        let mut ops: Vec<CallChainLink> = Vec::new();
+        ops.push(CallChainLink::Arg {
+            data: ArgCall {
+                arg: "version".to_string(),
+            },
+        });
+        let mut cc = construct_call_chain(ops);
+        prepare_present(&mut cc.head);
     }
 
     macro_rules! common_repo_def {
