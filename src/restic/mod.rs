@@ -1,5 +1,6 @@
 mod types;
-use crate::restic::types::{ResticCall, WrappedCall};
+use crate::restic::types::{AWSKey, ResticCall, WrappedCall};
+pub use crate::restic::types::{LocalRepo, Repo, RepoCommon, S3Repo};
 
 use anyhow;
 use std::process::{Command, Output};
@@ -17,39 +18,6 @@ fn presence() -> bool {
     rc.invoke()
         .expect("restic is not installed (or not on path)");
     true
-}
-
-#[derive(Debug)]
-pub(crate) struct RepoCommon {
-    passwd: String,
-}
-
-#[derive(Debug)]
-pub(crate) struct AWSKey {
-    id: String,
-    secret: String,
-}
-
-#[derive(Debug)]
-pub(crate) struct LocalRepo {
-    path: String,
-    common: RepoCommon,
-}
-
-#[derive(Debug)]
-pub(crate) struct S3Repo {
-    url: String,
-    bucket: String,
-    region: String,
-    path: Option<String>,
-    key: AWSKey,
-    common: RepoCommon,
-}
-
-#[derive(Debug)]
-pub(crate) enum Repo {
-    Local { data: LocalRepo },
-    S3 { data: S3Repo },
 }
 
 fn prepare_init_common<C: WrappedCall>(wc: &mut C, data: RepoCommon) -> &mut C {

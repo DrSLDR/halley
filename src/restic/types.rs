@@ -50,3 +50,41 @@ impl Default for ResticCall {
         Self::new()
     }
 }
+
+// API data structs.
+//
+// These need to be re-exported, since upper-level modules need to use them to
+// communicate with the API.
+
+#[derive(Debug)]
+pub struct RepoCommon {
+    pub passwd: String,
+}
+
+#[derive(Debug)]
+pub(crate) struct AWSKey {
+    pub(crate) id: String,
+    pub(crate) secret: String,
+}
+
+#[derive(Debug)]
+pub struct LocalRepo {
+    pub path: String,
+    pub common: RepoCommon,
+}
+
+#[derive(Debug)]
+pub struct S3Repo {
+    pub url: String,
+    pub bucket: String,
+    pub region: String,
+    pub path: Option<String>,
+    pub(crate) key: AWSKey,
+    pub common: RepoCommon,
+}
+
+#[derive(Debug)]
+pub enum Repo {
+    Local { data: LocalRepo },
+    S3 { data: S3Repo },
+}
