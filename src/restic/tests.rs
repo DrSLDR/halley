@@ -2,7 +2,8 @@ use super::*;
 use assert_fs::prelude::*;
 use predicates::prelude::*;
 use simulacrum::*;
-use tracing::Level;
+use std::process::Output;
+use tracing::{error, trace, Level};
 
 struct WrappedCallMock {
     e: Expectations,

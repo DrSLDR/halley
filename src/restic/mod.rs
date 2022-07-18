@@ -5,9 +5,7 @@ mod types;
 use crate::restic::types::{AWSKey, RepoCommon, ResticCall, WrappedCall};
 pub use crate::restic::types::{LocalRepo, Repo, S3Repo};
 
-use anyhow;
-use std::process::{Command, Output};
-use tracing::{debug, debug_span, error, info, info_span, trace};
+use tracing::{debug, debug_span, info, info_span};
 
 fn prepare_present<C: WrappedCall>(wc: &mut C) -> &mut C {
     let span = debug_span!("restic presence");
