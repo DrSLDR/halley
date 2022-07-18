@@ -1,48 +1,9 @@
+mod types;
+use crate::restic::types::{ResticCall, WrappedCall};
+
 use anyhow;
 use std::process::{Command, Output};
 use tracing::{debug, debug_span, error, info, info_span, trace};
-
-trait WrappedCall {
-    fn invoke(&mut self) -> Result<Output, std::io::Error>;
-    fn arg(&mut self, arg: String) -> &mut Self;
-    fn env(&mut self, key: String, value: String) -> &mut Self;
-}
-
-#[derive(Debug)]
-struct ResticCall {
-    cmd: Command,
-}
-
-impl ResticCall {
-    fn new() -> ResticCall {
-        ResticCall {
-            cmd: Command::new("restic"),
-        }
-    }
-}
-
-impl WrappedCall for ResticCall {
-    fn invoke(&mut self) -> Result<Output, std::io::Error> {
-        trace!("Invoking {:?}", self.cmd);
-        self.cmd.output()
-    }
-    fn arg(&mut self, arg: String) -> &mut Self {
-        trace!("Adding argument {:?}", arg);
-        self.cmd.arg(arg);
-        self
-    }
-    fn env(&mut self, key: String, val: String) -> &mut Self {
-        trace!("Adding envvar {:?} = {:?}", key, val);
-        self.cmd.env(key, val);
-        self
-    }
-}
-
-impl Default for ResticCall {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 fn prepare_present<C: WrappedCall>(wc: &mut C) -> &mut C {
     let span = debug_span!("restic presence");
