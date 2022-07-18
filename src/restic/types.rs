@@ -57,8 +57,8 @@ impl Default for ResticCall {
 // communicate with the API.
 
 #[derive(Debug)]
-pub struct RepoCommon {
-    pub passwd: String,
+pub(crate) struct RepoCommon {
+    pub(crate) passwd: String,
 }
 
 #[derive(Debug)]
@@ -70,7 +70,7 @@ pub(crate) struct AWSKey {
 #[derive(Debug)]
 pub struct LocalRepo {
     pub path: String,
-    pub common: RepoCommon,
+    pub(crate) common: RepoCommon,
 }
 
 #[derive(Debug)]
@@ -80,7 +80,7 @@ pub struct S3Repo {
     pub region: String,
     pub path: Option<String>,
     pub(crate) key: AWSKey,
-    pub common: RepoCommon,
+    pub(crate) common: RepoCommon,
 }
 
 #[derive(Debug)]

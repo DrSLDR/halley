@@ -2,8 +2,8 @@
 mod tests;
 
 mod types;
-use crate::restic::types::{AWSKey, ResticCall, WrappedCall};
-pub use crate::restic::types::{LocalRepo, Repo, RepoCommon, S3Repo};
+use crate::restic::types::{AWSKey, RepoCommon, ResticCall, WrappedCall};
+pub use crate::restic::types::{LocalRepo, Repo, S3Repo};
 
 use anyhow;
 use std::process::{Command, Output};
