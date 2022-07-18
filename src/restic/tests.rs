@@ -164,3 +164,27 @@ fn integration_init() {
         .expect("Failed to invoke restic to init a repo");
     temp.child("config").assert(predicate::path::is_file());
 }
+
+mod types {
+    use super::*;
+
+    pub struct MockCall {
+        args: Vec<String>,
+        envs: Vec<(String, String)>,
+    }
+
+    impl WrappedCall for MockCall {
+        fn invoke(&mut self) -> Result<Output, std::io::Error> {
+            error!("Someone tried to do the naughty!");
+            panic!("The mocked call should not be invoked!");
+        }
+        fn arg(&mut self, arg: String) -> &mut Self {
+            self.args.push(arg);
+            self
+        }
+        fn env(&mut self, key: String, value: String) -> &mut Self {
+            self.envs.push((key, value));
+            self
+        }
+    }
+}
