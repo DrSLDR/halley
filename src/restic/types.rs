@@ -9,19 +9,19 @@ use tracing::trace;
 //
 // It is what it is.
 
-pub(crate) trait WrappedCall {
+pub trait WrappedCall {
     fn invoke(&mut self) -> Result<Output, std::io::Error>;
     fn arg(&mut self, arg: String) -> &mut Self;
     fn env(&mut self, key: String, value: String) -> &mut Self;
 }
 
 #[derive(Debug)]
-pub(crate) struct ResticCall {
+pub struct ResticCall {
     cmd: Command,
 }
 
 impl ResticCall {
-    pub(crate) fn new() -> ResticCall {
+    pub fn new() -> ResticCall {
         ResticCall {
             cmd: Command::new("restic"),
         }
