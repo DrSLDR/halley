@@ -200,7 +200,7 @@ fn init_local() {
 
 #[test]
 fn init_s3() {
-    log_init();
+    let mut m = mc!();
     let repo = Repo::S3 {
         data: S3Repo {
             url: "example.org".to_string(),
@@ -214,26 +214,20 @@ fn init_s3() {
             common: common_repo_def!(),
         },
     };
-    let mut mock = WrappedCallMock::new();
-    eenv!(mock, "RESTIC_PASSWORD".to_string(), "test".to_string());
-    eenv!(mock, "AWS_ACCESS_KEY_ID".to_string(), "the_id".to_string());
-    eenv!(
-        mock,
-        "AWS_SECRET_ACCESS_KEY".to_string(),
-        "the_secret".to_string()
-    );
-    earg!(mock, "--repo".to_string());
-    earg!(
-        mock,
-        format!(
-            "s3:{url}/{bucket}/{path}",
-            url = "example.org",
-            bucket = "foo",
-            path = "bar"
-        )
-    );
-    earg!(mock, "init".to_string());
-    prepare_init(&mut mock, repo);
+    prepare_init(&mut m, repo);
+
+    m.assert_env_s("RESTIC_PASSWORD", "test");
+    m.assert_env_s("AWS_ACCESS_KEY_ID", "the_id");
+    m.assert_env_s("AWS_SECRET_ACCESS_KEY", "the_secret");
+    m.assert_arg_s("init");
+    m.assert_arg_s("--repo");
+    m.assert_arg(format!(
+        "s3:{url}/{bucket}/{path}",
+        url = "example.org",
+        bucket = "foo",
+        path = "bar"
+    ));
+    m.assert_empty();
 }
 
 #[test]
