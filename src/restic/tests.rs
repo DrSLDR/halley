@@ -299,9 +299,23 @@ mod types {
             }
         }
 
+        /// Asserts that `env` has been called with the given environment variable
         pub fn assert_env(&mut self, key: String, value: String) -> bool {
             trace!("Asserting MockCall env {:?} = {:?}", key, value);
-            unimplemented!();
+            match self
+                .envs
+                .iter()
+                .position(|(k, v)| k.eq(&key) && v.eq(&value))
+            {
+                None => panic!(
+                    "Env {:?}:{:?} not called (envv: {:?})",
+                    key, value, self.envs
+                ),
+                Some(p) => {
+                    self.envs.remove(p);
+                    true
+                }
+            }
         }
     }
 }
