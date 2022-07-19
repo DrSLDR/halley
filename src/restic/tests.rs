@@ -134,6 +134,13 @@ fn mock_env() {
 
 #[test]
 #[should_panic]
+fn mock_env_assertion() {
+    let mut m = mc!();
+    m.assert_env("key".to_string(), "value".to_string());
+}
+
+#[test]
+#[should_panic]
 fn mock_env_disorder() {
     let mut m = mc!();
     m.env("foo".to_string(), "bar".to_string());
