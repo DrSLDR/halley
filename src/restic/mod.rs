@@ -41,7 +41,6 @@ fn presence() -> bool {
 
 fn prepare_init_common<C: WrappedCall>(wc: &mut C, data: RepoCommon) -> &mut C {
     trace_call!("prepare_init_common", "called with {:?}", data);
-    debug!("Setting repo common config as {:?}", data);
     wc.env("RESTIC_PASSWORD".to_string(), data.passwd);
     wc
 }
@@ -52,11 +51,8 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
     #[cfg(not(test))]
     assert!(presence());
 
-    debug!("Initializing repo with {:?}", repo);
-
     match repo {
         Repo::Local { data } => {
-            info!("Initializing local repo at {}", data.path);
             prepare_init_common(wc, data.common)
                 .arg("init".to_string())
                 .arg("--repo".to_string())
@@ -72,7 +68,6 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
                 ),
                 None => format!("{url}/{bucket}", url = data.url, bucket = data.bucket),
             };
-            info!("Initializing S3 repo at {}", url);
             prepare_init_common(wc, data.common)
                 .env("AWS_ACCESS_KEY_ID".to_string(), data.key.id)
                 .env("AWS_SECRET_ACCESS_KEY".to_string(), data.key.secret)
