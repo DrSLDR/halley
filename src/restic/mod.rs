@@ -68,6 +68,7 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
                 ),
                 None => format!("{url}/{bucket}", url = data.url, bucket = data.bucket),
             };
+            debug!("Derived S3 URL {}", url);
             prepare_init_common(wc, data.common)
                 .env("AWS_ACCESS_KEY_ID".to_string(), data.key.id)
                 .env("AWS_SECRET_ACCESS_KEY".to_string(), data.key.secret)
