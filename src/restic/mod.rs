@@ -102,6 +102,8 @@ fn prepare_backup<C: WrappedCall>(wc: &mut C, repo: Repo, paths: Vec<String>) ->
     #[cfg(not(test))]
     assert!(presence());
 
+    assert!(!paths.is_empty());
+
     let wc = prepare_repo(wc, repo);
     wc.arg("backup".to_string());
     for path in paths {
