@@ -106,7 +106,7 @@ macro_rules! common_repo_def {
 macro_rules! common_repo_assert {
     ($m:ident) => {
         $m.assert_env_s("RESTIC_PASSWORD", "test");
-    }
+    };
 }
 
 macro_rules! local_repo_def {
@@ -131,7 +131,7 @@ macro_rules! local_repo_assert {
         common_repo_assert!($m);
         $m.assert_arg_s("--repo");
         $m.assert_arg_s($name);
-    }
+    };
 }
 
 macro_rules! s3_repo_def {
@@ -149,7 +149,7 @@ macro_rules! s3_repo_def {
                 common: common_repo_def!(),
             },
         }
-    }
+    };
 }
 
 macro_rules! s3_repo_assert {
@@ -164,19 +164,19 @@ macro_rules! s3_repo_assert {
             bucket = "foo",
             path = "bar"
         ));
-    }
+    };
 }
 
 macro_rules! init_assert {
     ($m:ident) => {
         $m.assert_arg_s("init");
-    }
+    };
 }
 
 macro_rules! backup_def {
     () => {
         vec![".git".to_owned(), "src".to_owned(), "target".to_owned()]
-    }
+    };
 }
 
 macro_rules! backup_assert {
@@ -185,7 +185,7 @@ macro_rules! backup_assert {
         $m.assert_arg_s(".git");
         $m.assert_arg_s("target");
         $m.assert_arg_s("src");
-    }
+    };
 }
 
 #[test]
