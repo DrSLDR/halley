@@ -110,6 +110,9 @@ macro_rules! common_repo_assert {
 }
 
 macro_rules! local_repo_def {
+    () => {
+        local_repo_def!("/tmp/restic/foo")
+    };
     ($name:expr) => {
         Repo::Local {
             data: LocalRepo {
@@ -121,6 +124,9 @@ macro_rules! local_repo_def {
 }
 
 macro_rules! local_repo_assert {
+    ($m:ident) => {
+        local_repo_assert!($m, "/tmp/restic/foo")
+    };
     ($m:ident, $name:expr) => {
         common_repo_assert!($m);
         $m.assert_arg_s("--repo");
@@ -178,10 +184,10 @@ fn presence() {
 #[test]
 fn init_local() {
     let mut m = mc!();
-    let repo = local_repo_def!("/tmp/restic/foo");
+    let repo = local_repo_def!();
     prepare_init(&mut m, repo);
 
-    local_repo_assert!(m, "/tmp/restic/foo");
+    local_repo_assert!(m);
     init_assert!(m);
     m.assert_empty();
 }
