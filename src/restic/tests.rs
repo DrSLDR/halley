@@ -159,6 +159,14 @@ fn mock_env_disorder() {
 */
 
 #[test]
+fn presence() {
+    let mut m = mc!();
+    prepare_present(&mut m);
+    m.assert_arg_s("version");
+    m.assert_empty();
+}
+
+#[test]
 fn old_presence() {
     log_init();
     let mut mock = WrappedCallMock::new();
