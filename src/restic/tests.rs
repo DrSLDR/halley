@@ -287,9 +287,16 @@ mod types {
             }
         }
 
+        /// Asserts that `arg` has been called with the given argument
         pub fn assert_arg(&mut self, arg: String) -> bool {
             trace!("Asserting MockCall arg {:?}", arg);
-            unimplemented!();
+            match self.args.iter().position(|s| s.eq(&arg)) {
+                None => panic!("Arg {:?} not called (argv: {:?})", arg, self.args),
+                Some(p) => {
+                    self.args.remove(p);
+                    true
+                }
+            }
         }
 
         pub fn assert_env(&mut self, key: String, value: String) -> bool {
