@@ -93,6 +93,47 @@ fn mock_failing_empty() {
 }
 
 #[test]
+fn mock_arg() {
+    log_init();
+    let mut m = MockCall::new();
+    m.arg("foo".to_string());
+    m.assert_arg("foo".to_string());
+    m.assert_empty();
+}
+
+#[test]
+fn mock_multiarg(){
+    log_init();
+    let mut m = MockCall::new();
+    m.arg("foo".to_string());
+    m.arg("bar".to_string());
+    m.arg("baz".to_string());
+    m.assert_arg("foo".to_string());
+    m.assert_arg("baz".to_string());
+    m.assert_arg("bar".to_string());
+    m.assert_empty();
+}
+
+#[test]
+fn mock_env() {
+    log_init();
+    let mut m = MockCall::new();
+    m.env("foo".to_string(), "bar".to_string());
+    m.assert_env("foo".to_string(), "bar".to_string());
+    m.assert_empty();
+}
+
+#[test]
+#[should_panic]
+fn mock_env_disorder() {
+    log_init();
+    let mut m = MockCall::new();
+    m.env("foo".to_string(), "bar".to_string());
+    m.assert_env("bar".to_string(), "foo".to_string());
+    m.assert_empty();
+}
+
+#[test]
 fn old_presence() {
     log_init();
     let mut mock = WrappedCallMock::new();
