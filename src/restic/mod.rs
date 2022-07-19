@@ -39,22 +39,17 @@ fn presence() -> bool {
     true
 }
 
-fn prepare_init_common<C: WrappedCall>(wc: &mut C, data: RepoCommon) -> &mut C {
-    trace_call!("prepare_init_common", "called with {:?}", data);
+fn prepare_common<C: WrappedCall>(wc: &mut C, data: RepoCommon) -> &mut C {
+    trace_call!("prepare_common", "called with {:?}", data);
     wc.env("RESTIC_PASSWORD".to_string(), data.passwd);
     wc
 }
 
-fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
-    trace_call!("prepare_init", "called with {:?}", repo);
-
-    #[cfg(not(test))]
-    assert!(presence());
-
+fn prepare_repo<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
+    trace_call!("prepare_repo", "call with {:?}", repo);
     match repo {
         Repo::Local { data } => {
-            prepare_init_common(wc, data.common)
-                .arg("init".to_string())
+            prepare_common(wc, data.common)
                 .arg("--repo".to_string())
                 .arg(data.path);
         }
@@ -69,14 +64,24 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
                 None => format!("{url}/{bucket}", url = data.url, bucket = data.bucket),
             };
             debug!("Derived S3 URL {}", url);
-            prepare_init_common(wc, data.common)
+            prepare_common(wc, data.common)
                 .env("AWS_ACCESS_KEY_ID".to_string(), data.key.id)
                 .env("AWS_SECRET_ACCESS_KEY".to_string(), data.key.secret)
-                .arg("init".to_string())
                 .arg("--repo".to_string())
                 .arg(format!("s3:{url}"));
         }
-    }
+    };
+    wc
+}
+
+fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
+    trace_call!("prepare_init", "called with {:?}", repo);
+
+    #[cfg(not(test))]
+    assert!(presence());
+
+    let wc = prepare_repo(wc, repo);
+    wc.arg("init".to_string());
     wc
 }
 
