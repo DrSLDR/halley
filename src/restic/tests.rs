@@ -113,7 +113,7 @@ fn mock_arg_assertion() {
 }
 
 #[test]
-fn mock_multiarg(){
+fn mock_multiarg() {
     let mut m = mc!();
     m.arg("foo".to_string());
     m.arg("bar".to_string());
