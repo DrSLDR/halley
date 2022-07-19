@@ -5,15 +5,33 @@ mod types;
 use crate::restic::types::{AWSKey, RepoCommon, ResticCall, WrappedCall};
 pub use crate::restic::types::{LocalRepo, Repo, S3Repo};
 
-use tracing::{debug, debug_span, info, info_span};
+use tracing::{debug, debug_span, info, info_span, trace, trace_span};
+
+macro_rules! trace_call {
+    ($fn:literal) => {
+        let _span = trace_span!($fn);
+        let _guard = _span.enter();
+        trace!("called");
+    };
+    ($fn:literal, $estr:literal) => {
+        let _span = trace_span!($fn);
+        let _guard = _span.enter();
+        trace!($estr);
+    };
+    ($fn:literal, $estr:literal, $($arg:ident),+) => {
+        let _span = trace_span!($fn);
+        let _guard = _span.enter();
+        trace!($estr, $($arg),+);
+    };
+}
 
 fn prepare_present<C: WrappedCall>(wc: &mut C) -> &mut C {
-    let span = debug_span!("restic presence");
-    let _enter = span.enter();
+    trace_call!("prepare_present");
     wc.arg("version".to_string())
 }
 
 fn presence() -> bool {
+    trace_call!("presence");
     let mut rc = ResticCall::new();
     let rc = prepare_present(&mut rc);
     rc.invoke()
@@ -22,16 +40,14 @@ fn presence() -> bool {
 }
 
 fn prepare_init_common<C: WrappedCall>(wc: &mut C, data: RepoCommon) -> &mut C {
-    let span = info_span!("repo common config");
-    let _enter = span.enter();
+    trace_call!("prepare_init_common", "called with {:?}", data);
     debug!("Setting repo common config as {:?}", data);
     wc.env("RESTIC_PASSWORD".to_string(), data.passwd);
     wc
 }
 
 fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
-    let span = info_span!("repo init");
-    let _enter = span.enter();
+    trace_call!("prepare_init", "called with {:?}", repo);
 
     #[cfg(not(test))]
     assert!(presence());
@@ -70,6 +86,7 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
 
 /// Initializes the repository defined in `repo`
 pub fn init(repo: Repo) -> anyhow::Result<()> {
+    trace_call!("init", "called with {:?}", repo);
     let mut rc = ResticCall::new();
     let rc = prepare_init(&mut rc, repo);
     match rc.invoke() {
