@@ -97,7 +97,17 @@ pub fn init(repo: Repo) -> anyhow::Result<()> {
 }
 
 fn prepare_backup<C: WrappedCall>(wc: &mut C, repo: Repo, paths: Vec<String>) -> &mut C {
-    unimplemented!();
+    trace_call!("prepare_backup", "called with {:?}, {:?}", repo, paths);
+
+    #[cfg(not(test))]
+    assert!(presence());
+
+    let wc = prepare_repo(wc, repo);
+    wc.arg("backup".to_string());
+    for path in paths {
+        wc.arg(path);
+    }
+    wc
 }
 
 pub fn backup(repo: Repo) -> anyhow::Result<()> {
