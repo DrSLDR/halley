@@ -5,7 +5,7 @@ mod types;
 use crate::restic::types::{AWSKey, RepoCommon, ResticCall, WrappedCall};
 pub use crate::restic::types::{LocalRepo, Repo, S3Repo};
 
-use tracing::{debug, debug_span, info, info_span, trace, trace_span};
+use tracing::{debug, trace, trace_span};
 
 macro_rules! trace_call {
     ($fn:literal) => {
