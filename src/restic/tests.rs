@@ -221,7 +221,14 @@ mod types {
         /// Returns `true` if both vectors are empty, `panic!()` otherwise.
         pub fn assert_empty(&mut self) -> bool {
             trace!("Asserting MockCall is empty");
-            unimplemented!();
+            if self.args.is_empty() && self.envs.is_empty() {
+                true
+            } else {
+                panic!(
+                    "Args or envvars remain!\nArgs: {:?}\nEnvs: {:?}\n",
+                    self.args, self.envs
+                );
+            }
         }
 
         pub fn assert_arg(&mut self, arg: String) -> bool {
