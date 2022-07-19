@@ -76,26 +76,30 @@ macro_rules! eenv {
     };
 }
 
+macro_rules! mc {
+    () => {{
+        log_init();
+        MockCall::new()
+    }};
+}
+
 #[test]
 fn mock_empty() {
-    log_init();
-    let mut m = MockCall::new();
+    let mut m = mc!();
     m.assert_empty();
 }
 
 #[test]
 #[should_panic]
 fn mock_failing_empty() {
-    log_init();
-    let mut m = MockCall::new();
+    let mut m = mc!();
     m.arg("foo".to_string());
     m.assert_empty();
 }
 
 #[test]
 fn mock_arg() {
-    log_init();
-    let mut m = MockCall::new();
+    let mut m = mc!();
     m.arg("foo".to_string());
     m.assert_arg("foo".to_string());
     m.assert_empty();
@@ -103,8 +107,7 @@ fn mock_arg() {
 
 #[test]
 fn mock_multiarg(){
-    log_init();
-    let mut m = MockCall::new();
+    let mut m = mc!();
     m.arg("foo".to_string());
     m.arg("bar".to_string());
     m.arg("baz".to_string());
@@ -116,8 +119,7 @@ fn mock_multiarg(){
 
 #[test]
 fn mock_env() {
-    log_init();
-    let mut m = MockCall::new();
+    let mut m = mc!();
     m.env("foo".to_string(), "bar".to_string());
     m.assert_env("foo".to_string(), "bar".to_string());
     m.assert_empty();
@@ -126,8 +128,7 @@ fn mock_env() {
 #[test]
 #[should_panic]
 fn mock_env_disorder() {
-    log_init();
-    let mut m = MockCall::new();
+    let mut m = mc!();
     m.env("foo".to_string(), "bar".to_string());
     m.assert_env("bar".to_string(), "foo".to_string());
     m.assert_empty();
