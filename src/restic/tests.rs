@@ -107,7 +107,7 @@ fn mock_failing_empty() {
 fn mock_arg() {
     let mut m = mc!();
     m.arg("foo".to_string());
-    m.assert_arg("foo".to_string());
+    m.assert_arg_s("foo");
     m.assert_empty();
 }
 
@@ -115,7 +115,7 @@ fn mock_arg() {
 #[should_panic]
 fn mock_arg_assertion() {
     let mut m = mc!();
-    m.assert_arg("foo".to_string());
+    m.assert_arg_s("foo");
 }
 
 #[test]
@@ -124,9 +124,9 @@ fn mock_multiarg() {
     m.arg("foo".to_string());
     m.arg("bar".to_string());
     m.arg("baz".to_string());
-    m.assert_arg("foo".to_string());
-    m.assert_arg("baz".to_string());
-    m.assert_arg("bar".to_string());
+    m.assert_arg_s("foo");
+    m.assert_arg_s("baz");
+    m.assert_arg_s("bar");
     m.assert_empty();
 }
 
@@ -134,7 +134,7 @@ fn mock_multiarg() {
 fn mock_env() {
     let mut m = mc!();
     m.env("foo".to_string(), "bar".to_string());
-    m.assert_env("foo".to_string(), "bar".to_string());
+    m.assert_env_s("foo", "bar");
     m.assert_empty();
 }
 
@@ -142,7 +142,7 @@ fn mock_env() {
 #[should_panic]
 fn mock_env_assertion() {
     let mut m = mc!();
-    m.assert_env("key".to_string(), "value".to_string());
+    m.assert_env_s("key", "value");
 }
 
 #[test]
@@ -150,7 +150,7 @@ fn mock_env_assertion() {
 fn mock_env_disorder() {
     let mut m = mc!();
     m.env("foo".to_string(), "bar".to_string());
-    m.assert_env("bar".to_string(), "foo".to_string());
+    m.assert_env_s("bar", "foo");
     m.assert_empty();
 }
 
@@ -309,6 +309,11 @@ mod types {
             }
         }
 
+        /// Helper function for calling with string literals
+        pub fn assert_arg_s(&mut self, arg: &str) -> bool {
+            self.assert_arg(arg.to_owned())
+        }
+
         /// Asserts that `env` has been called with the given environment variable
         pub fn assert_env(&mut self, key: String, value: String) -> bool {
             trace!("Asserting MockCall env {:?} = {:?}", key, value);
@@ -326,6 +331,11 @@ mod types {
                     true
                 }
             }
+        }
+
+        /// Helper function for calling with string literals
+        pub fn assert_env_s(&mut self, key: &str, value: &str) -> bool {
+            self.assert_env(key.to_owned(), value.to_owned())
         }
     }
 }
