@@ -158,22 +158,6 @@ fn mock_env_disorder() {
     TEST BLOCK FOR THE ACTUAL CODE
 */
 
-#[test]
-fn presence() {
-    let mut m = mc!();
-    prepare_present(&mut m);
-    m.assert_arg_s("version");
-    m.assert_empty();
-}
-
-#[test]
-fn old_presence() {
-    log_init();
-    let mut mock = WrappedCallMock::new();
-    earg!(mock, "version".to_string());
-    prepare_present(&mut mock);
-}
-
 macro_rules! common_repo_def {
     () => {
         RepoCommon {
@@ -194,15 +178,24 @@ macro_rules! local_repo_def {
 }
 
 #[test]
+fn presence() {
+    let mut m = mc!();
+    prepare_present(&mut m);
+    m.assert_arg_s("version");
+    m.assert_empty();
+}
+
+#[test]
 fn init_local() {
-    log_init();
+    let mut m = mc!();
     let repo = local_repo_def!("/tmp/restic/foo");
-    let mut mock = WrappedCallMock::new();
-    eenv!(mock, "RESTIC_PASSWORD".to_string(), "test".to_string());
-    earg!(mock, "init".to_string());
-    earg!(mock, "--repo".to_string());
-    earg!(mock, "/tmp/restic/foo".to_string());
-    prepare_init(&mut mock, repo);
+    prepare_init(&mut m, repo);
+
+    m.assert_env_s("RESTIC_PASSWORD", "test");
+    m.assert_arg_s("init");
+    m.assert_arg_s("--repo");
+    m.assert_arg_s("/tmp/restic/foo");
+    m.assert_empty();
 }
 
 #[test]
