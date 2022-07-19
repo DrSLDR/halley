@@ -188,10 +188,12 @@ mod types {
             panic!("The mocked call should not be invoked!");
         }
         fn arg(&mut self, arg: String) -> &mut Self {
+            trace!("Mocked arg: {:?}", arg);
             self.args.push(arg);
             self
         }
         fn env(&mut self, key: String, value: String) -> &mut Self {
+            trace!("Mocked env: {:?} = {:?}", key, value);
             self.envs.push((key, value));
             self
         }
@@ -205,15 +207,21 @@ mod types {
             }
         }
 
+        /// Asserts that there are no (more) arguments or environment variables to evaluate
+        ///
+        /// Returns `true` if both vectors are empty, `panic!()` otherwise.
         pub fn assert_empty(&mut self) -> bool {
+            trace!("Asserting MockCall is empty");
             unimplemented!();
         }
 
         pub fn assert_arg(&mut self, arg: String) -> bool {
+            trace!("Asserting MockCall arg {:?}", arg);
             unimplemented!();
         }
 
         pub fn assert_env(&mut self, key: String, value: String) -> bool {
+            trace!("Asserting MockCall env {:?} = {:?}", key, value);
             unimplemented!();
         }
     }
