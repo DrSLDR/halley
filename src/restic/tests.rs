@@ -103,7 +103,16 @@ macro_rules! common_repo_def {
     };
 }
 
+macro_rules! common_repo_assert {
+    ($m:ident) => {
+        $m.assert_env_s("RESTIC_PASSWORD", "test");
+    }
+}
+
 macro_rules! local_repo_def {
+    () => {
+        local_repo_def!("/tmp/restic/foo")
+    };
     ($name:expr) => {
         Repo::Local {
             data: LocalRepo {
@@ -112,6 +121,56 @@ macro_rules! local_repo_def {
             },
         }
     };
+}
+
+macro_rules! local_repo_assert {
+    ($m:ident) => {
+        local_repo_assert!($m, "/tmp/restic/foo")
+    };
+    ($m:ident, $name:expr) => {
+        common_repo_assert!($m);
+        $m.assert_arg_s("--repo");
+        $m.assert_arg_s($name);
+    }
+}
+
+macro_rules! s3_repo_def {
+    () => {
+        Repo::S3 {
+            data: S3Repo {
+                url: "example.org".to_string(),
+                bucket: "foo".to_string(),
+                region: "eu-west-1".to_string(),
+                path: Some("bar".to_string()),
+                key: AWSKey {
+                    id: "the_id".to_string(),
+                    secret: "the_secret".to_string(),
+                },
+                common: common_repo_def!(),
+            },
+        }
+    }
+}
+
+macro_rules! s3_repo_assert {
+    ($m:ident) => {
+        $m.assert_env_s("RESTIC_PASSWORD", "test");
+        $m.assert_env_s("AWS_ACCESS_KEY_ID", "the_id");
+        $m.assert_env_s("AWS_SECRET_ACCESS_KEY", "the_secret");
+        $m.assert_arg_s("--repo");
+        $m.assert_arg(format!(
+            "s3:{url}/{bucket}/{path}",
+            url = "example.org",
+            bucket = "foo",
+            path = "bar"
+        ));
+    }
+}
+
+macro_rules! init_assert {
+    ($m:ident) => {
+        $m.assert_arg_s("init");
+    }
 }
 
 #[test]
@@ -125,45 +184,22 @@ fn presence() {
 #[test]
 fn init_local() {
     let mut m = mc!();
-    let repo = local_repo_def!("/tmp/restic/foo");
+    let repo = local_repo_def!();
     prepare_init(&mut m, repo);
 
-    m.assert_env_s("RESTIC_PASSWORD", "test");
-    m.assert_arg_s("init");
-    m.assert_arg_s("--repo");
-    m.assert_arg_s("/tmp/restic/foo");
+    local_repo_assert!(m);
+    init_assert!(m);
     m.assert_empty();
 }
 
 #[test]
 fn init_s3() {
     let mut m = mc!();
-    let repo = Repo::S3 {
-        data: S3Repo {
-            url: "example.org".to_string(),
-            bucket: "foo".to_string(),
-            region: "eu-west-1".to_string(),
-            path: Some("bar".to_string()),
-            key: AWSKey {
-                id: "the_id".to_string(),
-                secret: "the_secret".to_string(),
-            },
-            common: common_repo_def!(),
-        },
-    };
+    let repo = s3_repo_def!();
     prepare_init(&mut m, repo);
 
-    m.assert_env_s("RESTIC_PASSWORD", "test");
-    m.assert_env_s("AWS_ACCESS_KEY_ID", "the_id");
-    m.assert_env_s("AWS_SECRET_ACCESS_KEY", "the_secret");
-    m.assert_arg_s("init");
-    m.assert_arg_s("--repo");
-    m.assert_arg(format!(
-        "s3:{url}/{bucket}/{path}",
-        url = "example.org",
-        bucket = "foo",
-        path = "bar"
-    ));
+    s3_repo_assert!(m);
+    init_assert!(m);
     m.assert_empty();
 }
 
