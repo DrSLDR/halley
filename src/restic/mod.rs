@@ -67,3 +67,12 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
     }
     wc
 }
+
+pub fn init(repo: Repo) -> anyhow::Result<()> {
+    let mut rc = ResticCall::new();
+    let rc = prepare_init(&mut rc, repo);
+    match rc.invoke() {
+        Ok(_) => Ok(()),
+        Err(_e) => todo!("Error handling for init missing!"),
+    }
+}
