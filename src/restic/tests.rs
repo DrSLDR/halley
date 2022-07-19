@@ -76,6 +76,12 @@ macro_rules! eenv {
     };
 }
 
+/*
+    TEST BLOCK FOR THE HANDCRAFTED MOCK
+
+    Writing tests for the tests. What a joke.
+*/
+
 macro_rules! mc {
     () => {{
         log_init();
@@ -147,6 +153,10 @@ fn mock_env_disorder() {
     m.assert_env("bar".to_string(), "foo".to_string());
     m.assert_empty();
 }
+
+/*
+    TEST BLOCK FOR THE ACTUAL CODE
+*/
 
 #[test]
 fn old_presence() {
