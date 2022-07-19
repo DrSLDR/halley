@@ -68,6 +68,7 @@ fn prepare_init<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
     wc
 }
 
+/// Initializes the repository defined in `repo`
 pub fn init(repo: Repo) -> anyhow::Result<()> {
     let mut rc = ResticCall::new();
     let rc = prepare_init(&mut rc, repo);
@@ -75,4 +76,24 @@ pub fn init(repo: Repo) -> anyhow::Result<()> {
         Ok(_) => Ok(()),
         Err(_e) => todo!("Error handling for init missing!"),
     }
+}
+
+fn prepare_backup<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
+    unimplemented!();
+}
+
+pub fn backup(repo: Repo) -> anyhow::Result<()> {
+    unimplemented!();
+}
+
+pub fn forget(repo: Repo) -> anyhow::Result<()> {
+    unimplemented!();
+}
+
+pub fn prune(repo: Repo) -> anyhow::Result<()> {
+    unimplemented!();
+}
+
+pub fn stats(repo: Repo) -> anyhow::Result<()> {
+    unimplemented!();
 }
