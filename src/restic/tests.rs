@@ -173,6 +173,21 @@ macro_rules! init_assert {
     }
 }
 
+macro_rules! backup_def {
+    () => {
+        vec![".git".to_owned(), "src".to_owned(), "target".to_owned()]
+    }
+}
+
+macro_rules! backup_assert {
+    ($m:ident) => {
+        $m.assert_arg_s("backup");
+        $m.assert_arg_s(".git");
+        $m.assert_arg_s("target");
+        $m.assert_arg_s("src");
+    }
+}
+
 #[test]
 fn presence() {
     let mut m = mc!();
@@ -200,6 +215,30 @@ fn init_s3() {
 
     s3_repo_assert!(m);
     init_assert!(m);
+    m.assert_empty();
+}
+
+#[test]
+fn backup_local() {
+    let mut m = mc!();
+    let repo = local_repo_def!();
+    let targets = backup_def!();
+    prepare_backup(&mut m, repo, targets);
+
+    local_repo_assert!(m);
+    backup_assert!(m);
+    m.assert_empty();
+}
+
+#[test]
+fn backup_s3() {
+    let mut m = mc!();
+    let repo = s3_repo_def!();
+    let targets = backup_def!();
+    prepare_backup(&mut m, repo, targets);
+
+    s3_repo_assert!(m);
+    backup_assert!(m);
     m.assert_empty();
 }
 

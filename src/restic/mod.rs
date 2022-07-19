@@ -96,7 +96,7 @@ pub fn init(repo: Repo) -> anyhow::Result<()> {
     }
 }
 
-fn prepare_backup<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
+fn prepare_backup<C: WrappedCall>(wc: &mut C, repo: Repo, paths: Vec<String>) -> &mut C {
     unimplemented!();
 }
 
