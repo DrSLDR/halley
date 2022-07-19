@@ -256,6 +256,24 @@ fn integration_init() {
     temp.child("config").assert(predicate::path::is_file());
 }
 
+#[test]
+#[ignore]
+fn integration_backup() {
+    log_init();
+    let temp = assert_fs::TempDir::new().unwrap();
+    let repo = local_repo_def!(temp.path().to_string_lossy());
+    let target = vec!["src".to_owned()];
+    let mut com = ResticCall::new();
+    prepare_init(&mut com, repo);
+    com.invoke()
+        .expect("Failed to invoke restic to init a repo");
+    let repo = local_repo_def!(temp.path().to_string_lossy());
+    let mut com = ResticCall::new();
+    prepare_backup(&mut com, repo, target);
+    debug!("Call: {:?}", com);
+    temp.child("snapshots").assert(predicate::path::is_dir());
+}
+
 mod types {
     use super::*;
 
