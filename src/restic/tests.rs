@@ -84,6 +84,15 @@ fn mock_empty() {
 }
 
 #[test]
+#[should_panic]
+fn mock_failing_empty() {
+    log_init();
+    let mut m = MockCall::new();
+    m.arg("foo".to_string());
+    m.assert_empty();
+}
+
+#[test]
 fn old_presence() {
     log_init();
     let mut mock = WrappedCallMock::new();
