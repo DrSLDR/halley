@@ -1,55 +1,10 @@
 use super::*;
+use types::*;
+
 use assert_fs::prelude::*;
 use predicates::prelude::*;
-use simulacrum::*;
 use std::process::Output;
 use tracing::{error, trace, Level};
-
-struct WrappedCallMock {
-    e: Expectations,
-}
-
-impl WrappedCallMock {
-    fn new() -> Self {
-        Self {
-            e: Expectations::new(),
-        }
-    }
-
-    fn then(&mut self) -> &mut Self {
-        self.e.then();
-        self
-    }
-
-    fn expect_arg(&mut self) -> Method<String, Self> {
-        self.e.expect::<String, Self>("arg")
-    }
-
-    fn expect_env(&mut self) -> Method<(String, String), Self> {
-        self.e.expect::<(String, String), Self>("env")
-    }
-}
-
-impl WrappedCall for WrappedCallMock {
-    fn invoke(&mut self) -> Result<Output, std::io::Error> {
-        error!("Something tried to invoke the mock!");
-        Err(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "not allowed to do that",
-        ))
-    }
-    fn arg(&mut self, arg: String) -> &mut Self {
-        trace!("Adding argument {:?}", arg);
-        self.e.was_called::<String, Self>("arg", arg);
-        self
-    }
-    fn env(&mut self, key: String, value: String) -> &mut Self {
-        trace!("Adding envvar {:?} = {:?}", key, value);
-        self.e
-            .was_called::<(String, String), Self>("env", (key, value));
-        self
-    }
-}
 
 fn log_init() {
     let _ = tracing_subscriber::fmt()
@@ -58,29 +13,87 @@ fn log_init() {
         .try_init();
 }
 
-macro_rules! earg {
-    ($mock:tt, $arg:expr) => {
-        $mock.then().expect_arg().called_once().with($arg)
-    };
-}
+/*
+    TEST BLOCK FOR THE HANDCRAFTED MOCK
 
-macro_rules! eenv {
-    ($mock:tt, $key:expr, $val:expr) => {
-        $mock
-            .then()
-            .expect_env()
-            .called_once()
-            .with(params!($key, $val))
-    };
+    Writing tests for the tests. What a joke.
+*/
+
+macro_rules! mc {
+    () => {{
+        log_init();
+        MockCall::new()
+    }};
 }
 
 #[test]
-fn presence() {
-    log_init();
-    let mut mock = WrappedCallMock::new();
-    earg!(mock, "version".to_string());
-    prepare_present(&mut mock);
+fn mock_empty() {
+    let mut m = mc!();
+    m.assert_empty();
 }
+
+#[test]
+#[should_panic]
+fn mock_failing_empty() {
+    let mut m = mc!();
+    m.arg("foo".to_string());
+    m.assert_empty();
+}
+
+#[test]
+fn mock_arg() {
+    let mut m = mc!();
+    m.arg("foo".to_string());
+    m.assert_arg_s("foo");
+    m.assert_empty();
+}
+
+#[test]
+#[should_panic]
+fn mock_arg_assertion() {
+    let mut m = mc!();
+    m.assert_arg_s("foo");
+}
+
+#[test]
+fn mock_multiarg() {
+    let mut m = mc!();
+    m.arg("foo".to_string());
+    m.arg("bar".to_string());
+    m.arg("baz".to_string());
+    m.assert_arg_s("foo");
+    m.assert_arg_s("baz");
+    m.assert_arg_s("bar");
+    m.assert_empty();
+}
+
+#[test]
+fn mock_env() {
+    let mut m = mc!();
+    m.env("foo".to_string(), "bar".to_string());
+    m.assert_env_s("foo", "bar");
+    m.assert_empty();
+}
+
+#[test]
+#[should_panic]
+fn mock_env_assertion() {
+    let mut m = mc!();
+    m.assert_env_s("key", "value");
+}
+
+#[test]
+#[should_panic]
+fn mock_env_disorder() {
+    let mut m = mc!();
+    m.env("foo".to_string(), "bar".to_string());
+    m.assert_env_s("bar", "foo");
+    m.assert_empty();
+}
+
+/*
+    TEST BLOCK FOR THE ACTUAL CODE
+*/
 
 macro_rules! common_repo_def {
     () => {
@@ -102,20 +115,29 @@ macro_rules! local_repo_def {
 }
 
 #[test]
+fn presence() {
+    let mut m = mc!();
+    prepare_present(&mut m);
+    m.assert_arg_s("version");
+    m.assert_empty();
+}
+
+#[test]
 fn init_local() {
-    log_init();
+    let mut m = mc!();
     let repo = local_repo_def!("/tmp/restic/foo");
-    let mut mock = WrappedCallMock::new();
-    eenv!(mock, "RESTIC_PASSWORD".to_string(), "test".to_string());
-    earg!(mock, "init".to_string());
-    earg!(mock, "--repo".to_string());
-    earg!(mock, "/tmp/restic/foo".to_string());
-    prepare_init(&mut mock, repo);
+    prepare_init(&mut m, repo);
+
+    m.assert_env_s("RESTIC_PASSWORD", "test");
+    m.assert_arg_s("init");
+    m.assert_arg_s("--repo");
+    m.assert_arg_s("/tmp/restic/foo");
+    m.assert_empty();
 }
 
 #[test]
 fn init_s3() {
-    log_init();
+    let mut m = mc!();
     let repo = Repo::S3 {
         data: S3Repo {
             url: "example.org".to_string(),
@@ -129,26 +151,20 @@ fn init_s3() {
             common: common_repo_def!(),
         },
     };
-    let mut mock = WrappedCallMock::new();
-    eenv!(mock, "RESTIC_PASSWORD".to_string(), "test".to_string());
-    eenv!(mock, "AWS_ACCESS_KEY_ID".to_string(), "the_id".to_string());
-    eenv!(
-        mock,
-        "AWS_SECRET_ACCESS_KEY".to_string(),
-        "the_secret".to_string()
-    );
-    earg!(mock, "--repo".to_string());
-    earg!(
-        mock,
-        format!(
-            "s3:{url}/{bucket}/{path}",
-            url = "example.org",
-            bucket = "foo",
-            path = "bar"
-        )
-    );
-    earg!(mock, "init".to_string());
-    prepare_init(&mut mock, repo);
+    prepare_init(&mut m, repo);
+
+    m.assert_env_s("RESTIC_PASSWORD", "test");
+    m.assert_env_s("AWS_ACCESS_KEY_ID", "the_id");
+    m.assert_env_s("AWS_SECRET_ACCESS_KEY", "the_secret");
+    m.assert_arg_s("init");
+    m.assert_arg_s("--repo");
+    m.assert_arg(format!(
+        "s3:{url}/{bucket}/{path}",
+        url = "example.org",
+        bucket = "foo",
+        path = "bar"
+    ));
+    m.assert_empty();
 }
 
 #[test]
@@ -163,4 +179,95 @@ fn integration_init() {
     com.invoke()
         .expect("Failed to invoke restic to init a repo");
     temp.child("config").assert(predicate::path::is_file());
+}
+
+mod types {
+    use super::*;
+
+    pub struct MockCall {
+        args: Vec<String>,
+        envs: Vec<(String, String)>,
+    }
+
+    impl WrappedCall for MockCall {
+        fn invoke(&mut self) -> Result<Output, std::io::Error> {
+            error!("Someone tried to do the naughty!");
+            panic!("The mocked call should not be invoked!");
+        }
+        fn arg(&mut self, arg: String) -> &mut Self {
+            trace!("Mocked arg: {:?}", arg);
+            self.args.push(arg);
+            self
+        }
+        fn env(&mut self, key: String, value: String) -> &mut Self {
+            trace!("Mocked env: {:?} = {:?}", key, value);
+            self.envs.push((key, value));
+            self
+        }
+    }
+
+    impl MockCall {
+        pub fn new() -> MockCall {
+            MockCall {
+                args: Vec::new(),
+                envs: Vec::new(),
+            }
+        }
+
+        /// Asserts that there are no (more) arguments or environment variables to evaluate
+        ///
+        /// Returns `true` if both vectors are empty, `panic!()` otherwise.
+        pub fn assert_empty(&mut self) -> bool {
+            trace!("Asserting MockCall is empty");
+            if self.args.is_empty() && self.envs.is_empty() {
+                true
+            } else {
+                panic!(
+                    "Args or envvars remain!\nArgs: {:?}\nEnvs: {:?}\n",
+                    self.args, self.envs
+                );
+            }
+        }
+
+        /// Asserts that `arg` has been called with the given argument
+        pub fn assert_arg(&mut self, arg: String) -> bool {
+            trace!("Asserting MockCall arg {:?}", arg);
+            match self.args.iter().position(|s| s.eq(&arg)) {
+                None => panic!("Arg {:?} not called (argv: {:?})", arg, self.args),
+                Some(p) => {
+                    self.args.remove(p);
+                    true
+                }
+            }
+        }
+
+        /// Helper function for calling with string literals
+        pub fn assert_arg_s(&mut self, arg: &str) -> bool {
+            self.assert_arg(arg.to_owned())
+        }
+
+        /// Asserts that `env` has been called with the given environment variable
+        pub fn assert_env(&mut self, key: String, value: String) -> bool {
+            trace!("Asserting MockCall env {:?} = {:?}", key, value);
+            match self
+                .envs
+                .iter()
+                .position(|(k, v)| k.eq(&key) && v.eq(&value))
+            {
+                None => panic!(
+                    "Env {:?}:{:?} not called (envv: {:?})",
+                    key, value, self.envs
+                ),
+                Some(p) => {
+                    self.envs.remove(p);
+                    true
+                }
+            }
+        }
+
+        /// Helper function for calling with string literals
+        pub fn assert_env_s(&mut self, key: &str, value: &str) -> bool {
+            self.assert_env(key.to_owned(), value.to_owned())
+        }
+    }
 }
