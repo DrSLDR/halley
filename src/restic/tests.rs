@@ -1,4 +1,6 @@
 use super::*;
+use types::*;
+
 use assert_fs::prelude::*;
 use predicates::prelude::*;
 use simulacrum::*;
@@ -75,7 +77,14 @@ macro_rules! eenv {
 }
 
 #[test]
-fn presence() {
+fn mock_empty() {
+    log_init();
+    let mut m = MockCall::new();
+    m.assert_empty();
+}
+
+#[test]
+fn old_presence() {
     log_init();
     let mut mock = WrappedCallMock::new();
     earg!(mock, "version".to_string());
@@ -185,6 +194,27 @@ mod types {
         fn env(&mut self, key: String, value: String) -> &mut Self {
             self.envs.push((key, value));
             self
+        }
+    }
+
+    impl MockCall {
+        pub fn new() -> MockCall {
+            MockCall {
+                args: Vec::new(),
+                envs: Vec::new(),
+            }
+        }
+
+        pub fn assert_empty(&mut self) -> bool {
+            unimplemented!();
+        }
+
+        pub fn assert_arg(&mut self, arg: String) -> bool {
+            unimplemented!();
+        }
+
+        pub fn assert_env(&mut self, key: String, value: String) -> bool {
+            unimplemented!();
         }
     }
 }
