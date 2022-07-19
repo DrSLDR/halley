@@ -106,6 +106,13 @@ fn mock_arg() {
 }
 
 #[test]
+#[should_panic]
+fn mock_arg_assertion() {
+    let mut m = mc!();
+    m.assert_arg("foo".to_string());
+}
+
+#[test]
 fn mock_multiarg(){
     let mut m = mc!();
     m.arg("foo".to_string());
