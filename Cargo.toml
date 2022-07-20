@@ -13,6 +13,8 @@ edition = "2021"
 [dependencies]
 directory-hasher = { git = "https://github.com/DrSLDR/directory-hasher" }
 anyhow = "1.0"
+rusoto_core = "0.48.0"
+rusoto_s3 = "0.48.0"
 tracing = "0.1.34"
 tracing-subscriber = "0.3.14"
 
