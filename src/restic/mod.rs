@@ -9,27 +9,10 @@ mod tests;
 mod types;
 use crate::restic::types::{ResticCall, WrappedCall};
 
-use crate::types::{RepoCommon, Repo};
+use crate::trace_call;
+use crate::types::{Repo, RepoCommon};
 
 use tracing::{debug, trace, trace_span};
-
-macro_rules! trace_call {
-    ($fn:literal) => {
-        let _span = trace_span!($fn);
-        let _guard = _span.enter();
-        trace!("called");
-    };
-    ($fn:literal, $estr:literal) => {
-        let _span = trace_span!($fn);
-        let _guard = _span.enter();
-        trace!($estr);
-    };
-    ($fn:literal, $estr:literal, $($arg:ident),+) => {
-        let _span = trace_span!($fn);
-        let _guard = _span.enter();
-        trace!($estr, $($arg),+);
-    };
-}
 
 fn prepare_present<C: WrappedCall>(wc: &mut C) -> &mut C {
     trace_call!("prepare_present");
