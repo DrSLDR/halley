@@ -3,13 +3,13 @@
 //! This module calls to the external restic binary in order to create repositories,
 //! snapshots, and manage retention.
 
-
 #[cfg(test)]
 mod tests;
 
 mod types;
-use crate::restic::types::{AWSKey, RepoCommon, ResticCall, WrappedCall};
-pub use crate::restic::types::{LocalRepo, Repo, S3Repo};
+use crate::restic::types::{ResticCall, WrappedCall};
+
+use crate::types::{RepoCommon, Repo};
 
 use tracing::{debug, trace, trace_span};
 

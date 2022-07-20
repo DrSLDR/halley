@@ -1,4 +1,5 @@
 use super::*;
+use crate::types::{AWSKey, LocalRepo, Region, S3Repo};
 use types::*;
 
 use assert_fs::prelude::*;
@@ -140,7 +141,7 @@ macro_rules! s3_repo_def {
             data: S3Repo {
                 url: "example.org".to_string(),
                 bucket: "foo".to_string(),
-                region: "eu-west-1".to_string(),
+                region: Region::EuWest1,
                 path: Some("bar".to_string()),
                 key: AWSKey {
                     id: "the_id".to_string(),
