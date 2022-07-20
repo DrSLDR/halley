@@ -1,3 +1,9 @@
+//! Restic interface
+//!
+//! This module calls to the external restic binary in order to create repositories,
+//! snapshots, and manage retention.
+
+
 #[cfg(test)]
 mod tests;
 
