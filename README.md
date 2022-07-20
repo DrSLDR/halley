@@ -7,6 +7,12 @@ An offsite backup manager, using [restic](https://restic.net/)
 First plan of action:
 
 * [ ] Wrapper around Restic
+  * [x] Presence - Ensuring restic is installed
+  * [x] Init - Creating a repository
+  * [x] Backup - Creating a snapshot and putting it in a repo
+  * [ ] Forget - Filtering snapshots that are too old
+  * [ ] Prune - Actually binning unused data
+  * [ ] Stats - Getting repository statistics, for logging
 * [ ] Scaffolding to talk to S3
 
 Later on:
