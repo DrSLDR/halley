@@ -4,6 +4,9 @@
 //! repository exists, as well as ferrying objects in and out of the Glacier storage
 //! class.
 
+#[cfg(test)]
+mod tests;
+
 use crate::trace_call;
 use crate::types::{Region, S3Repo};
 
