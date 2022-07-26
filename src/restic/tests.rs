@@ -1,5 +1,6 @@
 use super::*;
 use crate::types::{AWSKey, LocalRepo, Region, S3Repo};
+use crate::util::test_utils::*;
 use types::*;
 
 use assert_fs::prelude::*;
@@ -96,14 +97,6 @@ fn mock_env_disorder() {
     TEST BLOCK FOR THE ACTUAL CODE
 */
 
-macro_rules! common_repo_def {
-    () => {
-        RepoCommon {
-            passwd: "test".to_string(),
-        }
-    };
-}
-
 macro_rules! common_repo_assert {
     ($m:ident) => {
         $m.assert_env_s("RESTIC_PASSWORD", "test");
@@ -112,15 +105,7 @@ macro_rules! common_repo_assert {
 
 macro_rules! local_repo_def {
     () => {
-        local_repo_def!("/tmp/restic/foo")
-    };
-    ($name:expr) => {
-        Repo::Local {
-            data: LocalRepo {
-                path: $name.to_string(),
-                common: common_repo_def!(),
-            },
-        }
+        local_repo_def("/tmp/restic/foo")
     };
 }
 
@@ -132,24 +117,6 @@ macro_rules! local_repo_assert {
         common_repo_assert!($m);
         $m.assert_arg_s("--repo");
         $m.assert_arg_s($name);
-    };
-}
-
-macro_rules! s3_repo_def {
-    () => {
-        Repo::S3 {
-            data: S3Repo {
-                url: "example.org".to_string(),
-                bucket: "foo".to_string(),
-                region: Region::EuWest1,
-                path: Some("bar".to_string()),
-                key: AWSKey {
-                    id: "the_id".to_string(),
-                    secret: "the_secret".to_string(),
-                },
-                common: common_repo_def!(),
-            },
-        }
     };
 }
 
@@ -211,7 +178,7 @@ fn init_local() {
 #[test]
 fn init_s3() {
     let mut m = mc!();
-    let repo = s3_repo_def!();
+    let repo = s3_repo_def();
     prepare_init(&mut m, repo);
 
     s3_repo_assert!(m);
@@ -234,7 +201,7 @@ fn backup_local() {
 #[test]
 fn backup_s3() {
     let mut m = mc!();
-    let repo = s3_repo_def!();
+    let repo = s3_repo_def();
     let targets = backup_def!();
     prepare_backup(&mut m, repo, targets);
 
@@ -248,7 +215,7 @@ fn backup_s3() {
 fn integration_init() {
     log_init();
     let temp = assert_fs::TempDir::new().unwrap();
-    let repo = local_repo_def!(temp.path().to_string_lossy());
+    let repo = local_repo_def(&temp.path().to_string_lossy());
     let mut com = ResticCall::new();
     prepare_init(&mut com, repo);
     debug!("Call: {:?}", com);
@@ -262,13 +229,13 @@ fn integration_init() {
 fn integration_backup() {
     log_init();
     let temp = assert_fs::TempDir::new().unwrap();
-    let repo = local_repo_def!(temp.path().to_string_lossy());
+    let repo = local_repo_def(&temp.path().to_string_lossy());
     let target = vec!["src".to_owned()];
     let mut com = ResticCall::new();
     prepare_init(&mut com, repo);
     com.invoke()
         .expect("Failed to invoke restic to init a repo");
-    let repo = local_repo_def!(temp.path().to_string_lossy());
+    let repo = local_repo_def(&temp.path().to_string_lossy());
     let mut com = ResticCall::new();
     prepare_backup(&mut com, repo, target);
     debug!("Call: {:?}", com);

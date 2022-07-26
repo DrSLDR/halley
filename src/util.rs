@@ -35,3 +35,45 @@ macro_rules! trace_call {
         trace!($estr, $($arg),+);
     };
 }
+
+#[cfg(test)]
+pub(crate) mod test_utils {
+    //! Common utilities for several test modules
+
+    use crate::types::*;
+
+    pub(crate) fn common_repo_def() -> RepoCommon {
+        RepoCommon {
+            passwd: "test".to_string(),
+        }
+    }
+
+    pub fn local_repo_def(name: &str) -> Repo {
+        Repo::Local {
+            data: LocalRepo {
+                path: name.to_string(),
+                common: common_repo_def(),
+            },
+        }
+    }
+
+    pub(crate) fn aws_key_def() -> AWSKey {
+        AWSKey {
+            id: "the_id".to_string(),
+            secret: "the_secret".to_string(),
+        }
+    }
+
+    pub fn s3_repo_def() -> Repo {
+        Repo::S3 {
+            data: S3Repo {
+                bucket: "foo".to_string(),
+                url: "example.org".to_string(),
+                region: Region::EuWest1,
+                path: Some("bar".to_string()),
+                key: aws_key_def(),
+                common: common_repo_def()
+            }
+        }
+    }
+}
