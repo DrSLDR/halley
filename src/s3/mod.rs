@@ -27,3 +27,13 @@ fn init(repo: S3Repo) -> S3Client {
         repo.region,
     )
 }
+
+pub(crate) struct S3Handler {
+    client: S3Client,
+}
+
+impl S3Handler {
+    pub fn new(repo: S3Repo) -> S3Handler {
+        unimplemented!()
+    }
+}
