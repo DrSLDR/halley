@@ -11,20 +11,19 @@ use crate::trace_call;
 use crate::types::S3Repo;
 
 use rusoto_core::{credential, Client};
-use rusoto_s3::{HeadBucketRequest, S3Client, S3};
-use tracing::{debug, error, trace, trace_span};
+use rusoto_s3::{HeadBucketRequest, ListObjectsV2Request, S3Client, S3};
+use tracing::{debug, error, trace, trace_span, warn};
 
 pub(crate) struct S3Handler {
-    _url: String,
-    _bucket: String,
+    url: String,
+    bucket: String,
+    prefix: Option<String>,
     client: S3Client,
 }
 
 impl std::fmt::Debug for S3Handler {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        f.debug_struct("S3Handler")
-            .field("url", &self._url)
-            .finish()
+        f.debug_struct("S3Handler").field("url", &self.url).finish()
     }
 }
 
@@ -33,8 +32,9 @@ impl S3Handler {
     pub fn new(repo: S3Repo) -> S3Handler {
         trace_call!("new", "called with {:?}", repo);
         S3Handler {
-            _url: repo.render_full_url(),
-            _bucket: repo.bucket,
+            url: repo.render_full_url(),
+            bucket: repo.bucket,
+            prefix: repo.path,
             client: S3Client::new_with_client(
                 Client::new_with(
                     credential::StaticProvider::new_minimal(repo.key.id, repo.key.secret),
@@ -50,19 +50,58 @@ impl S3Handler {
         let response = self
             .client
             .head_bucket(HeadBucketRequest {
-                bucket: self._bucket.to_owned(),
+                bucket: self.bucket.to_owned(),
                 expected_bucket_owner: None,
             })
             .await;
         match response {
             Ok(()) => {
-                debug!("Bucket {} exists", &self._bucket);
+                debug!("Bucket {} exists", &self.bucket);
                 true
             }
             Err(e) => {
                 error!("Checking for bucket existence failed! See debug log for more details.");
                 debug!("{:?}", e);
                 false
+            }
+        }
+    }
+
+    async fn list_objects(&self, store: Vec<String>, token: Option<String>) -> Vec<String> {
+        unimplemented!();
+    }
+
+    pub async fn list_all_items(&self) -> Option<Vec<String>> {
+        trace_call!("list_all_items", "called on {:?}", self);
+        let mut items: Vec<String> = Vec::with_capacity(1024);
+        warn!("Still using hardcoded, default item vector capacity!");
+        match self
+            .client
+            .list_objects_v2(ListObjectsV2Request {
+                bucket: self.bucket.to_owned(),
+                continuation_token: None,
+                delimiter: None,
+                encoding_type: None,
+                expected_bucket_owner: None,
+                fetch_owner: None,
+                max_keys: None,
+                prefix: match &self.prefix {
+                    Some(s) => Some(s.to_owned()),
+                    None => None,
+                },
+                request_payer: None,
+                start_after: None,
+            })
+            .await
+        {
+            Ok(data) => {
+                println!("{:#?}", data);
+                Some(items)
+            }
+            Err(e) => {
+                error!("Failed to list items! See debug log for more details.");
+                debug!("{:?}", e);
+                None
             }
         }
     }

@@ -29,5 +29,5 @@ pub async fn test_real() {
         },
     });
 
-    h.bucket_exists().await;
+    h.list_all_items().await;
 }
