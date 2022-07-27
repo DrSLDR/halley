@@ -1,6 +1,8 @@
 use tracing::Level;
 use tracing_subscriber;
 
+use halley::*;
+
 #[tokio::main]
 async fn main() {
     #[cfg(debug_assertions)]
@@ -13,5 +15,5 @@ async fn main() {
 
     println!("Hello, world!");
 
-    lib::s3::S3Handler::new();
+    test_real().await;
 }
