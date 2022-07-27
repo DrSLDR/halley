@@ -1,6 +1,9 @@
 //! Common types for the entire Halley library
 
+use crate::trace_call;
+
 pub use rusoto_core::Region;
+use tracing::{trace, trace_span};
 
 // First off, the entire restic group of Repo types.
 
@@ -44,6 +47,21 @@ pub struct S3Repo {
     pub(crate) common: RepoCommon,
 }
 
+impl S3Repo {
+    /// Returns the full URL string of the repository
+    pub fn render_full_url(&self) -> String {
+        trace_call!("render_full_url");
+        match &self.path {
+            Some(path) => format!(
+                "{url}/{bucket}/{path}",
+                url = self.url,
+                bucket = self.bucket,
+                path = path
+            ),
+            None => format!("{url}/{bucket}", url = self.url, bucket = self.bucket),
+        }
+    }
+}
 
 /// Enum for the two (supported) repository types
 #[derive(Debug)]

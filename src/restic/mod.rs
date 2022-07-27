@@ -43,16 +43,8 @@ fn prepare_repo<C: WrappedCall>(wc: &mut C, repo: Repo) -> &mut C {
                 .arg(data.path);
         }
         Repo::S3 { data } => {
-            let url = match data.path {
-                Some(path) => format!(
-                    "{url}/{bucket}/{path}",
-                    url = data.url,
-                    bucket = data.bucket,
-                    path = path
-                ),
-                None => format!("{url}/{bucket}", url = data.url, bucket = data.bucket),
-            };
-            debug!("Derived S3 URL {}", url);
+            let url = data.render_full_url();
+            debug!("Got S3 URL {}", url);
             prepare_common(wc, data.common)
                 .env("AWS_ACCESS_KEY_ID".to_string(), data.key.id)
                 .env("AWS_SECRET_ACCESS_KEY".to_string(), data.key.secret)
