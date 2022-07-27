@@ -461,6 +461,7 @@ dependencies = [
  "predicates",
  "rusoto_core",
  "rusoto_s3",
+ "tokio",
  "tracing",
  "tracing-subscriber",
 ]

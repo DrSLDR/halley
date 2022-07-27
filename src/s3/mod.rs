@@ -11,11 +11,12 @@ use crate::trace_call;
 use crate::types::S3Repo;
 
 use rusoto_core::{credential, Client};
-use rusoto_s3::S3Client;
-use tracing::{trace, trace_span};
+use rusoto_s3::{HeadBucketRequest, S3Client, S3};
+use tracing::{error, trace, trace_span};
 
 pub(crate) struct S3Handler {
     _url: String,
+    _bucket: String,
     client: S3Client,
 }
 
@@ -33,6 +34,7 @@ impl S3Handler {
         trace_call!("new", "called with {:?}", repo);
         S3Handler {
             _url: repo.render_full_url(),
+            _bucket: repo.bucket,
             client: S3Client::new_with_client(
                 Client::new_with(
                     credential::StaticProvider::new_minimal(repo.key.id, repo.key.secret),
@@ -40,6 +42,20 @@ impl S3Handler {
                 ),
                 repo.region,
             ),
+        }
+    }
+
+    pub async fn bucket_exists(&self) -> bool {
+        let response = self
+            .client
+            .head_bucket(HeadBucketRequest {
+                bucket: self._bucket.to_owned(),
+                expected_bucket_owner: None,
+            })
+            .await;
+        match response {
+            Ok(()) => panic!("BUCKET"),
+            Err(e) => panic!("{:?}", e),
         }
     }
 }

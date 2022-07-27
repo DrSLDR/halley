@@ -1,7 +1,8 @@
 use tracing::Level;
 use tracing_subscriber;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     #[cfg(debug_assertions)]
     tracing_subscriber::fmt()
         .pretty()
@@ -11,4 +12,6 @@ fn main() {
     tracing_subscriber::fmt().compact().init();
 
     println!("Hello, world!");
+
+    lib::s3::S3Handler::new();
 }
