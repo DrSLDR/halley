@@ -46,6 +46,7 @@ impl S3Handler {
     }
 
     pub async fn bucket_exists(&self) -> bool {
+        trace_call!("bucket_exists", "called on {:?}", self);
         let response = self
             .client
             .head_bucket(HeadBucketRequest {
