@@ -8,14 +8,23 @@
 mod tests;
 
 use crate::trace_call;
-use crate::types::{S3Repo};
+use crate::types::S3Repo;
 
 use rusoto_core::{credential, Client};
 use rusoto_s3::S3Client;
 use tracing::{trace, trace_span};
 
 pub(crate) struct S3Handler {
+    _url: String,
     client: S3Client,
+}
+
+impl std::fmt::Debug for S3Handler {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        f.debug_struct("S3Handler")
+            .field("url", &self._url)
+            .finish()
+    }
 }
 
 impl S3Handler {
@@ -23,6 +32,7 @@ impl S3Handler {
     pub fn new(repo: S3Repo) -> S3Handler {
         trace_call!("new", "called with {:?}", repo);
         S3Handler {
+            _url: repo.render_full_url(),
             client: S3Client::new_with_client(
                 Client::new_with(
                     credential::StaticProvider::new_minimal(repo.key.id, repo.key.secret),
