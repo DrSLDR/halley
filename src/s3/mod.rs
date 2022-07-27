@@ -12,7 +12,7 @@ use crate::types::S3Repo;
 
 use rusoto_core::{credential, Client};
 use rusoto_s3::{HeadBucketRequest, S3Client, S3};
-use tracing::{error, trace, trace_span};
+use tracing::{debug, error, trace, trace_span};
 
 pub(crate) struct S3Handler {
     _url: String,
@@ -54,8 +54,15 @@ impl S3Handler {
             })
             .await;
         match response {
-            Ok(()) => panic!("BUCKET"),
-            Err(e) => panic!("{:?}", e),
+            Ok(()) => {
+                debug!("Bucket {} exists", &self._bucket);
+                true
+            }
+            Err(e) => {
+                error!("Checking for bucket existence failed! See debug log for more details.");
+                debug!("{:?}", e);
+                false
+            }
         }
     }
 }
