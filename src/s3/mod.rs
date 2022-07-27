@@ -8,32 +8,28 @@
 mod tests;
 
 use crate::trace_call;
-use crate::types::{Region, S3Repo};
+use crate::types::{S3Repo};
 
 use rusoto_core::{credential, Client};
 use rusoto_s3::S3Client;
 use tracing::{trace, trace_span};
-
-/// Creates a [`S3Client`] which can be used to communicate with a given repository.
-///
-/// [`S3Client`]: rusoto_s3::S3Client
-fn init(repo: S3Repo) -> S3Client {
-    trace_call!("init", "called with {:?}", repo);
-    S3Client::new_with_client(
-        Client::new_with(
-            credential::StaticProvider::new_minimal(repo.key.id, repo.key.secret),
-            rusoto_core::HttpClient::new().unwrap(),
-        ),
-        repo.region,
-    )
-}
 
 pub(crate) struct S3Handler {
     client: S3Client,
 }
 
 impl S3Handler {
+    /// Creates a new [`S3Handler`] which can be used to communicate with a given repository.
     pub fn new(repo: S3Repo) -> S3Handler {
-        unimplemented!()
+        trace_call!("new", "called with {:?}", repo);
+        S3Handler {
+            client: S3Client::new_with_client(
+                Client::new_with(
+                    credential::StaticProvider::new_minimal(repo.key.id, repo.key.secret),
+                    rusoto_core::HttpClient::new().unwrap(),
+                ),
+                repo.region,
+            ),
+        }
     }
 }
