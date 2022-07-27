@@ -4,8 +4,8 @@ use crate::util::test_utils::*;
 
 #[test]
 fn spawn_client() {
-    match s3_repo_def() {
-        Repo::S3 { data } => init(data),
-        Repo::Local { data: _ } => unimplemented!(),
+    let _h: S3Handler = match s3_repo_def() {
+        Repo::S3 { data } => S3Handler::new(data),
+        _ => unimplemented!(),
     };
 }
