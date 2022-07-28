@@ -4,7 +4,7 @@ use tracing_subscriber;
 use halley::*;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
     #[cfg(debug_assertions)]
     tracing_subscriber::fmt()
         .pretty()
@@ -15,5 +15,7 @@ async fn main() {
 
     println!("Hello, world!");
 
-    test_real().await;
+    test_real().await?;
+
+    Ok(())
 }
