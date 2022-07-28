@@ -93,8 +93,13 @@ impl S3Handler {
             .await
         {
             Ok(data) => {
-                println!("{:#?}", data);
-                Ok(None)
+                match data.contents {
+                    Some(content) => unimplemented!(),
+                    None => {
+                        warn!("Object listing call on {:?} returned nothing", self);
+                        Ok(None)
+                    },
+                }
             }
             Err(e) => {
                 error!("Failed to list items! See debug log for more details.");
