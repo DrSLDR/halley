@@ -10,6 +10,7 @@ mod tests;
 use crate::trace_call;
 use crate::types::S3Repo;
 
+use async_recursion::async_recursion;
 use rusoto_core::{credential, Client};
 use rusoto_s3::{HeadBucketRequest, ListObjectsV2Request, S3Client, S3};
 use tracing::{debug, error, trace, trace_span, warn};
@@ -67,12 +68,18 @@ impl S3Handler {
         }
     }
 
+    #[async_recursion]
     async fn list_objects(
         &self,
         store: &mut Vec<String>,
         token: Option<String>,
-    ) -> anyhow::Result<Option<String>> {
-        trace_call!("list_objects","called with store {:?}, token {:?}", store, token);
+    ) -> anyhow::Result<()> {
+        trace_call!(
+            "list_objects",
+            "called with store {:?}, token {:?}",
+            store,
+            token
+        );
         match self
             .client
             .list_objects_v2(ListObjectsV2Request {
@@ -92,15 +99,21 @@ impl S3Handler {
             })
             .await
         {
-            Ok(data) => {
-                match data.contents {
-                    Some(content) => unimplemented!(),
-                    None => {
-                        warn!("Object listing call on {:?} returned nothing", self);
-                        Ok(None)
-                    },
+            Ok(data) => match data.contents {
+                Some(contents) => {
+                    for object in contents {
+                        store.push(object.key.unwrap())
+                    }
+                    match data.next_continuation_token {
+                        Some(token) => self.list_objects(store, Some(token)).await,
+                        None => Ok(())
+                    }
                 }
-            }
+                None => {
+                    warn!("Object listing call on {:?} returned nothing", self);
+                    Ok(())
+                }
+            },
             Err(e) => {
                 error!("Failed to list items! See debug log for more details.");
                 debug!("{:?}", e);
