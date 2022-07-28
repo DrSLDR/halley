@@ -135,7 +135,16 @@ impl S3Handler {
         let mut items: Vec<String> = Vec::with_capacity(self.alloc_size);
         self.list_objects(&mut items, None).await?;
 
-        debug!("Gathered items {:#?}", items);
+        info!("Listed {} items in {:?}", items.len(), self);
+        if items.is_empty() {
+            warn!("Listed no items in {:?}!", self);
+        }
+        debug!("Collected items {:#?}", items);
+        debug!(
+            "Vector utilization at {}% of initialization ({})",
+            { items.len() / self.alloc_size },
+            self.alloc_size
+        );
 
         Ok(items)
     }
