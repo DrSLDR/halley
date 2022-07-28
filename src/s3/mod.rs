@@ -72,6 +72,7 @@ impl S3Handler {
         store: &mut Vec<String>,
         token: Option<String>,
     ) -> anyhow::Result<Option<String>> {
+        trace_call!("list_objects","called with store {:?}, token {:?}", store, token);
         match self
             .client
             .list_objects_v2(ListObjectsV2Request {
@@ -108,6 +109,8 @@ impl S3Handler {
         let mut items: Vec<String> = Vec::with_capacity(1024);
         warn!("Still using hardcoded, default item vector capacity!");
         let token = self.list_objects(&mut items, None).await?;
+
+        debug!("Gathered items {:#?}", items);
 
         Ok(vec![])
     }
