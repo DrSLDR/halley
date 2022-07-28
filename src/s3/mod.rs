@@ -94,7 +94,7 @@ impl S3Handler {
                 encoding_type: None,
                 expected_bucket_owner: None,
                 fetch_owner: None,
-                max_keys: Some(1),
+                max_keys: None,
                 prefix: match &self.prefix {
                     Some(s) => Some(s.to_owned()),
                     None => None,
