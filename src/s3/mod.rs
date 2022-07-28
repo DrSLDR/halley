@@ -13,7 +13,7 @@ use crate::types::S3Repo;
 use async_recursion::async_recursion;
 use rusoto_core::{credential, Client};
 use rusoto_s3::{HeadBucketRequest, ListObjectsV2Request, S3Client, S3};
-use tracing::{debug, error, trace, trace_span, warn};
+use tracing::{debug, error, info, trace, trace_span, warn};
 
 pub(crate) struct S3Handler {
     url: String,
@@ -106,11 +106,14 @@ impl S3Handler {
                     }
                     match data.next_continuation_token {
                         Some(token) => self.list_objects(store, Some(token)).await,
-                        None => Ok(())
+                        None => Ok(()),
                     }
                 }
                 None => {
-                    warn!("Object listing call on {:?} returned nothing", self);
+                    match data.continuation_token {
+                        Some(_) => info!("Object listing call on {:?} returned nothing\nAssuming it just ran out of items", self),
+                        None => warn!("Object listing call on {:?} returned nothing", self),
+                    }
                     Ok(())
                 }
             },
