@@ -19,6 +19,7 @@ pub(crate) struct S3Handler {
     url: String,
     bucket: String,
     prefix: Option<String>,
+    alloc_size: usize,
     client: S3Client,
 }
 
@@ -36,6 +37,10 @@ impl S3Handler {
             url: repo.render_full_url(),
             bucket: repo.bucket,
             prefix: repo.path,
+            alloc_size: {
+                warn!("Still using hardcoded, default item vector capacity!");
+                1024
+            },
             client: S3Client::new_with_client(
                 Client::new_with(
                     credential::StaticProvider::new_minimal(repo.key.id, repo.key.secret),
@@ -127,12 +132,11 @@ impl S3Handler {
 
     pub async fn list_all_items(&self) -> anyhow::Result<Vec<String>> {
         trace_call!("list_all_items", "called on {:?}", self);
-        let mut items: Vec<String> = Vec::with_capacity(1024);
-        warn!("Still using hardcoded, default item vector capacity!");
-        let token = self.list_objects(&mut items, None).await?;
+        let mut items: Vec<String> = Vec::with_capacity(self.alloc_size);
+        self.list_objects(&mut items, None).await?;
 
         debug!("Gathered items {:#?}", items);
 
-        Ok(vec![])
+        Ok(items)
     }
 }
