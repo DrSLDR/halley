@@ -76,7 +76,7 @@ impl S3Handler {
             .client
             .list_objects_v2(ListObjectsV2Request {
                 bucket: self.bucket.to_owned(),
-                continuation_token: None,
+                continuation_token: token,
                 delimiter: None,
                 encoding_type: None,
                 expected_bucket_owner: None,
