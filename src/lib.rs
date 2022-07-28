@@ -11,7 +11,7 @@ mod util;
 
 use crate::types::*;
 
-pub async fn test_real() {
+pub async fn test_real() -> anyhow::Result<()> {
     let h = s3::S3Handler::new(S3Repo {
         url: "s3.fr-par.scw.cloud".to_owned(),
         bucket: "testbucket-2".to_owned(),
@@ -29,5 +29,7 @@ pub async fn test_real() {
         },
     });
 
-    h.list_all_items().await;
+    h.list_all_items().await?;
+
+    Ok(())
 }

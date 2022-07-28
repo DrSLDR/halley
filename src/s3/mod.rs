@@ -67,14 +67,11 @@ impl S3Handler {
         }
     }
 
-    async fn list_objects(&self, store: Vec<String>, token: Option<String>) -> Vec<String> {
-        unimplemented!();
-    }
-
-    pub async fn list_all_items(&self) -> Option<Vec<String>> {
-        trace_call!("list_all_items", "called on {:?}", self);
-        let mut items: Vec<String> = Vec::with_capacity(1024);
-        warn!("Still using hardcoded, default item vector capacity!");
+    async fn list_objects(
+        &self,
+        store: &mut Vec<String>,
+        token: Option<String>,
+    ) -> anyhow::Result<Option<String>> {
         match self
             .client
             .list_objects_v2(ListObjectsV2Request {
@@ -84,7 +81,7 @@ impl S3Handler {
                 encoding_type: None,
                 expected_bucket_owner: None,
                 fetch_owner: None,
-                max_keys: None,
+                max_keys: Some(1),
                 prefix: match &self.prefix {
                     Some(s) => Some(s.to_owned()),
                     None => None,
@@ -96,13 +93,22 @@ impl S3Handler {
         {
             Ok(data) => {
                 println!("{:#?}", data);
-                Some(items)
+                Ok(None)
             }
             Err(e) => {
                 error!("Failed to list items! See debug log for more details.");
                 debug!("{:?}", e);
-                None
+                Err(anyhow::Error::new(e))
             }
         }
+    }
+
+    pub async fn list_all_items(&self) -> anyhow::Result<Vec<String>> {
+        trace_call!("list_all_items", "called on {:?}", self);
+        let mut items: Vec<String> = Vec::with_capacity(1024);
+        warn!("Still using hardcoded, default item vector capacity!");
+        let token = self.list_objects(&mut items, None).await?;
+
+        Ok(vec![])
     }
 }
