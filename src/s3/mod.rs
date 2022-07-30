@@ -12,7 +12,7 @@ use crate::types::S3Repo;
 
 use async_recursion::async_recursion;
 use rusoto_core::{credential, Client};
-use rusoto_s3::{HeadBucketRequest, ListObjectsV2Request, S3Client, S3};
+use rusoto_s3::{HeadBucketRequest, HeadObjectRequest, ListObjectsV2Request, S3Client, S3};
 use tracing::{debug, error, info, trace, trace_span, warn};
 
 pub(crate) struct S3Handler {
@@ -147,5 +147,45 @@ impl S3Handler {
         );
 
         Ok(items)
+    }
+
+    pub async fn get_storage_class(&self, key: String) -> anyhow::Result<String> {
+        trace_call!("get_storage_class", "called with {:?}", key);
+        match self
+            .client
+            .head_object(HeadObjectRequest {
+                bucket: self.bucket.to_owned(),
+                expected_bucket_owner: None,
+                if_match: None,
+                if_modified_since: None,
+                if_none_match: None,
+                if_unmodified_since: None,
+                key: key.to_owned(),
+                part_number: None,
+                range: None,
+                request_payer: None,
+                sse_customer_algorithm: None,
+                sse_customer_key: None,
+                sse_customer_key_md5: None,
+                version_id: None,
+            })
+            .await
+        {
+            Ok(head) => {
+                debug!("{:#?}", head);
+                match head.storage_class {
+                    Some(class) => Ok(class),
+                    None => {
+                        warn!("Failed to get any storage class for {}, assuming STANDARD", key);
+                        Ok("STANDARD".to_string())
+                    }
+                }
+            }
+            Err(e) => {
+                error!("Could not head object! See debug log for more details.");
+                debug!("{:?}", e);
+                Err(anyhow::Error::new(e))
+            }
+        }
     }
 }

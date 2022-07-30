@@ -30,6 +30,7 @@ pub async fn test_real() -> anyhow::Result<()> {
     });
 
     h.list_all_items().await?;
+    h.get_storage_class("foo/config".to_owned()).await?;
 
     Ok(())
 }
