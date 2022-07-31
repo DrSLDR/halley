@@ -14,6 +14,7 @@ edition = "2021"
 directory-hasher = { git = "https://github.com/DrSLDR/directory-hasher" }
 anyhow = "1.0"
 async-recursion = "1.0.0"
+rayon = "1.5"
 rusoto_core = "0.48.0"
 rusoto_s3 = "0.48.0"
 tokio = "1.20"
