@@ -135,25 +135,16 @@ impl S3Handler {
             store,
             token
         );
-        match self
-            .client
-            .list_objects_v2(ListObjectsV2Request {
-                bucket: self.bucket.clone(),
-                continuation_token: token,
-                delimiter: None,
-                encoding_type: None,
-                expected_bucket_owner: None,
-                fetch_owner: None,
-                max_keys: None,
-                prefix: match &self.prefix {
-                    Some(s) => Some(s.clone()),
-                    None => None,
-                },
-                request_payer: None,
-                start_after: None,
-            })
-            .await
-        {
+
+        let mut r = ListObjectsV2Request::default();
+        r.bucket = self.bucket.clone();
+        r.continuation_token = token;
+        r.prefix = match &self.prefix {
+            Some(s) => Some(s.clone()),
+            None => None,
+        };
+
+        match self.client.list_objects_v2(r).await {
             Ok(data) => match data.contents {
                 Some(contents) => {
                     for object in contents {
@@ -203,26 +194,12 @@ impl S3Handler {
     /// Gets the [`StorageClass`] of the given key
     pub async fn get_storage_class(&self, key: String) -> anyhow::Result<StorageClass> {
         trace_call!("get_storage_class", "called with {:?}", key);
-        match self
-            .client
-            .head_object(HeadObjectRequest {
-                bucket: self.bucket.clone(),
-                expected_bucket_owner: None,
-                if_match: None,
-                if_modified_since: None,
-                if_none_match: None,
-                if_unmodified_since: None,
-                key: key.clone(),
-                part_number: None,
-                range: None,
-                request_payer: None,
-                sse_customer_algorithm: None,
-                sse_customer_key: None,
-                sse_customer_key_md5: None,
-                version_id: None,
-            })
-            .await
-        {
+
+        let mut r = HeadObjectRequest::default();
+        r.bucket = self.bucket.clone();
+        r.key = key.clone();
+
+        match self.client.head_object(r).await {
             Ok(head) => match head.storage_class {
                 Some(class) => Ok(class.parse::<StorageClass>()?),
                 None => {
@@ -247,18 +224,12 @@ impl S3Handler {
     /// [`STANDARD`]: StorageClass::STANDARD
     pub async fn restore_object(&self, key: String) -> anyhow::Result<()> {
         trace_call!("restore_object", "called with key {:?}", key);
-        match self
-            .client
-            .restore_object(RestoreObjectRequest {
-                bucket: self.bucket.clone(),
-                expected_bucket_owner: None,
-                key: key.clone(),
-                request_payer: None,
-                restore_request: None,
-                version_id: None,
-            })
-            .await
-        {
+
+        let mut r = RestoreObjectRequest::default();
+        r.bucket = self.bucket.clone();
+        r.key = key.clone();
+
+        match self.client.restore_object(r).await {
             Ok(_) => {
                 debug!("Requested {} be restored", key);
                 Ok(())
