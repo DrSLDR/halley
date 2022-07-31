@@ -319,7 +319,7 @@ impl S3Handler {
         let start = Instant::now();
 
         let mut objects = self.list_all_objects().await?;
-        objects.retain(|o| o.class == StorageClass::GLACIER);
+        objects.retain(|o| o.class != StorageClass::GLACIER);
 
         for object in objects.iter() {
             self.archive_object(object.key.clone()).await?;
