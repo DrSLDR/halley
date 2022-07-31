@@ -314,9 +314,21 @@ impl S3Handler {
     }
 
     /// Enumerates all objects and requests that they be archived
-    pub async fn archive_all_objects(&self) -> anyhow::Result<()> {
+    pub async fn archive_all_objects(&self) -> anyhow::Result<Vec<Object>> {
         trace_call!("archive_all_objects");
+        let start = Instant::now();
 
-        unimplemented!()
+        let mut objects = self.list_all_objects().await?;
+        objects.retain(|o| o.class == StorageClass::GLACIER);
+
+        for object in objects.iter() {
+            self.archive_object(object.key.clone()).await?;
+        };
+
+        let duration = start.elapsed();
+
+        info!("Requested archival of {} objects in {:?}", objects.len(), duration);
+
+        Ok(objects)
     }
 }
