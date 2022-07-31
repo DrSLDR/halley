@@ -97,7 +97,7 @@ impl S3Handler {
         let response = self
             .client
             .head_bucket(HeadBucketRequest {
-                bucket: self.bucket.to_owned(),
+                bucket: self.bucket.clone(),
                 expected_bucket_owner: None,
             })
             .await;
@@ -137,7 +137,7 @@ impl S3Handler {
         match self
             .client
             .list_objects_v2(ListObjectsV2Request {
-                bucket: self.bucket.to_owned(),
+                bucket: self.bucket.clone(),
                 continuation_token: token,
                 delimiter: None,
                 encoding_type: None,
@@ -145,7 +145,7 @@ impl S3Handler {
                 fetch_owner: None,
                 max_keys: None,
                 prefix: match &self.prefix {
-                    Some(s) => Some(s.to_owned()),
+                    Some(s) => Some(s.clone()),
                     None => None,
                 },
                 request_payer: None,
@@ -205,13 +205,13 @@ impl S3Handler {
         match self
             .client
             .head_object(HeadObjectRequest {
-                bucket: self.bucket.to_owned(),
+                bucket: self.bucket.clone(),
                 expected_bucket_owner: None,
                 if_match: None,
                 if_modified_since: None,
                 if_none_match: None,
                 if_unmodified_since: None,
-                key: key.to_owned(),
+                key: key.clone(),
                 part_number: None,
                 range: None,
                 request_payer: None,
@@ -259,14 +259,14 @@ impl S3Handler {
             .client
             .copy_object(CopyObjectRequest {
                 acl: None,
-                bucket: self.bucket.to_owned(),
+                bucket: self.bucket.clone(),
                 bucket_key_enabled: None,
                 cache_control: None,
                 content_disposition: None,
                 content_encoding: None,
                 content_language: None,
                 content_type: None,
-                copy_source: format!("{}/{}", self.bucket.to_owned(), key.to_owned()),
+                copy_source: format!("{}/{}", self.bucket.clone(), key.clone()),
                 copy_source_if_match: None,
                 copy_source_if_modified_since: None,
                 copy_source_if_none_match: None,
@@ -281,7 +281,7 @@ impl S3Handler {
                 grant_read: None,
                 grant_read_acp: None,
                 grant_write_acp: None,
-                key: key.to_owned(),
+                key: key.clone(),
                 metadata: None,
                 metadata_directive: None,
                 object_lock_legal_hold_status: None,
@@ -326,7 +326,7 @@ impl S3Handler {
     /// [`STANDARD`]: StorageClass::STANDARD
     pub async fn archive_object(&self, key: String) -> anyhow::Result<()> {
         trace_call!("archive_object", "called with key {:?}", key);
-        self.change_storage_class(key.to_owned(), StorageClass::GLACIER)
+        self.change_storage_class(key.clone(), StorageClass::GLACIER)
             .await?;
         debug!("Requested {} be archived", key);
         Ok(())
