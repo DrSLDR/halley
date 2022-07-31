@@ -11,10 +11,13 @@ use crate::trace_call;
 use crate::types::S3Repo;
 
 use std::str::FromStr;
+use std::string::ToString;
 
 use async_recursion::async_recursion;
 use rusoto_core::{credential, Client};
-use rusoto_s3::{HeadBucketRequest, HeadObjectRequest, ListObjectsV2Request, S3Client, S3};
+use rusoto_s3::{
+    CopyObjectRequest, HeadBucketRequest, HeadObjectRequest, ListObjectsV2Request, S3Client, S3,
+};
 use tracing::{debug, error, info, trace, trace_span, warn};
 
 /// Stateful struct containing the `S3Client` and relevant helper data
@@ -50,6 +53,15 @@ impl FromStr for StorageClass {
                 "StorageClass string {} could not be parsed",
                 s
             ))),
+        }
+    }
+}
+
+impl ToString for StorageClass {
+    fn to_string(&self) -> String {
+        match self {
+            Self::STANDARD => "STANDARD".to_string(),
+            Self::GLACIER => "GLACIER".to_string(),
         }
     }
 }
@@ -242,6 +254,49 @@ impl S3Handler {
             key,
             to_class
         );
+
+        let e = CopyObjectRequest {
+            acl: None,
+            bucket: self.bucket.to_owned(),
+            bucket_key_enabled: None,
+            cache_control: None,
+            content_disposition: None,
+            content_encoding: None,
+            content_language: None,
+            content_type: None,
+            copy_source: key.to_owned(),
+            copy_source_if_match: None,
+            copy_source_if_modified_since: None,
+            copy_source_if_none_match: None,
+            copy_source_if_unmodified_since: None,
+            copy_source_sse_customer_algorithm: None,
+            copy_source_sse_customer_key: None,
+            copy_source_sse_customer_key_md5: None,
+            expected_bucket_owner: None,
+            expected_source_bucket_owner: None,
+            expires: None,
+            grant_full_control: None,
+            grant_read: None,
+            grant_read_acp: None,
+            grant_write_acp: None,
+            key: key.to_owned(),
+            metadata: None,
+            metadata_directive: None,
+            object_lock_legal_hold_status: None,
+            object_lock_mode: None,
+            object_lock_retain_until_date: None,
+            request_payer: None,
+            sse_customer_algorithm: None,
+            sse_customer_key: None,
+            sse_customer_key_md5: None,
+            ssekms_encryption_context: None,
+            ssekms_key_id: None,
+            server_side_encryption: None,
+            storage_class: Some(to_class.to_string()),
+            tagging: None,
+            tagging_directive: None,
+            website_redirect_location: None,
+        };
 
         unimplemented!()
     }
