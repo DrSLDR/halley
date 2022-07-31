@@ -241,99 +241,33 @@ impl S3Handler {
         }
     }
 
-    /// Copies an object to a given storage class
-    ///
-    /// Another internal helper function
-    async fn change_storage_class(
-        &self,
-        key: String,
-        to_class: StorageClass,
-    ) -> anyhow::Result<()> {
-        trace_call!(
-            "change_storage_class",
-            "called with key {:?}, class {:?}",
-            key,
-            to_class
-        );
-
-        match self
-            .client
-            .copy_object(CopyObjectRequest {
-                acl: None,
-                bucket: self.bucket.clone(),
-                bucket_key_enabled: None,
-                cache_control: None,
-                content_disposition: None,
-                content_encoding: None,
-                content_language: None,
-                content_type: None,
-                copy_source: format!("{}/{}", self.bucket.clone(), key.clone()),
-                copy_source_if_match: None,
-                copy_source_if_modified_since: None,
-                copy_source_if_none_match: None,
-                copy_source_if_unmodified_since: None,
-                copy_source_sse_customer_algorithm: None,
-                copy_source_sse_customer_key: None,
-                copy_source_sse_customer_key_md5: None,
-                expected_bucket_owner: None,
-                expected_source_bucket_owner: None,
-                expires: None,
-                grant_full_control: None,
-                grant_read: None,
-                grant_read_acp: None,
-                grant_write_acp: None,
-                key: key.clone(),
-                metadata: None,
-                metadata_directive: None,
-                object_lock_legal_hold_status: None,
-                object_lock_mode: None,
-                object_lock_retain_until_date: None,
-                request_payer: None,
-                sse_customer_algorithm: None,
-                sse_customer_key: None,
-                sse_customer_key_md5: None,
-                ssekms_encryption_context: None,
-                ssekms_key_id: None,
-                server_side_encryption: None,
-                storage_class: Some(to_class.to_string()),
-                tagging: None,
-                tagging_directive: None,
-                website_redirect_location: None,
-            })
-            .await
-        {
-            Ok(_) => Ok(()),
-            Err(e) => {
-                error!("Could not copy object! See debug log for more details.");
-                debug!("{:?}", e);
-                Err(anyhow::Error::new(e))
-            }
-        }
-    }
-
     /// Copies an object from [`GLACIER`] to [`STANDARD`]
     ///
     /// [`GLACIER`]: StorageClass::GLACIER
     /// [`STANDARD`]: StorageClass::STANDARD
     pub async fn restore_object(&self, key: String) -> anyhow::Result<()> {
         trace_call!("restore_object", "called with key {:?}", key);
-        match self.client.restore_object(RestoreObjectRequest {
-            bucket: self.bucket.clone(),
-            expected_bucket_owner: None,
-            key: key.clone(),
-            request_payer: None,
-            restore_request: None,
-            version_id: None,
-        }).await {
+        match self
+            .client
+            .restore_object(RestoreObjectRequest {
+                bucket: self.bucket.clone(),
+                expected_bucket_owner: None,
+                key: key.clone(),
+                request_payer: None,
+                restore_request: None,
+                version_id: None,
+            })
+            .await
+        {
             Ok(_) => {
                 debug!("Requested {} be restored", key);
                 Ok(())
-            },
+            }
             Err(e) => {
                 error!("Failed to restore object! See debug log for details.");
                 debug!("{:?}", e);
                 Err(anyhow::Error::new(e))
-            },
+            }
         }
     }
 
@@ -343,9 +277,23 @@ impl S3Handler {
     /// [`STANDARD`]: StorageClass::STANDARD
     pub async fn archive_object(&self, key: String) -> anyhow::Result<()> {
         trace_call!("archive_object", "called with key {:?}", key);
-        self.change_storage_class(key.clone(), StorageClass::GLACIER)
-            .await?;
-        debug!("Requested {} be archived", key);
-        Ok(())
+
+        let mut r = CopyObjectRequest::default();
+        r.bucket = self.bucket.clone();
+        r.copy_source = format!("{}/{}", self.bucket.clone(), key.clone());
+        r.key = key.clone();
+        r.storage_class = Some(StorageClass::STANDARD.to_string());
+
+        match self.client.copy_object(r).await {
+            Ok(_) => {
+                debug!("Requested {} be archived", key);
+                Ok(())
+            }
+            Err(e) => {
+                error!("Failed to copy object! See debug log for more details.");
+                debug!("{:?}", e);
+                Err(anyhow::Error::new(e))
+            }
+        }
     }
 }
