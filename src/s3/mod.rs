@@ -236,8 +236,12 @@ impl S3Handler {
         key: String,
         to_class: StorageClass,
     ) -> anyhow::Result<()> {
-        trace_call!("change_storage_class", "called with key {:?}, class {:?}", key, to_class);
-
+        trace_call!(
+            "change_storage_class",
+            "called with key {:?}, class {:?}",
+            key,
+            to_class
+        );
 
         unimplemented!()
     }
