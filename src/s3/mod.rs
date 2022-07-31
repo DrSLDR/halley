@@ -41,15 +41,13 @@ impl FromStr for StorageClass {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<StorageClass, Self::Err> {
-        if s == "STANDARD" {
-            Ok(StorageClass::STANDARD)
-        } else if s == "GLACIER" {
-            Ok(StorageClass::GLACIER)
-        } else {
-            Err(anyhow::Error::msg(format!(
+        match s {
+            "STANDARD" => Ok(StorageClass::STANDARD),
+            "GLACIER" => Ok(StorageClass::GLACIER),
+            _ => Err(anyhow::Error::msg(format!(
                 "StorageClass string {} could not be parsed",
                 s
-            )))
+            ))),
         }
     }
 }
