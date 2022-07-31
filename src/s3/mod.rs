@@ -209,8 +209,8 @@ impl S3Handler {
         }
         debug!("Collected items {:#?}", items);
         debug!(
-            "Vector utilization at {}% of initialization ({})",
-            { items.len() / self.alloc_size },
+            "Vector utilization at {:.1}% of initialization ({})",
+            { (items.len() as f32 / self.alloc_size as f32) * 100.0 },
             self.alloc_size
         );
 
