@@ -263,7 +263,7 @@ impl S3Handler {
                 content_encoding: None,
                 content_language: None,
                 content_type: None,
-                copy_source: key.to_owned(),
+                copy_source: format!("{}/{}", self.bucket.to_owned(), key.to_owned()),
                 copy_source_if_match: None,
                 copy_source_if_modified_since: None,
                 copy_source_if_none_match: None,
@@ -323,7 +323,8 @@ impl S3Handler {
     /// [`STANDARD`]: StorageClass::STANDARD
     pub async fn archive_object(&self, key: String) -> anyhow::Result<()> {
         trace_call!("archive_object", "called with key {:?}", key);
-        self.change_storage_class(key.to_owned(), StorageClass::GLACIER).await?;
+        self.change_storage_class(key.to_owned(), StorageClass::GLACIER)
+            .await?;
         debug!("Requested {} be archived", key);
         Ok(())
     }

@@ -30,8 +30,10 @@ pub async fn test_real() -> anyhow::Result<()> {
     });
 
     h.list_all_items().await?;
-    h.get_storage_class("foo/config".to_owned()).await?;
-    h.archive_object("foo/config".to_owned()).await?;
+    match h.get_storage_class("foo/config".to_owned()).await? {
+        s3::StorageClass::STANDARD => h.archive_object("foo/config".to_owned()).await?,
+        s3::StorageClass::GLACIER => h.restore_object("foo/config".to_owned()).await?,
+    }
 
     Ok(())
 }
