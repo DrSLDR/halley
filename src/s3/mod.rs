@@ -248,4 +248,11 @@ impl S3Handler {
 
         unimplemented!()
     }
+
+    /// Copies an object from [`STANDARD`] to [`GLACIER`]
+    pub async fn archive_object(&self, key: String) -> anyhow::Result<()> {
+        trace_call!("archive_object", "called with key {:?}", key);
+
+        unimplemented!()
+    }
 }
