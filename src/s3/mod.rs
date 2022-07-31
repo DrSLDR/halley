@@ -351,4 +351,46 @@ impl S3Handler {
 
         Ok(objects)
     }
+
+    /// Enumerates all objects and requests that they be restored. This function will
+    /// not return until all objects have been restored.
+    pub async fn restore_all_objects_blocking(&self) -> anyhow::Result<()> {
+        trace_call!("restore_all_objects_blocking");
+
+        let mut objects = self.restore_all_objects().await?;
+
+        if objects.is_empty() {
+            info!("No objects were in need of restoration, no need to block");
+            return Ok(());
+        }
+
+        let start = Instant::now();
+        let count = objects.len();
+        debug!("Stepping into restoration blocking loop");
+        'blocking: loop {
+            debug!("Sleeping for {:?}", self.hold_time);
+            thread::sleep(self.hold_time);
+
+            'inner: loop {
+                match objects.pop() {
+                    Some(o) => match self.get_storage_class(o.key.clone()).await? {
+                        StorageClass::STANDARD => debug!("{:?} successfully restored", o.key),
+                        StorageClass::GLACIER => {
+                            debug!("{:?} still archived, placing it back in the stack", o.key);
+                            objects.push(o);
+                            break 'inner;
+                        }
+                    },
+                    None => {
+                        debug!("Reached end of object list, breaking blocking loop");
+                        break 'blocking;
+                    }
+                }
+            }
+        }
+        let duration = start.elapsed();
+        info!("Restored {} objects in {:?}", count, duration);
+
+        Ok(())
+    }
 }
