@@ -37,7 +37,7 @@ impl std::fmt::Debug for S3Handler {
 }
 
 /// Defines the storage classes we can handle
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub(crate) enum StorageClass {
     STANDARD,
     GLACIER,
@@ -293,11 +293,19 @@ impl S3Handler {
     /// queried to be restored. If all objects are already restored, then nothing will
     /// be done.
     pub async fn restore_all_objects(&self) -> anyhow::Result<()> {
+        trace_call!("restore_all_objects");
+
+        let mut objects = self.list_all_objects().await?;
+        objects.retain(|o| o.class == StorageClass::GLACIER);
+
+
         unimplemented!()
     }
 
     /// Enumerates all objects and requests that they be archived
     pub async fn archive_all_objects(&self) -> anyhow::Result<()> {
+        trace_call!("archive_all_objects");
+
         unimplemented!()
     }
 }
