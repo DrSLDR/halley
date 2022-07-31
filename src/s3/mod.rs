@@ -67,6 +67,13 @@ impl ToString for StorageClass {
     }
 }
 
+/// Defines a object record, so we can track storage class straight away
+#[derive(Debug)]
+pub(crate) struct Object {
+    pub key: String,
+    pub class: StorageClass,
+}
+
 // Be mindful that sometimes requests just _fail_ on their own - consider handling
 // timeouts in a way that makes sense, rather than just failing them.
 
@@ -126,7 +133,7 @@ impl S3Handler {
     #[async_recursion]
     async fn list_objects(
         &self,
-        store: &mut Vec<String>,
+        store: &mut Vec<Object>,
         token: Option<String>,
     ) -> anyhow::Result<()> {
         trace_call!(
@@ -148,7 +155,19 @@ impl S3Handler {
             Ok(data) => match data.contents {
                 Some(contents) => {
                     for object in contents {
-                        store.push(object.key.unwrap())
+                        store.push(Object {
+                            key: object.key.clone().unwrap(),
+                            class: match object.storage_class {
+                                Some(class) => class.parse::<StorageClass>()?,
+                                None => {
+                                    warn!(
+                                        "Failed to get any storage class for {}, assuming STANDARD",
+                                        object.key.unwrap()
+                                    );
+                                    "STANDARD".parse::<StorageClass>()?
+                                }
+                            },
+                        })
                     }
                     match data.next_continuation_token {
                         Some(token) => self.list_objects(store, Some(token)).await,
@@ -172,9 +191,9 @@ impl S3Handler {
     }
 
     /// Collects a list of all keys in the given bucket and path
-    pub async fn list_all_items(&self) -> anyhow::Result<Vec<String>> {
+    pub async fn list_all_items(&self) -> anyhow::Result<Vec<Object>> {
         trace_call!("list_all_items", "called on {:?}", self);
-        let mut items: Vec<String> = Vec::with_capacity(self.alloc_size);
+        let mut items: Vec<Object> = Vec::with_capacity(self.alloc_size);
         self.list_objects(&mut items, None).await?;
 
         info!("Listed {} items in {:?}", items.len(), self);
