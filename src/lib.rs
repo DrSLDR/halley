@@ -29,7 +29,8 @@ pub async fn test_real() -> anyhow::Result<()> {
         },
     });
 
-    h.list_all_objects().await?;
+    // h.list_all_objects().await?;
+    h.restore_all_objects().await?;
 
     Ok(())
 }

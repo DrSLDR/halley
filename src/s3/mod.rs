@@ -12,6 +12,7 @@ use crate::types::S3Repo;
 
 use std::str::FromStr;
 use std::string::ToString;
+use std::time::{Duration, Instant};
 
 use async_recursion::async_recursion;
 use rusoto_core::{credential, Client};
@@ -292,14 +293,24 @@ impl S3Handler {
     /// The function guarantees that only the objects not already restored will be
     /// queried to be restored. If all objects are already restored, then nothing will
     /// be done.
-    pub async fn restore_all_objects(&self) -> anyhow::Result<()> {
+    ///
+    /// Returns a list of objects that has been queried, which may be empty.
+    pub async fn restore_all_objects(&self) -> anyhow::Result<Vec<Object>> {
         trace_call!("restore_all_objects");
+        let start = Instant::now();
 
         let mut objects = self.list_all_objects().await?;
         objects.retain(|o| o.class == StorageClass::GLACIER);
 
+        for object in objects.iter() {
+            self.restore_object(object.key.clone()).await?;
+        };
 
-        unimplemented!()
+        let duration = start.elapsed();
+
+        info!("Requested restoration of {} objects in {:?}", objects.len(), duration);
+
+        Ok(objects)
     }
 
     /// Enumerates all objects and requests that they be archived
