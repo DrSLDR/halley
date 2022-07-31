@@ -286,4 +286,18 @@ impl S3Handler {
             }
         }
     }
+
+    /// Enumerates all objects and requests that they be restored
+    ///
+    /// The function guarantees that only the objects not already restored will be
+    /// queried to be restored. If all objects are already restored, then nothing will
+    /// be done.
+    pub async fn restore_all_objects(&self) -> anyhow::Result<()> {
+        unimplemented!()
+    }
+
+    /// Enumerates all objects and requests that they be archived
+    pub async fn archive_all_objects(&self) -> anyhow::Result<()> {
+        unimplemented!()
+    }
 }
