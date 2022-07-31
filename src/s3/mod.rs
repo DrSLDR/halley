@@ -273,7 +273,7 @@ impl S3Handler {
         r.bucket = self.bucket.clone();
         r.copy_source = format!("{}/{}", self.bucket.clone(), key.clone());
         r.key = key.clone();
-        r.storage_class = Some(StorageClass::STANDARD.to_string());
+        r.storage_class = Some(StorageClass::GLACIER.to_string());
 
         match self.client.copy_object(r).await {
             Ok(_) => {
