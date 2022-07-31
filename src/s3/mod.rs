@@ -10,6 +10,8 @@ mod tests;
 use crate::trace_call;
 use crate::types::S3Repo;
 
+use std::str::FromStr;
+
 use async_recursion::async_recursion;
 use rusoto_core::{credential, Client};
 use rusoto_s3::{HeadBucketRequest, HeadObjectRequest, ListObjectsV2Request, S3Client, S3};
@@ -26,6 +28,29 @@ pub(crate) struct S3Handler {
 impl std::fmt::Debug for S3Handler {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         f.debug_struct("S3Handler").field("url", &self.url).finish()
+    }
+}
+
+#[derive(Debug)]
+pub(crate) enum StorageClass {
+    STANDARD,
+    GLACIER,
+}
+
+impl FromStr for StorageClass {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<StorageClass, Self::Err> {
+        if s == "STANDARD" {
+            Ok(StorageClass::STANDARD)
+        } else if s == "GLACIER" {
+            Ok(StorageClass::GLACIER)
+        } else {
+            Err(anyhow::Error::msg(format!(
+                "StorageClass string {} could not be parsed",
+                s
+            )))
+        }
     }
 }
 
@@ -149,7 +174,7 @@ impl S3Handler {
         Ok(items)
     }
 
-    pub async fn get_storage_class(&self, key: String) -> anyhow::Result<String> {
+    pub async fn get_storage_class(&self, key: String) -> anyhow::Result<StorageClass> {
         trace_call!("get_storage_class", "called with {:?}", key);
         match self
             .client
@@ -174,10 +199,13 @@ impl S3Handler {
             Ok(head) => {
                 debug!("{:#?}", head);
                 match head.storage_class {
-                    Some(class) => Ok(class),
+                    Some(class) => Ok(class.parse::<StorageClass>()?),
                     None => {
-                        warn!("Failed to get any storage class for {}, assuming STANDARD", key);
-                        Ok("STANDARD".to_string())
+                        warn!(
+                            "Failed to get any storage class for {}, assuming STANDARD",
+                            key
+                        );
+                        Ok("STANDARD".parse::<StorageClass>()?)
                     }
                 }
             }
