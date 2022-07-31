@@ -191,8 +191,8 @@ impl S3Handler {
     }
 
     /// Collects a list of all keys in the given bucket and path
-    pub async fn list_all_items(&self) -> anyhow::Result<Vec<Object>> {
-        trace_call!("list_all_items", "called on {:?}", self);
+    pub async fn list_all_objects(&self) -> anyhow::Result<Vec<Object>> {
+        trace_call!("list_all_objects", "called on {:?}", self);
         let mut items: Vec<Object> = Vec::with_capacity(self.alloc_size);
         self.list_objects(&mut items, None).await?;
 

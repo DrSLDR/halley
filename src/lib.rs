@@ -29,7 +29,7 @@ pub async fn test_real() -> anyhow::Result<()> {
         },
     });
 
-    h.list_all_items().await?;
+    h.list_all_objects().await?;
 
     Ok(())
 }
