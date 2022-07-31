@@ -17,6 +17,7 @@ use rusoto_core::{credential, Client};
 use rusoto_s3::{HeadBucketRequest, HeadObjectRequest, ListObjectsV2Request, S3Client, S3};
 use tracing::{debug, error, info, trace, trace_span, warn};
 
+/// Stateful struct containing the `S3Client` and relevant helper data
 pub(crate) struct S3Handler {
     url: String,
     bucket: String,
@@ -31,6 +32,7 @@ impl std::fmt::Debug for S3Handler {
     }
 }
 
+/// Defines the storage classes we can handle
 #[derive(Debug)]
 pub(crate) enum StorageClass {
     STANDARD,
@@ -74,6 +76,7 @@ impl S3Handler {
         }
     }
 
+    /// Tests whether the related bucket exists
     pub async fn bucket_exists(&self) -> bool {
         trace_call!("bucket_exists", "called on {:?}", self);
         let response = self
@@ -96,6 +99,14 @@ impl S3Handler {
         }
     }
 
+    /// Actually calls S3 to gather all the objects in the bucket, possibly in the given
+    /// path.
+    ///
+    /// This is an internal helper function which is async recursive, which is all sorts
+    /// of fun. This is due to the (potential) necessity of handling a
+    /// `continuation_token`, since a call will only return up to 1000 items.
+    ///
+    /// The data itself is added to the mutable `store` vector passed in.
     #[async_recursion]
     async fn list_objects(
         &self,
@@ -153,6 +164,7 @@ impl S3Handler {
         }
     }
 
+    /// Collects a list of all keys in the given bucket and path
     pub async fn list_all_items(&self) -> anyhow::Result<Vec<String>> {
         trace_call!("list_all_items", "called on {:?}", self);
         let mut items: Vec<String> = Vec::with_capacity(self.alloc_size);
@@ -172,6 +184,7 @@ impl S3Handler {
         Ok(items)
     }
 
+    /// Gets the [`StorageClass`] of the given key
     pub async fn get_storage_class(&self, key: String) -> anyhow::Result<StorageClass> {
         trace_call!("get_storage_class", "called with {:?}", key);
         match self
