@@ -304,11 +304,15 @@ impl S3Handler {
 
         for object in objects.iter() {
             self.restore_object(object.key.clone()).await?;
-        };
+        }
 
         let duration = start.elapsed();
 
-        info!("Requested restoration of {} objects in {:?}", objects.len(), duration);
+        info!(
+            "Requested restoration of {} objects in {:?}",
+            objects.len(),
+            duration
+        );
 
         Ok(objects)
     }
@@ -329,11 +333,15 @@ impl S3Handler {
 
         for object in objects.iter() {
             self.archive_object(object.key.clone()).await?;
-        };
+        }
 
         let duration = start.elapsed();
 
-        info!("Requested archival of {} objects in {:?}", objects.len(), duration);
+        info!(
+            "Requested archival of {} objects in {:?}",
+            objects.len(),
+            duration
+        );
 
         Ok(objects)
     }
