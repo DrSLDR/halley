@@ -227,4 +227,25 @@ impl S3Handler {
             }
         }
     }
+
+    /// Copies an object to a given storage class
+    ///
+    /// Another internal helper function
+    async fn change_storage_class(
+        &self,
+        key: String,
+        to_class: StorageClass,
+    ) -> anyhow::Result<()> {
+        trace_call!("change_storage_class", "called with key {:?}, class {:?}", key, to_class);
+
+
+        unimplemented!()
+    }
+
+    /// Copies an object from [`GLACIER`] to [`STANDARD`]
+    pub async fn restore_object(&self, key: String) -> anyhow::Result<()> {
+        trace_call!("restore_object", "called with key {:?}", key);
+
+        unimplemented!()
+    }
 }
