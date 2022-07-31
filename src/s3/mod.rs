@@ -247,6 +247,9 @@ impl S3Handler {
     }
 
     /// Copies an object from [`GLACIER`] to [`STANDARD`]
+    ///
+    /// [`GLACIER`]: StorageClass::GLACIER
+    /// [`STANDARD`]: StorageClass::STANDARD
     pub async fn restore_object(&self, key: String) -> anyhow::Result<()> {
         trace_call!("restore_object", "called with key {:?}", key);
 
@@ -254,6 +257,9 @@ impl S3Handler {
     }
 
     /// Copies an object from [`STANDARD`] to [`GLACIER`]
+    ///
+    /// [`GLACIER`]: StorageClass::GLACIER
+    /// [`STANDARD`]: StorageClass::STANDARD
     pub async fn archive_object(&self, key: String) -> anyhow::Result<()> {
         trace_call!("archive_object", "called with key {:?}", key);
 
