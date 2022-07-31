@@ -219,19 +219,16 @@ impl S3Handler {
             })
             .await
         {
-            Ok(head) => {
-                debug!("{:#?}", head);
-                match head.storage_class {
-                    Some(class) => Ok(class.parse::<StorageClass>()?),
-                    None => {
-                        warn!(
-                            "Failed to get any storage class for {}, assuming STANDARD",
-                            key
-                        );
-                        Ok("STANDARD".parse::<StorageClass>()?)
-                    }
+            Ok(head) => match head.storage_class {
+                Some(class) => Ok(class.parse::<StorageClass>()?),
+                None => {
+                    warn!(
+                        "Failed to get any storage class for {}, assuming STANDARD",
+                        key
+                    );
+                    Ok("STANDARD".parse::<StorageClass>()?)
                 }
-            }
+            },
             Err(e) => {
                 error!("Could not head object! See debug log for more details.");
                 debug!("{:?}", e);
