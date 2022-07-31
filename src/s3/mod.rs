@@ -314,6 +314,12 @@ impl S3Handler {
     }
 
     /// Enumerates all objects and requests that they be archived
+    ///
+    /// The function guarantees that only the objects not already archived will be
+    /// queried to be archived. If all objects are already archived, then nothing will
+    /// be done.
+    ///
+    /// Returns a list of objects that has been queried, which may be empty.
     pub async fn archive_all_objects(&self) -> anyhow::Result<Vec<Object>> {
         trace_call!("archive_all_objects");
         let start = Instant::now();
