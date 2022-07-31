@@ -16,7 +16,8 @@ use std::string::ToString;
 use async_recursion::async_recursion;
 use rusoto_core::{credential, Client};
 use rusoto_s3::{
-    CopyObjectRequest, HeadBucketRequest, HeadObjectRequest, ListObjectsV2Request, S3Client, S3,
+    CopyObjectRequest, HeadBucketRequest, HeadObjectRequest, ListObjectsV2Request,
+    RestoreObjectRequest, S3Client, S3,
 };
 use tracing::{debug, error, info, trace, trace_span, warn};
 
@@ -316,8 +317,24 @@ impl S3Handler {
     /// [`STANDARD`]: StorageClass::STANDARD
     pub async fn restore_object(&self, key: String) -> anyhow::Result<()> {
         trace_call!("restore_object", "called with key {:?}", key);
-
-        unimplemented!()
+        match self.client.restore_object(RestoreObjectRequest {
+            bucket: self.bucket.clone(),
+            expected_bucket_owner: None,
+            key: key.clone(),
+            request_payer: None,
+            restore_request: None,
+            version_id: None,
+        }).await {
+            Ok(_) => {
+                debug!("Requested {} be restored", key);
+                Ok(())
+            },
+            Err(e) => {
+                error!("Failed to restore object! See debug log for details.");
+                debug!("{:?}", e);
+                Err(anyhow::Error::new(e))
+            },
+        }
     }
 
     /// Copies an object from [`STANDARD`] to [`GLACIER`]
