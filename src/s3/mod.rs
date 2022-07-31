@@ -218,7 +218,7 @@ impl S3Handler {
         }
     }
 
-    /// Copies an object from [`GLACIER`] to [`STANDARD`]
+    /// Restores an object from [`GLACIER`] to [`STANDARD`]
     ///
     /// [`GLACIER`]: StorageClass::GLACIER
     /// [`STANDARD`]: StorageClass::STANDARD
