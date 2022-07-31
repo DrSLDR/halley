@@ -12,6 +12,7 @@ use crate::types::S3Repo;
 
 use std::str::FromStr;
 use std::string::ToString;
+use std::thread;
 use std::time::{Duration, Instant};
 
 use async_recursion::async_recursion;
@@ -28,6 +29,7 @@ pub(crate) struct S3Handler {
     bucket: String,
     prefix: Option<String>,
     alloc_size: usize,
+    hold_time: Duration,
     client: S3Client,
 }
 
@@ -89,6 +91,10 @@ impl S3Handler {
             alloc_size: {
                 warn!("Still using hardcoded, default item vector capacity!");
                 1024
+            },
+            hold_time: {
+                warn!("Still using hardcoded, default hold time!");
+                Duration::from_secs(15)
             },
             client: S3Client::new_with_client(
                 Client::new_with(
