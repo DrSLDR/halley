@@ -383,23 +383,16 @@ impl S3Handler {
         //     .build()
         //     .unwrap();
 
-        let rt = tokio::runtime::Handle::current();
-
         let _n: Vec<_> = objects
             .iter()
             .map(|o| {
                 let k = o.key.clone();
-                let c = self.client.clone();
-                let b = self.bucket.clone();
-                rt.spawn(async {
-                    archive_object_ext(c, k, b)
-                        .await
-                        .expect("Failed a parallel archive request")
+                let h = self.clone();
+                tokio::spawn(async move {
+                    h.archive_object(k).await.expect("Failed a parallel archive request")
                 })
             })
             .collect();
-
-        drop(rt);
 
         let duration = start.elapsed();
 
