@@ -8,7 +8,7 @@
 mod tests;
 
 use crate::trace_call;
-use crate::types::S3Repo;
+use crate::types::{AWSKey, RepoCommon, S3Repo};
 
 use std::future::Future;
 use std::pin::Pin;
@@ -32,6 +32,7 @@ pub(crate) struct S3Handler {
     url: String,
     bucket: String,
     prefix: Option<String>,
+    _repo: S3Repo,
     alloc_size: usize,
     hold_time: Duration,
     client: S3Client,
@@ -40,6 +41,24 @@ pub(crate) struct S3Handler {
 impl std::fmt::Debug for S3Handler {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         f.debug_struct("S3Handler").field("url", &self.url).finish()
+    }
+}
+
+impl Clone for S3Handler {
+    fn clone(&self) -> Self {
+        Self::new(S3Repo {
+            url: self._repo.url.clone(),
+            bucket: self.bucket.clone(),
+            region: self._repo.region.clone(),
+            path: self.prefix.clone(),
+            key: AWSKey {
+                id: self._repo.key.id.clone(),
+                secret: self._repo.key.secret.clone(),
+            },
+            common: RepoCommon {
+                passwd: self._repo.common.passwd.clone(),
+            },
+        })
     }
 }
 
@@ -90,8 +109,8 @@ impl S3Handler {
         trace_call!("new", "called with {:?}", repo);
         S3Handler {
             url: repo.render_full_url(),
-            bucket: repo.bucket,
-            prefix: repo.path,
+            bucket: repo.bucket.clone(),
+            prefix: repo.path.clone(),
             alloc_size: {
                 warn!("Still using hardcoded, default item vector capacity!");
                 1024
@@ -102,11 +121,15 @@ impl S3Handler {
             },
             client: S3Client::new_with_client(
                 Client::new_with(
-                    credential::StaticProvider::new_minimal(repo.key.id, repo.key.secret),
+                    credential::StaticProvider::new_minimal(
+                        repo.key.id.clone(),
+                        repo.key.secret.clone(),
+                    ),
                     rusoto_core::HttpClient::new().unwrap(),
                 ),
-                repo.region,
+                repo.region.clone(),
             ),
+            _repo: repo,
         }
     }
 
