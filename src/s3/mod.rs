@@ -35,6 +35,7 @@ pub(crate) struct S3Handler {
     _repo: S3Repo,
     alloc_size: usize,
     hold_time: Duration,
+    concurrent_tasks: usize,
     client: S3Client,
 }
 
@@ -118,6 +119,10 @@ impl S3Handler {
             hold_time: {
                 warn!("Still using hardcoded, default hold time!");
                 Duration::from_secs(15)
+            },
+            concurrent_tasks: {
+                warn!("Still using hardcoded, default concurrent tasks count!");
+                1
             },
             client: S3Client::new_with_client(
                 Client::new_with(
