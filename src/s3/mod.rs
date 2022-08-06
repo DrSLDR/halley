@@ -304,7 +304,11 @@ impl S3Handler {
     /// [`STANDARD`]: StorageClass::STANDARD
     pub async fn archive_object(&self, key: String) -> anyhow::Result<()> {
         trace_call!("archive_object", "called with key {:?}", key);
+        self.nospan_archive_object(key).await
+    }
 
+    /// [`archive_object`] without span logging
+    async fn nospan_archive_object(&self, key: String) -> anyhow::Result<()> {
         let mut r = CopyObjectRequest::default();
         r.bucket = self.bucket.clone();
         r.copy_source = format!("{}/{}", self.bucket.clone(), key.clone());
@@ -393,7 +397,7 @@ impl S3Handler {
                 let h = self.clone();
                 tokio::spawn(async move {
                     for object in objects_subset {
-                        h.archive_object(object.key)
+                        h.nospan_archive_object(object.key)
                             .await
                             .expect("Failed a parallel archive task");
                     }
