@@ -392,8 +392,6 @@ impl S3Handler {
 
                 let h = self.clone();
                 tokio::spawn(async move {
-                    let span = trace_span!("archive_task_{}", i);
-                    let _enter = span.enter();
                     for object in objects_subset {
                         h.archive_object(object.key)
                             .await
