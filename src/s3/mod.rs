@@ -64,7 +64,7 @@ impl Clone for S3Handler {
 }
 
 /// Defines the storage classes we can handle
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub(crate) enum StorageClass {
     STANDARD,
     GLACIER,
@@ -95,7 +95,7 @@ impl ToString for StorageClass {
 }
 
 /// Defines a object record, so we can track storage class straight away
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Object {
     pub key: String,
     pub class: StorageClass,
