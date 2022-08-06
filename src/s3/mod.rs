@@ -25,6 +25,7 @@ use rusoto_s3::{
     RestoreObjectRequest, S3Client, S3,
 };
 use tokio;
+use tokio::task::JoinHandle;
 use tracing::{debug, error, info, trace, trace_span, warn};
 
 /// Stateful struct containing the `S3Client` and relevant helper data
@@ -369,35 +370,45 @@ impl S3Handler {
         let mut objects = self.list_all_objects().await?;
         // objects.retain(|o| o.class != StorageClass::GLACIER);
 
-        // for object in objects.iter() {
-        //     self.archive_object(object.key.clone()).await?;
-        // }
+        let handles = (0..self.concurrent_tasks)
+            .into_iter()
+            .map(|i: usize| {
+                debug!(
+                    "Creating object iterator {} of {}, starting from index {}",
+                    i + 1,
+                    self.concurrent_tasks,
+                    i
+                );
+                let mut iter = objects.iter();
+                for _ in 0..i {
+                    iter.next();
+                }
+                debug!(
+                    "Creating subset vector from step size {}",
+                    self.concurrent_tasks
+                );
+                let objects_subset: Vec<Object> = iter
+                    .step_by(self.concurrent_tasks)
+                    .map(|o| o.clone())
+                    .collect();
+                debug!("Got subset vector of length {}", objects_subset.len());
 
-        // let n = objects
-        //     .par_iter()
-        //     .for_each(|o| {
-        //         let mut fut = self.archive_object(o.key.clone());
-        //         let pin = Box::pin(&mut fut);
-        //         pin.poll();
-        //         // loop {
-        //         // }
-        //     });
-
-        // let rt = tokio::runtime::Builder::new_current_thread()
-        //     .max_blocking_threads(64)
-        //     .build()
-        //     .unwrap();
-
-        let _n: Vec<_> = objects
-            .iter()
-            .map(|o| {
-                let k = o.key.clone();
                 let h = self.clone();
                 tokio::spawn(async move {
-                    h.archive_object(k).await.expect("Failed a parallel archive request")
+                    let span = trace_span!("archive_task_{}", i);
+                    let _enter = span.enter();
+                    for object in objects_subset {
+                        h.archive_object(object.key)
+                            .await
+                            .expect("Failed a parallel archive task");
+                    }
                 })
             })
-            .collect();
+            .collect::<Vec<JoinHandle<()>>>();
+
+        for handle in handles {
+            handle.await?
+        }
 
         let duration = start.elapsed();
 
