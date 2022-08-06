@@ -7,7 +7,6 @@ use halley::*;
 async fn main() -> anyhow::Result<()> {
     #[cfg(debug_assertions)]
     tracing_subscriber::fmt()
-        .pretty()
         .with_max_level(Level::TRACE)
         .init();
     #[cfg(not(debug_assertions))]
