@@ -10,15 +10,12 @@ mod tests;
 use crate::trace_call;
 use crate::types::{AWSKey, RepoCommon, S3Repo};
 
-use std::future::Future;
-use std::pin::Pin;
 use std::str::FromStr;
 use std::string::ToString;
 use std::thread;
 use std::time::{Duration, Instant};
 
 use async_recursion::async_recursion;
-use rayon::prelude::*;
 use rusoto_core::{credential, Client};
 use rusoto_s3::{
     CopyObjectRequest, HeadBucketRequest, HeadObjectRequest, ListObjectsV2Request,
@@ -461,37 +458,5 @@ impl S3Handler {
         info!("Restored {} objects in {:?}", count, duration);
 
         Ok(())
-    }
-}
-
-/// Struct-external implementation of [`archive_object`]
-///
-/// This will, in theory, allow us to execute it in asynchronous parallel
-///
-/// [`archive_object`]: S3Handler::archive_object
-async fn archive_object_ext(client: S3Client, key: String, bucket: String) -> anyhow::Result<()> {
-    trace_call!(
-        "archive_object_ext",
-        "called with key {:?}, bucket {:?}",
-        key,
-        bucket
-    );
-
-    let mut r = CopyObjectRequest::default();
-    r.bucket = bucket.clone();
-    r.copy_source = format!("{}/{}", bucket.clone(), key.clone());
-    r.key = key.clone();
-    r.storage_class = Some(StorageClass::GLACIER.to_string());
-
-    match client.copy_object(r).await {
-        Ok(_) => {
-            debug!("Requested {} be archived", key);
-            Ok(())
-        }
-        Err(e) => {
-            error!("Failed to copy object! See debug log for more details.");
-            debug!("{:?}", e);
-            Err(anyhow::Error::new(e))
-        }
     }
 }
