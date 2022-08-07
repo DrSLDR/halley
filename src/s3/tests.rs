@@ -57,27 +57,27 @@ macro_rules! s3h {
 #[tokio::test]
 async fn bucket_exists() {
     let h = s3h!();
-    assert!(h.bucket_exists().await);
+    assert!(h.bucket_exists().await.unwrap());
 
     let rd = MockRequestDispatcher::with_status(403);
     let h = s3h!(rd);
-    assert!(!h.bucket_exists().await);
+    assert!(!h.bucket_exists().await.unwrap());
 
     let rd = MockRequestDispatcher::with_status(404);
     let h = s3h!(rd);
-    assert!(!h.bucket_exists().await);
+    assert!(!h.bucket_exists().await.unwrap());
 
     let rd = MultipleMockRequestDispatcher::new([
         MockRequestDispatcher::with_status(500),
         MockRequestDispatcher::default(),
     ]);
     let h = s3h!(rd);
-    assert!(h.bucket_exists().await);
+    assert!(h.bucket_exists().await.unwrap());
 
     let rd = MultipleMockRequestDispatcher::new([
         MockRequestDispatcher::with_status(408),
         MockRequestDispatcher::default(),
     ]);
     let h = s3h!(rd);
-    assert!(h.bucket_exists().await);
+    assert!(h.bucket_exists().await.unwrap());
 }

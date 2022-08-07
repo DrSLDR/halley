@@ -144,7 +144,7 @@ impl S3Handler {
     }
 
     /// Tests whether the related bucket exists
-    pub async fn bucket_exists(&self) -> bool {
+    pub async fn bucket_exists(&self) -> anyhow::Result<bool> {
         trace_call!("bucket_exists", "called on {:?}", self);
         let response = self
             .client
@@ -156,12 +156,12 @@ impl S3Handler {
         match response {
             Ok(()) => {
                 debug!("Bucket {} exists", &self.bucket);
-                true
+                Ok(true)
             }
             Err(e) => {
                 error!("Checking for bucket existence failed! See debug log for more details.");
                 debug!("{:?}", e);
-                false
+                Ok(false)
             }
         }
     }
