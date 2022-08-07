@@ -106,6 +106,22 @@ impl S3Handler {
     /// Creates a new [`S3Handler`] which can be used to communicate with a given repository.
     pub fn new(repo: S3Repo) -> S3Handler {
         trace_call!("new", "called with {:?}", repo);
+        let client = S3Client::new_with_client(
+            Client::new_with(
+                credential::StaticProvider::new_minimal(
+                    repo.key.id.clone(),
+                    repo.key.secret.clone(),
+                ),
+                rusoto_core::HttpClient::new().unwrap(),
+            ),
+            repo.region.clone(),
+        );
+        S3Handler::new_with_client(repo, client)
+    }
+
+    /// Creates a new [`S3Handler`] with a given internal `S3Client`
+    pub fn new_with_client(repo: S3Repo, client: S3Client) -> S3Handler {
+        trace_call!("new_with_client", "called with {:?}", repo);
         S3Handler {
             url: repo.render_full_url(),
             bucket: repo.bucket.clone(),
@@ -122,16 +138,7 @@ impl S3Handler {
                 warn!("Still using hardcoded, default concurrent tasks count!");
                 1
             },
-            client: S3Client::new_with_client(
-                Client::new_with(
-                    credential::StaticProvider::new_minimal(
-                        repo.key.id.clone(),
-                        repo.key.secret.clone(),
-                    ),
-                    rusoto_core::HttpClient::new().unwrap(),
-                ),
-                repo.region.clone(),
-            ),
+            client,
             _repo: repo,
         }
     }
