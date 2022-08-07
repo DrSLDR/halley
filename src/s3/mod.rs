@@ -154,12 +154,18 @@ impl S3Handler {
     }
 
     /// Calls the client, retrying if certain errors occur
-    async fn call_retrying<F, A, O, E>(&self, f: F, args: A) -> Result<O, RusotoError<E>>
-    where
-        F: Fn(A) -> Result<O, RusotoError<E>>,
-    {
+    async fn call_retrying<'l, 'a, A, O, E>(
+        &'l self,
+        f: fn(
+            &'l S3Client,
+            A,
+        ) -> std::pin::Pin<
+            Box<dyn std::future::Future<Output = Result<O, RusotoError<E>>> + Send + 'a>,
+        >,
+        args: A,
+    ) -> Result<O, RusotoError<E>> {
         for _ in 0..self.retry_count {
-            match f(args) {
+            match f(&self.client, args).await {
                 Ok(o) => return Ok(o),
                 Err(e) => unimplemented!(),
             }
