@@ -14,6 +14,7 @@ use crate::trace_call;
 use crate::types::{AWSKey, RepoCommon, S3Repo};
 
 use std::rc::Rc;
+use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -253,16 +254,24 @@ impl S3Handler {
             token
         );
 
-        let mut r = ListObjectsV2Request::default();
-        r.bucket = self.bucket.clone();
-        r.continuation_token = token;
-        r.prefix = match &self.prefix {
-            Some(s) => Some(s.clone()),
-            None => None,
+        let bucket = Arc::new(self.bucket.clone());
+        let token = Arc::new(token.clone());
+        let g = || {
+            let mut r = ListObjectsV2Request::default();
+            r.bucket = bucket.to_string();
+            r.continuation_token = match &*token {
+                Some(s) => Some(s.clone()),
+                None => None
+            };
+            r.prefix = match &self.prefix {
+                Some(s) => Some(s.clone()),
+                None => None,
+            };
+            r
         };
 
-        match self.client.list_objects_v2(r).await {
-            Ok(data) => match data.contents {
+        match self.call_retrying(S3Client::list_objects_v2, g).await {
+            Some(Ok(data)) => match data.contents {
                 Some(contents) => {
                     for object in contents {
                         store.push(Object {
@@ -292,10 +301,16 @@ impl S3Handler {
                     Ok(())
                 }
             },
-            Err(e) => {
+            Some(Err(e)) => {
                 error!("Failed to list items! See debug log for more details.");
                 debug!("{:?}", e);
                 Err(anyhow::Error::new(e))
+            },
+            None => {
+                error!("Listing objects did not complete successfully! See debug log for more details.");
+                Err(anyhow::Error::msg(
+                    "Listing objects ran out of retries",
+                ))
             }
         }
     }

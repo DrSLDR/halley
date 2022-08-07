@@ -92,4 +92,22 @@ async fn list_all_objects() {
     let v = h.list_all_objects().await;
     assert!(v.is_ok());
     assert!(v.unwrap().is_empty());
+
+    for code in retry_http!() {
+        let rd = MultipleMockRequestDispatcher::new([
+            MockRequestDispatcher::with_status(code),
+            MockRequestDispatcher::default(),
+        ]);
+        let h = s3h!(rd);
+        assert!(h.list_all_objects().await.is_ok())
+    }
+
+    for code in fail_http!() {
+        let rd = MultipleMockRequestDispatcher::new([
+            MockRequestDispatcher::with_status(code),
+            MockRequestDispatcher::default(),
+        ]);
+        let h = s3h!(rd);
+        assert!(h.list_all_objects().await.is_err());
+    }
 }
