@@ -197,33 +197,29 @@ impl S3Handler {
             r
         };
         match self.call_retrying(S3Client::head_bucket, g).await {
-            Some(r) => {
-                match r {
-                    Ok(()) => {
-                        debug!("Bucket {} exists", &self.bucket);
-                        Ok(true)
-                    }
-                    Err(e) => match e {
-                        RusotoError::Unknown(http) => match http.status.as_u16() {
-                            404 => {
-                                error!("Bucket {} does not exist", &self.bucket);
-                                Ok(false)
-                            }
-                            _ => {
-                                debug!("Unhandleable HTTP status");
-                                Err(anyhow::Error::new(RusotoError::Unknown::<
-                                    rusoto_s3::HeadBucketError,
-                                >(http)))
-                            }
-                        },
-                        _ => {
-                            error!("Checking for bucket existence failed! See debug log for more details.");
-                            debug!("{:?}", e);
-                            Err(anyhow::Error::new(e))
-                        }
-                    },
-                }
+            Some(Ok(())) => {
+                debug!("Bucket {} exists", &self.bucket);
+                Ok(true)
             }
+            Some(Err(e)) => match e {
+                RusotoError::Unknown(http) => match http.status.as_u16() {
+                    404 => {
+                        error!("Bucket {} does not exist", &self.bucket);
+                        Ok(false)
+                    }
+                    _ => {
+                        debug!("Unhandleable HTTP status");
+                        Err(anyhow::Error::new(RusotoError::Unknown::<
+                            rusoto_s3::HeadBucketError,
+                        >(http)))
+                    }
+                },
+                _ => {
+                    error!("Checking for bucket existence failed! See debug log for more details.");
+                    debug!("{:?}", e);
+                    Err(anyhow::Error::new(e))
+                }
+            },
             None => {
                 error!("Checking for bucket existence did not complete successfully! See debug log for more details.");
                 Err(anyhow::Error::msg(
@@ -261,7 +257,7 @@ impl S3Handler {
             r.bucket = bucket.to_string();
             r.continuation_token = match &*token {
                 Some(s) => Some(s.clone()),
-                None => None
+                None => None,
             };
             r.prefix = match &self.prefix {
                 Some(s) => Some(s.clone()),
@@ -305,12 +301,10 @@ impl S3Handler {
                 error!("Failed to list items! See debug log for more details.");
                 debug!("{:?}", e);
                 Err(anyhow::Error::new(e))
-            },
+            }
             None => {
                 error!("Listing objects did not complete successfully! See debug log for more details.");
-                Err(anyhow::Error::msg(
-                    "Listing objects ran out of retries",
-                ))
+                Err(anyhow::Error::msg("Listing objects ran out of retries"))
             }
         }
     }
