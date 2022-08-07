@@ -154,7 +154,7 @@ impl S3Handler {
     }
 
     /// Calls the client, retrying if certain errors occur
-    async fn call_retrying<'l, 'a, A, O, E>(
+    async fn call_retrying<'l, 'a, A, G, O, E>(
         &'l self,
         f: fn(
             &'l S3Client,
@@ -162,39 +162,43 @@ impl S3Handler {
         ) -> std::pin::Pin<
             Box<dyn std::future::Future<Output = Result<O, RusotoError<E>>> + Send + 'a>,
         >,
-        args: A,
-    ) -> Result<O, RusotoError<E>> {
+        generator: G,
+    ) -> Result<O, RusotoError<E>>
+    where
+        G: Fn() -> A,
+    {
         trace_call!("call_retrying", "called for fptr {:?}", f);
         for _ in 0..self.retry_count {
+            let args = generator();
             match f(&self.client, args).await {
                 Ok(o) => return Ok(o),
                 Err(e) => match e {
                     RusotoError::Service(e) => {
                         debug!("Caught a service error, bailing out");
                         return Err(RusotoError::Service(e));
-                    },
+                    }
                     RusotoError::HttpDispatch(e) => {
                         debug!("Caught a dispatch error ({:?}), sleeping and retrying", e);
-                    },
+                    }
                     RusotoError::Credentials(e) => {
                         debug!("Caught a credentials error ({:?}), bailing out", e);
                         return Err(RusotoError::Credentials(e));
-                    },
+                    }
                     RusotoError::Validation(e) => {
                         debug!("Caught a validation error ({:?}), bailing out", e);
                         return Err(RusotoError::Validation(e));
-                    },
+                    }
                     RusotoError::ParseError(e) => {
                         debug!("Caught a parse error ({:?}), sleeping and retrying", e);
-                    },
-                    RusotoError::Unknown(e) => {
-                        debug!("Caught a unknown error ({:?}), bailing out", e);
-                        return Err(RusotoError::Unknown(e));
                     }
                     RusotoError::Blocking => {
                         warn!("Caught a blocking error, which really should never happen");
                     }
-                }
+                    RusotoError::Unknown(e) => {
+                        debug!("Caught a unknown error ({:?}), bailing out", e);
+                        return Err(RusotoError::Unknown(e));
+                    }
+                },
             }
 
             thread::sleep(self.retry_wait);
@@ -205,9 +209,14 @@ impl S3Handler {
     /// Tests whether the related bucket exists
     pub async fn bucket_exists(&self) -> anyhow::Result<bool> {
         trace_call!("bucket_exists", "called on {:?}", self);
-        let mut r = HeadBucketRequest::default();
-        r.bucket = self.bucket.clone();
-        match self.call_retrying(S3Client::head_bucket, r).await {
+        let bucket = std::rc::Rc::new(self.bucket.clone());
+        let g = || {
+            let b = bucket.clone();
+            let mut r = HeadBucketRequest::default();
+            r.bucket = b.to_string();
+            r
+        };
+        match self.call_retrying(S3Client::head_bucket, g).await {
             Ok(()) => {
                 debug!("Bucket {} exists", &self.bucket);
                 Ok(true)
