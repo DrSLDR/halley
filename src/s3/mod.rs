@@ -27,7 +27,7 @@ use tokio;
 use tokio::task::JoinHandle;
 use tracing::{debug, error, info, trace, trace_span, warn};
 
-/// Stateful struct containing the `S3Client` and relevant helper data
+/// Struct containing the `S3Client` and relevant helper data
 pub(crate) struct S3Handler {
     url: String,
     bucket: String,
@@ -64,9 +64,6 @@ impl Clone for S3Handler {
         })
     }
 }
-
-// Be mindful that sometimes requests just _fail_ on their own - consider handling
-// timeouts in a way that makes sense, rather than just failing them.
 
 impl S3Handler {
     /// Creates a new [`S3Handler`] which can be used to communicate with a given repository.
