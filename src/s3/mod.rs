@@ -145,6 +145,12 @@ impl S3Handler {
                 warn!("Still using hardcoded, default retry count!");
                 5
             },
+            #[cfg(test)]
+            retry_wait: {
+                warn!("Still using hardcoded, default retry wait time!");
+                Duration::from_millis(10)
+            },
+            #[cfg(not(test))]
             retry_wait: {
                 warn!("Still using hardcoded, default retry wait time!");
                 Duration::from_secs(2)
