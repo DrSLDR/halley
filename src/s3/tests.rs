@@ -19,6 +19,20 @@ fn spawn_handler() {
     let _h: S3Handler = S3Handler::new(repo);
 }
 
+/// HTTP response codes that MUST cause a retry
+macro_rules! retry_http {
+    () => {
+        [408, 429, 500, 502, 503, 504]
+    };
+}
+
+/// HTTP response codes that MUST cause a failure
+macro_rules! fail_http {
+    () => {
+        [400]
+    };
+}
+
 macro_rules! make_s3_client {
     ($rd:expr, $reg:expr) => {
         S3Client::new_with($rd, MockCredentialsProvider, $reg.clone())
