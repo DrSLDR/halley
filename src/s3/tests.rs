@@ -36,13 +36,23 @@ macro_rules! s3h {
         s3h!($rd, get_s3_repo!())
     };
     () => {
-        s3h!(rusoto_mock::MockRequestDispatcher::default(), get_s3_repo!())
-    }
+        s3h!(
+            rusoto_mock::MockRequestDispatcher::default(),
+            get_s3_repo!()
+        )
+    };
 }
 
 #[tokio::test]
 async fn bucket_exists() {
     let h = s3h!();
-
     assert!(h.bucket_exists().await);
+
+    let rd = rusoto_mock::MockRequestDispatcher::with_status(403);
+    let h = s3h!(rd);
+    assert!(!h.bucket_exists().await);
+
+    let rd = rusoto_mock::MockRequestDispatcher::with_status(404);
+    let h = s3h!(rd);
+    assert!(!h.bucket_exists().await);
 }
