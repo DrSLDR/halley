@@ -52,4 +52,18 @@ async fn bucket_exists() {
     let rd = MockRequestDispatcher::with_status(404);
     let h = s3h!(rd);
     assert!(!h.bucket_exists().await);
+
+    let rd = MultipleMockRequestDispatcher::new([
+        MockRequestDispatcher::with_status(500),
+        MockRequestDispatcher::default(),
+    ]);
+    let h = s3h!(rd);
+    assert!(h.bucket_exists().await);
+
+    let rd = MultipleMockRequestDispatcher::new([
+        MockRequestDispatcher::with_status(408),
+        MockRequestDispatcher::default(),
+    ]);
+    let h = s3h!(rd);
+    assert!(h.bucket_exists().await);
 }
