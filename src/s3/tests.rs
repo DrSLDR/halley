@@ -61,23 +61,27 @@ async fn bucket_exists() {
 
     let rd = MockRequestDispatcher::with_status(403);
     let h = s3h!(rd);
-    assert!(!h.bucket_exists().await.unwrap());
+    assert!(h.bucket_exists().await.is_err());
 
     let rd = MockRequestDispatcher::with_status(404);
     let h = s3h!(rd);
     assert!(!h.bucket_exists().await.unwrap());
 
-    let rd = MultipleMockRequestDispatcher::new([
-        MockRequestDispatcher::with_status(500),
-        MockRequestDispatcher::default(),
-    ]);
-    let h = s3h!(rd);
-    assert!(h.bucket_exists().await.unwrap());
+    for code in retry_http!() {
+        let rd = MultipleMockRequestDispatcher::new([
+            MockRequestDispatcher::with_status(code),
+            MockRequestDispatcher::default(),
+        ]);
+        let h = s3h!(rd);
+        assert!(h.bucket_exists().await.unwrap())
+    }
 
-    let rd = MultipleMockRequestDispatcher::new([
-        MockRequestDispatcher::with_status(408),
-        MockRequestDispatcher::default(),
-    ]);
-    let h = s3h!(rd);
-    assert!(h.bucket_exists().await.unwrap());
+    for code in fail_http!() {
+        let rd = MultipleMockRequestDispatcher::new([
+            MockRequestDispatcher::with_status(code),
+            MockRequestDispatcher::default(),
+        ]);
+        let h = s3h!(rd);
+        assert!(h.bucket_exists().await.is_err());
+    }
 }
