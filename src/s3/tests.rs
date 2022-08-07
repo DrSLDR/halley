@@ -141,3 +141,53 @@ async fn list_all_objects() {
     assert!(r.is_ok());
     assert!(r.unwrap().len() == 2);
 }
+
+#[tokio::test]
+async fn get_storage_class() {
+    let h = s3h!();
+    let v = h.get_storage_class("foo".to_string()).await;
+    assert!(v.is_ok());
+    assert!(v.unwrap() == StorageClass::STANDARD);
+
+    let rd = MockRequestDispatcher::default().with_header("x-amz-storage-class", "GLACIER");
+    let h = s3h!(rd);
+    let v = h.get_storage_class("foo".to_string()).await;
+    assert!(v.is_ok());
+    assert!(v.unwrap() == StorageClass::GLACIER);
+
+    let rd = MockRequestDispatcher::default().with_header("x-amz-storage-class", "STANDARD");
+    let h = s3h!(rd);
+    let v = h.get_storage_class("foo".to_string()).await;
+    assert!(v.is_ok());
+    assert!(v.unwrap() == StorageClass::STANDARD);
+
+    let rd = MockRequestDispatcher::default().with_header("x-amz-storage-class", "lol");
+    let h = s3h!(rd);
+    assert!(h.get_storage_class("foo".to_string()).await.is_err());
+
+    let rd = MockRequestDispatcher::with_status(403);
+    let h = s3h!(rd);
+    assert!(h.get_storage_class("foo".to_string()).await.is_err());
+
+    let rd = MockRequestDispatcher::with_status(404);
+    let h = s3h!(rd);
+    assert!(h.get_storage_class("foo".to_string()).await.is_err());
+
+    for code in retry_http!() {
+        let rd = MultipleMockRequestDispatcher::new([
+            MockRequestDispatcher::with_status(code),
+            MockRequestDispatcher::default(),
+        ]);
+        let h = s3h!(rd);
+        assert!(h.get_storage_class("foo".to_string()).await.is_ok())
+    }
+
+    for code in fail_http!() {
+        let rd = MultipleMockRequestDispatcher::new([
+            MockRequestDispatcher::with_status(code),
+            MockRequestDispatcher::default(),
+        ]);
+        let h = s3h!(rd);
+        assert!(h.get_storage_class("foo".to_string()).await.is_err());
+    }
+}
