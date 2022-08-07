@@ -236,13 +236,13 @@ impl S3Handler {
             r
         };
         match self.call_retrying(S3Client::head_bucket, g).await {
-            Some(r) => match r {
-                Ok(()) => {
-                    debug!("Bucket {} exists", &self.bucket);
-                    Ok(true)
-                }
-                Err(e) => {
-                    match e {
+            Some(r) => {
+                match r {
+                    Ok(()) => {
+                        debug!("Bucket {} exists", &self.bucket);
+                        Ok(true)
+                    }
+                    Err(e) => match e {
                         RusotoError::Unknown(http) => match http.status.as_u16() {
                             404 => {
                                 error!("Bucket {} does not exist", &self.bucket);
@@ -259,10 +259,10 @@ impl S3Handler {
                             error!("Checking for bucket existence failed! See debug log for more details.");
                             debug!("{:?}", e);
                             Err(anyhow::Error::new(e))
-                        },
-                    }
+                        }
+                    },
                 }
-            },
+            }
             None => {
                 error!("Checking for bucket existence did not complete successfully! See debug log for more details.");
                 Err(anyhow::Error::msg(
