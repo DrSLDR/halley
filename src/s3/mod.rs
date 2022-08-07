@@ -386,19 +386,48 @@ impl S3Handler {
     pub async fn restore_object(&self, key: String) -> anyhow::Result<()> {
         trace_call!("restore_object", "called with key {:?}", key);
 
-        let mut r = RestoreObjectRequest::default();
-        r.bucket = self.bucket.clone();
-        r.key = key.clone();
+        let bucket = Rc::new(self.bucket.clone());
+        let key = Rc::new(key);
+        let g = || {
+            let mut r = RestoreObjectRequest::default();
+            r.bucket = bucket.to_string();
+            r.key = key.to_string();
+            r
+        };
 
-        match self.client.restore_object(r).await {
-            Ok(_) => {
+        match self.call_retrying(S3Client::restore_object, g).await {
+            Some(Ok(_)) => {
                 debug!("Requested {} be restored", key);
                 Ok(())
             }
-            Err(e) => {
-                error!("Failed to restore object! See debug log for details.");
-                debug!("{:?}", e);
-                Err(anyhow::Error::new(e))
+            Some(Err(e)) => match &e {
+                RusotoError::Unknown(http) => match http.status.as_u16() {
+                    403 => {
+                        error!("Forbidden to access object {}", key);
+                        Err(anyhow::Error::new(e))
+                    }
+                    404 => {
+                        error!("Object {} not found", key);
+                        Err(anyhow::Error::new(e))
+                    }
+                    409 => {
+                        debug!("Restore already in progress, this is fine");
+                        Ok(())
+                    }
+                    _ => {
+                        error!("Unhandleable HTTP code");
+                        Err(anyhow::Error::new(e))
+                    }
+                },
+                _ => {
+                    error!("Failed to restore object! See debug log for details.");
+                    debug!("{:?}", e);
+                    Err(anyhow::Error::new(e))
+                }
+            },
+            None => {
+                error!("Restoring object {} did not complete successfully! See debug log for more details.", key);
+                Err(anyhow::Error::msg("Restoring object ran out of retries"))
             }
         }
     }
