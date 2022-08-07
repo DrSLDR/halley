@@ -164,6 +164,7 @@ impl S3Handler {
         >,
         args: A,
     ) -> Result<O, RusotoError<E>> {
+        trace_call!("call_retrying", "called for fptr {:?}", f);
         for _ in 0..self.retry_count {
             match f(&self.client, args).await {
                 Ok(o) => return Ok(o),
