@@ -201,7 +201,7 @@ impl S3Handler {
                 debug!("Bucket {} exists", &self.bucket);
                 Ok(true)
             }
-            Some(Err(e)) => match e {
+            Some(Err(e)) => match &e {
                 RusotoError::Unknown(http) => match http.status.as_u16() {
                     404 => {
                         error!("Bucket {} does not exist", &self.bucket);
@@ -209,9 +209,7 @@ impl S3Handler {
                     }
                     _ => {
                         debug!("Unhandleable HTTP status");
-                        Err(anyhow::Error::new(RusotoError::Unknown::<
-                            rusoto_s3::HeadBucketError,
-                        >(http)))
+                        Err(anyhow::Error::new(e))
                     }
                 },
                 _ => {
