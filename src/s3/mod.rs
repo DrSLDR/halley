@@ -164,7 +164,7 @@ impl S3Handler {
             Box<dyn std::future::Future<Output = Result<O, RusotoError<E>>> + Send + 'a>,
         >,
         generator: G,
-    ) -> Result<O, RusotoError<E>>
+    ) -> Option<Result<O, RusotoError<E>>>
     where
         G: Fn() -> A,
     {
@@ -172,22 +172,22 @@ impl S3Handler {
         for _ in 0..self.retry_count {
             let args = generator();
             match f(&self.client, args).await {
-                Ok(o) => return Ok(o),
+                Ok(o) => return Some(Ok(o)),
                 Err(e) => match e {
                     RusotoError::Service(e) => {
                         debug!("Caught a service error, bailing out");
-                        return Err(RusotoError::Service(e));
+                        return Some(Err(RusotoError::Service(e)));
                     }
                     RusotoError::HttpDispatch(e) => {
                         debug!("Caught a dispatch error ({:?}), sleeping and retrying", e);
                     }
                     RusotoError::Credentials(e) => {
                         debug!("Caught a credentials error ({:?}), bailing out", e);
-                        return Err(RusotoError::Credentials(e));
+                        return Some(Err(RusotoError::Credentials(e)));
                     }
                     RusotoError::Validation(e) => {
                         debug!("Caught a validation error ({:?}), bailing out", e);
-                        return Err(RusotoError::Validation(e));
+                        return Some(Err(RusotoError::Validation(e)));
                     }
                     RusotoError::ParseError(e) => {
                         debug!("Caught a parse error ({:?}), sleeping and retrying", e);
@@ -196,15 +196,25 @@ impl S3Handler {
                         warn!("Caught a blocking error, which really should never happen");
                     }
                     RusotoError::Unknown(e) => {
-                        debug!("Caught a unknown error ({:?}), bailing out", e);
-                        return Err(RusotoError::Unknown(e));
+                        debug!("Caught a unknown error ({:?}), looking deeper", e);
+                        match e.status.as_u16() {
+                            408 | 429 | 500 | 502 | 503 | 504 => {
+                                debug!("Retryable HTTP code")
+                            }
+                            _ => {
+                                debug!("Unhandled HTTP code, bailing out");
+                                return Some(Err(RusotoError::Unknown(e)));
+                            }
+                        }
                     }
                 },
             }
 
+            debug!("Sleeping for {:?}", self.retry_wait);
             thread::sleep(self.retry_wait);
         }
-        unimplemented!()
+        warn!("Failed to complete call after {:?} retries", self.retry_count);
+        None
     }
 
     /// Tests whether the related bucket exists
@@ -217,15 +227,18 @@ impl S3Handler {
             r
         };
         match self.call_retrying(S3Client::head_bucket, g).await {
-            Ok(()) => {
-                debug!("Bucket {} exists", &self.bucket);
-                Ok(true)
-            }
-            Err(e) => {
-                error!("Checking for bucket existence failed! See debug log for more details.");
-                debug!("{:?}", e);
-                Ok(false)
-            }
+            Some(r) => match r {
+                Ok(()) => {
+                    debug!("Bucket {} exists", &self.bucket);
+                    Ok(true)
+                }
+                Err(e) => {
+                    error!("Checking for bucket existence failed! See debug log for more details.");
+                    debug!("{:?}", e);
+                    Ok(false)
+                }
+            },
+            None => unimplemented!(),
         }
     }
 
