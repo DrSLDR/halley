@@ -110,4 +110,34 @@ async fn list_all_objects() {
         let h = s3h!(rd);
         assert!(h.list_all_objects().await.is_err());
     }
+
+    let body = "<?xml version='1.0' encoding='UTF-8'?>
+    <ListBucketResult
+        xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">
+        <Name>testbucket-2</Name>
+        <Prefix/>
+        <Delimiter/>
+        <MaxKeys>1000</MaxKeys>
+        <IsTruncated>false</IsTruncated>
+        <KeyCount>910</KeyCount>
+        <Contents>
+            <ETag>\"d1b45e489539fdd080b6a8bd51ac8846\"</ETag>
+            <Key>bar/config</Key>
+            <LastModified>2022-07-28T21:39:20.000Z</LastModified>
+            <Size>155</Size>
+            <StorageClass>GLACIER</StorageClass>
+        </Contents>
+        <Contents>
+            <ETag>\"031dbfb83084336de714837a1884bc90\"</ETag>
+            <Key>bar/kimchi</Key>
+            <LastModified>2022-07-28T21:39:28.000Z</LastModified>
+            <Size>450</Size>
+        </Contents>
+    </ListBucketResult>";
+    let rd = MockRequestDispatcher::default();
+    let rd = rd.with_body(body);
+    let h = s3h!(rd);
+    let r = h.list_all_objects().await;
+    assert!(r.is_ok());
+    assert!(r.unwrap().len() == 2);
 }
