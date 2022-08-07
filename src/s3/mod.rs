@@ -213,7 +213,10 @@ impl S3Handler {
             debug!("Sleeping for {:?}", self.retry_wait);
             thread::sleep(self.retry_wait);
         }
-        warn!("Failed to complete call after {:?} retries", self.retry_count);
+        warn!(
+            "Failed to complete call after {:?} retries",
+            self.retry_count
+        );
         None
     }
 
