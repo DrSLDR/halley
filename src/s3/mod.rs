@@ -333,12 +333,17 @@ impl S3Handler {
     pub async fn get_storage_class(&self, key: String) -> anyhow::Result<StorageClass> {
         trace_call!("get_storage_class", "called with {:?}", key);
 
-        let mut r = HeadObjectRequest::default();
-        r.bucket = self.bucket.clone();
-        r.key = key.clone();
+        let bucket = Rc::new(self.bucket.clone());
+        let key = Rc::new(key);
+        let g = || {
+            let mut r = HeadObjectRequest::default();
+            r.bucket = bucket.to_string();
+            r.key = key.to_string();
+            r
+        };
 
-        match self.client.head_object(r).await {
-            Ok(head) => match head.storage_class {
+        match self.call_retrying(S3Client::head_object, g).await {
+            Some(Ok(head)) => match head.storage_class {
                 Some(class) => Ok(class.parse::<StorageClass>()?),
                 None => {
                     warn!(
@@ -348,10 +353,30 @@ impl S3Handler {
                     Ok("STANDARD".parse::<StorageClass>()?)
                 }
             },
-            Err(e) => {
-                error!("Could not head object! See debug log for more details.");
-                debug!("{:?}", e);
-                Err(anyhow::Error::new(e))
+            Some(Err(e)) => match &e {
+                RusotoError::Unknown(http) => match http.status.as_u16() {
+                    404 => {
+                        error!("Object {} not found", key);
+                        Err(anyhow::Error::new(e))
+                    }
+                    403 => {
+                        error!("Forbidden to access object {}", key);
+                        Err(anyhow::Error::new(e))
+                    }
+                    _ => {
+                        error!("Unhandleable HTTP code");
+                        Err(anyhow::Error::new(e))
+                    }
+                },
+                _ => {
+                    error!("Could not head object! See debug log for more details.");
+                    debug!("{:?}", e);
+                    Err(anyhow::Error::new(e))
+                }
+            },
+            None => {
+                error!("Heading object {} did not complete successfully! See debug log for more details.", key);
+                Err(anyhow::Error::msg("Heading object ran out of retries"))
             }
         }
     }
