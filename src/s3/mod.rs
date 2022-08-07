@@ -10,6 +10,7 @@ mod tests;
 use crate::trace_call;
 use crate::types::{AWSKey, RepoCommon, S3Repo};
 
+use std::rc::Rc;
 use std::str::FromStr;
 use std::string::ToString;
 use std::thread;
@@ -209,11 +210,10 @@ impl S3Handler {
     /// Tests whether the related bucket exists
     pub async fn bucket_exists(&self) -> anyhow::Result<bool> {
         trace_call!("bucket_exists", "called on {:?}", self);
-        let bucket = std::rc::Rc::new(self.bucket.clone());
+        let bucket = Rc::new(self.bucket.clone());
         let g = || {
-            let b = bucket.clone();
             let mut r = HeadBucketRequest::default();
-            r.bucket = b.to_string();
+            r.bucket = bucket.to_string();
             r
         };
         match self.call_retrying(S3Client::head_bucket, g).await {
