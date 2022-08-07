@@ -28,11 +28,21 @@ macro_rules! make_s3_client {
     };
 }
 
+macro_rules! s3h {
+    ($rd:expr, $repo:expr) => {
+        S3Handler::new_with_client($repo, make_s3_client!($rd, $repo.region))
+    };
+    ($rd:expr) => {
+        s3h!($rd, get_s3_repo!())
+    };
+    () => {
+        s3h!(rusoto_mock::MockRequestDispatcher::default(), get_s3_repo!())
+    }
+}
+
 #[tokio::test]
 async fn bucket_exists() {
-    let repo = get_s3_repo!();
-    let client = make_s3_client!(repo.region);
-    let h = S3Handler::new_with_client(repo, client);
+    let h = s3h!();
 
     assert!(h.bucket_exists().await);
 }
