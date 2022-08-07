@@ -176,14 +176,9 @@ impl S3Handler {
     /// Tests whether the related bucket exists
     pub async fn bucket_exists(&self) -> anyhow::Result<bool> {
         trace_call!("bucket_exists", "called on {:?}", self);
-        let response = self
-            .client
-            .head_bucket(HeadBucketRequest {
-                bucket: self.bucket.clone(),
-                expected_bucket_owner: None,
-            })
-            .await;
-        match response {
+        let mut r = HeadBucketRequest::default();
+        r.bucket = self.bucket.clone();
+        match self.call_retrying(S3Client::head_bucket, r).await {
             Ok(()) => {
                 debug!("Bucket {} exists", &self.bucket);
                 Ok(true)
