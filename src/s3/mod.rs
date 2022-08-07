@@ -168,8 +168,36 @@ impl S3Handler {
         for _ in 0..self.retry_count {
             match f(&self.client, args).await {
                 Ok(o) => return Ok(o),
-                Err(e) => unimplemented!(),
+                Err(e) => match e {
+                    RusotoError::Service(e) => {
+                        debug!("Caught a service error, bailing out");
+                        return Err(RusotoError::Service(e));
+                    },
+                    RusotoError::HttpDispatch(e) => {
+                        debug!("Caught a dispatch error ({:?}), sleeping and retrying", e);
+                    },
+                    RusotoError::Credentials(e) => {
+                        debug!("Caught a credentials error ({:?}), bailing out", e);
+                        return Err(RusotoError::Credentials(e));
+                    },
+                    RusotoError::Validation(e) => {
+                        debug!("Caught a validation error ({:?}), bailing out", e);
+                        return Err(RusotoError::Validation(e));
+                    },
+                    RusotoError::ParseError(e) => {
+                        debug!("Caught a parse error ({:?}), sleeping and retrying", e);
+                    },
+                    RusotoError::Unknown(e) => {
+                        debug!("Caught a unknown error ({:?}), bailing out", e);
+                        return Err(RusotoError::Unknown(e));
+                    }
+                    RusotoError::Blocking => {
+                        warn!("Caught a blocking error, which really should never happen");
+                    }
+                }
             }
+
+            thread::sleep(self.retry_wait);
         }
         unimplemented!()
     }
