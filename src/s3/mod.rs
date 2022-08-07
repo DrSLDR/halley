@@ -236,12 +236,33 @@ impl S3Handler {
                     Ok(true)
                 }
                 Err(e) => {
-                    error!("Checking for bucket existence failed! See debug log for more details.");
-                    debug!("{:?}", e);
-                    Ok(false)
+                    match e {
+                        RusotoError::Unknown(http) => match http.status.as_u16() {
+                            404 => {
+                                error!("Bucket {} does not exist", &self.bucket);
+                                Ok(false)
+                            }
+                            _ => {
+                                debug!("Unhandleable HTTP status");
+                                Err(anyhow::Error::new(RusotoError::Unknown::<
+                                    rusoto_s3::HeadBucketError,
+                                >(http)))
+                            }
+                        },
+                        _ => {
+                            error!("Checking for bucket existence failed! See debug log for more details.");
+                            debug!("{:?}", e);
+                            Err(anyhow::Error::new(e))
+                        },
+                    }
                 }
             },
-            None => unimplemented!(),
+            None => {
+                error!("Checking for bucket existence did not complete successfully! See debug log for more details.");
+                Err(anyhow::Error::msg(
+                    "Bucket existence check ran out of retries",
+                ))
+            }
         }
     }
 
