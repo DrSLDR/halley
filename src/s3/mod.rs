@@ -165,7 +165,7 @@ impl S3Handler {
                     RusotoError::Unknown(e) => {
                         debug!("Caught a unknown error ({:?}), looking deeper", e);
                         match e.status.as_u16() {
-                            408 | 429 | 500 | 502 | 503 | 504 => {
+                            408 | 429 | 500 | 502 | 504 => {
                                 debug!("Retryable HTTP code")
                             }
                             _ => {

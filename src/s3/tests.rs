@@ -22,7 +22,7 @@ fn spawn_handler() {
 /// HTTP response codes that MUST cause a retry
 macro_rules! retry_http {
     () => {
-        [408, 429, 500, 502, 503, 504]
+        [408, 429, 500, 502, 504]
     };
 }
 
