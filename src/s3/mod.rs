@@ -34,6 +34,8 @@ pub(crate) struct S3Handler {
     alloc_size: usize,
     hold_time: Duration,
     concurrent_tasks: usize,
+    retry_count: usize,
+    retry_wait: Duration,
     client: S3Client,
 }
 
@@ -138,9 +140,25 @@ impl S3Handler {
                 warn!("Still using hardcoded, default concurrent tasks count!");
                 1
             },
+            retry_count: {
+                warn!("Still using hardcoded, default retry count!");
+                5
+            },
+            retry_wait: {
+                warn!("Still using hardcoded, default retry wait time!");
+                Duration::from_secs(2)
+            },
             client,
             _repo: repo,
         }
+    }
+
+    /// Calls the client, retrying if certain errors occur
+    async fn call_retrying<F, A, T>(&self, f: F, args: A) -> anyhow::Result<T>
+    where
+        F: Fn(A) -> T,
+    {
+        unimplemented!();
     }
 
     /// Tests whether the related bucket exists
