@@ -2,7 +2,7 @@ use super::*;
 use crate::types::*;
 use crate::util::test_utils::*;
 
-use rusoto_mock;
+use rusoto_mock::*;
 
 macro_rules! get_s3_repo {
     () => {
@@ -21,10 +21,10 @@ fn spawn_handler() {
 
 macro_rules! make_s3_client {
     ($rd:expr, $reg:expr) => {
-        S3Client::new_with($rd, rusoto_mock::MockCredentialsProvider, $reg.clone())
+        S3Client::new_with($rd, MockCredentialsProvider, $reg.clone())
     };
     ($reg:expr) => {
-        make_s3_client!(rusoto_mock::MockRequestDispatcher::default(), $reg)
+        make_s3_client!(MockRequestDispatcher::default(), $reg)
     };
 }
 
@@ -36,10 +36,7 @@ macro_rules! s3h {
         s3h!($rd, get_s3_repo!())
     };
     () => {
-        s3h!(
-            rusoto_mock::MockRequestDispatcher::default(),
-            get_s3_repo!()
-        )
+        s3h!(MockRequestDispatcher::default(), get_s3_repo!())
     };
 }
 
@@ -48,11 +45,11 @@ async fn bucket_exists() {
     let h = s3h!();
     assert!(h.bucket_exists().await);
 
-    let rd = rusoto_mock::MockRequestDispatcher::with_status(403);
+    let rd = MockRequestDispatcher::with_status(403);
     let h = s3h!(rd);
     assert!(!h.bucket_exists().await);
 
-    let rd = rusoto_mock::MockRequestDispatcher::with_status(404);
+    let rd = MockRequestDispatcher::with_status(404);
     let h = s3h!(rd);
     assert!(!h.bucket_exists().await);
 }
