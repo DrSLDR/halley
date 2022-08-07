@@ -85,3 +85,11 @@ async fn bucket_exists() {
         assert!(h.bucket_exists().await.is_err());
     }
 }
+
+#[tokio::test]
+async fn list_all_objects() {
+    let h = s3h!();
+    let v = h.list_all_objects().await;
+    assert!(v.is_ok());
+    assert!(v.unwrap().is_empty());
+}
