@@ -16,7 +16,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use async_recursion::async_recursion;
-use rusoto_core::{credential, Client};
+use rusoto_core::{credential, Client, RusotoError};
 use rusoto_s3::{
     CopyObjectRequest, HeadBucketRequest, HeadObjectRequest, ListObjectsV2Request,
     RestoreObjectRequest, S3Client, S3,
@@ -154,11 +154,17 @@ impl S3Handler {
     }
 
     /// Calls the client, retrying if certain errors occur
-    async fn call_retrying<F, A, T>(&self, f: F, args: A) -> anyhow::Result<T>
+    async fn call_retrying<F, A, O, E>(&self, f: F, args: A) -> Result<O, RusotoError<E>>
     where
-        F: Fn(A) -> T,
+        F: Fn(A) -> Result<O, RusotoError<E>>,
     {
-        unimplemented!();
+        for _ in 0..self.retry_count {
+            match f(args) {
+                Ok(o) => return Ok(o),
+                Err(e) => unimplemented!(),
+            }
+        }
+        unimplemented!()
     }
 
     /// Tests whether the related bucket exists
