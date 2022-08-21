@@ -13,7 +13,6 @@ use types::*;
 use crate::trace_call;
 use crate::types::{AWSKey, RepoCommon, S3Repo};
 
-use std::rc::Rc;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -199,7 +198,7 @@ impl S3Handler {
     /// Tests whether the related bucket exists
     pub async fn bucket_exists(&self) -> anyhow::Result<bool> {
         trace_call!("bucket_exists", "called on {:?}", self);
-        let bucket = Rc::new(self.bucket.clone());
+        let bucket = self.bucket.clone();
         let g = || {
             let mut r = HeadBucketRequest::default();
             r.bucket = bucket.to_string();
@@ -340,8 +339,8 @@ impl S3Handler {
     pub async fn get_storage_class(&self, key: String) -> anyhow::Result<StorageClass> {
         trace_call!("get_storage_class", "called with {:?}", key);
 
-        let bucket = Rc::new(self.bucket.clone());
-        let key = Rc::new(key);
+        let bucket = self.bucket.clone();
+        let key = Arc::new(key);
         let g = || {
             let mut r = HeadObjectRequest::default();
             r.bucket = bucket.to_string();
@@ -395,8 +394,8 @@ impl S3Handler {
     pub async fn restore_object(&self, key: String) -> anyhow::Result<()> {
         trace_call!("restore_object", "called with key {:?}", key);
 
-        let bucket = Rc::new(self.bucket.clone());
-        let key = Rc::new(key);
+        let bucket = self.bucket.clone();
+        let key = Arc::new(key);
         let g = || {
             let mut r = RestoreObjectRequest::default();
             r.bucket = bucket.to_string();
