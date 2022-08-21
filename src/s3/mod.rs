@@ -30,15 +30,15 @@ use tracing::{debug, error, info, trace, trace_span, warn};
 
 /// Struct containing the `S3Client` and relevant helper data
 pub(crate) struct S3Handler {
-    url: String,
-    bucket: String,
-    prefix: Option<String>,
-    _repo: S3Repo,
+    url: Arc<String>,
+    bucket: Arc<String>,
+    prefix: Arc<Option<String>>,
+    _repo: Arc<S3Repo>,
     alloc_size: usize,
-    hold_time: Duration,
+    hold_time: Arc<Duration>,
     concurrent_tasks: usize,
     retry_count: usize,
-    retry_wait: Duration,
+    retry_wait: Arc<Duration>,
     client: S3Client,
 }
 
@@ -50,19 +50,28 @@ impl std::fmt::Debug for S3Handler {
 
 impl Clone for S3Handler {
     fn clone(&self) -> Self {
-        Self::new(S3Repo {
-            url: self._repo.url.clone(),
+        let client = S3Client::new_with_client(
+            Client::new_with(
+                credential::StaticProvider::new_minimal(
+                    self._repo.key.id.clone(),
+                    self._repo.key.secret.clone(),
+                ),
+                rusoto_core::HttpClient::new().unwrap(),
+            ),
+            self._repo.region.clone(),
+        );
+        S3Handler {
+            url: self.url.clone(),
             bucket: self.bucket.clone(),
-            region: self._repo.region.clone(),
-            path: self.prefix.clone(),
-            key: AWSKey {
-                id: self._repo.key.id.clone(),
-                secret: self._repo.key.secret.clone(),
-            },
-            common: RepoCommon {
-                passwd: self._repo.common.passwd.clone(),
-            },
-        })
+            prefix: self.prefix.clone(),
+            _repo: self._repo.clone(),
+            alloc_size: self.alloc_size,
+            hold_time: self.hold_time.clone(),
+            concurrent_tasks: self.concurrent_tasks,
+            retry_count: self.retry_count,
+            retry_wait: self.retry_wait.clone(),
+            client,
+        }
     }
 }
 
@@ -87,16 +96,16 @@ impl S3Handler {
     pub fn new_with_client(repo: S3Repo, client: S3Client) -> S3Handler {
         trace_call!("new_with_client", "called with {:?}", repo);
         S3Handler {
-            url: repo.render_full_url(),
-            bucket: repo.bucket.clone(),
-            prefix: repo.path.clone(),
+            url: Arc::new(repo.render_full_url()),
+            bucket: Arc::new(repo.bucket.clone()),
+            prefix: Arc::new(repo.path.clone()),
             alloc_size: {
                 warn!("Still using hardcoded, default item vector capacity!");
                 1024
             },
             hold_time: {
                 warn!("Still using hardcoded, default hold time!");
-                Duration::from_secs(15)
+                Arc::new(Duration::from_secs(15))
             },
             concurrent_tasks: {
                 warn!("Still using hardcoded, default concurrent tasks count!");
@@ -109,15 +118,15 @@ impl S3Handler {
             #[cfg(test)]
             retry_wait: {
                 warn!("Still using hardcoded, default retry wait time!");
-                Duration::from_millis(10)
+                Arc::new(Duration::from_millis(10))
             },
             #[cfg(not(test))]
             retry_wait: {
                 warn!("Still using hardcoded, default retry wait time!");
-                Duration::from_secs(2)
+                Arc::new(Duration::from_secs(2))
             },
             client,
-            _repo: repo,
+            _repo: Arc::new(repo),
         }
     }
 
@@ -178,7 +187,7 @@ impl S3Handler {
             }
 
             debug!("Sleeping for {:?}", self.retry_wait);
-            thread::sleep(self.retry_wait);
+            thread::sleep(*self.retry_wait);
         }
         warn!(
             "Failed to complete call after {:?} retries",
@@ -257,7 +266,7 @@ impl S3Handler {
                 Some(s) => Some(s.clone()),
                 None => None,
             };
-            r.prefix = match &self.prefix {
+            r.prefix = match &*self.prefix {
                 Some(s) => Some(s.clone()),
                 None => None,
             };
@@ -596,7 +605,7 @@ impl S3Handler {
         debug!("Stepping into restoration blocking loop");
         'blocking: loop {
             debug!("Sleeping for {:?}", self.hold_time);
-            thread::sleep(self.hold_time);
+            thread::sleep(*self.hold_time);
 
             'inner: loop {
                 match objects.pop() {
