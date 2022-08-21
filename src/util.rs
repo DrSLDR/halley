@@ -72,8 +72,8 @@ pub(crate) mod test_utils {
                 region: Region::EuWest1,
                 path: Some("bar".to_string()),
                 key: aws_key_def(),
-                common: common_repo_def()
-            }
+                common: common_repo_def(),
+            },
         }
     }
 }

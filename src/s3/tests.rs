@@ -192,7 +192,6 @@ async fn get_storage_class() {
     }
 }
 
-
 #[tokio::test]
 async fn restore_object() {
     let h = s3h!();
