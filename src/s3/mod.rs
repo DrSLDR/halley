@@ -443,21 +443,46 @@ impl S3Handler {
 
     /// [`archive_object`] without span logging
     async fn nospan_archive_object(&self, key: String) -> anyhow::Result<()> {
-        let mut r = CopyObjectRequest::default();
-        r.bucket = self.bucket.clone();
-        r.copy_source = format!("{}/{}", self.bucket.clone(), key.clone());
-        r.key = key.clone();
-        r.storage_class = Some(StorageClass::GLACIER.to_string());
+        let bucket = Arc::new(self.bucket.clone());
+        let key = Arc::new(key.clone());
+        let g = || {
+            let mut r = CopyObjectRequest::default();
+            r.key = key.to_string();
+            r.bucket = bucket.to_string();
+            r.copy_source = format!("{}/{}", bucket.clone(), key.clone());
+            r.storage_class = Some(StorageClass::GLACIER.to_string());
+            r
+        };
 
-        match self.client.copy_object(r).await {
-            Ok(_) => {
+        match self.call_retrying(S3Client::copy_object, g).await {
+            Some(Ok(_)) => {
                 debug!("Requested {} be archived", key);
                 Ok(())
             }
-            Err(e) => {
-                error!("Failed to copy object! See debug log for more details.");
-                debug!("{:?}", e);
-                Err(anyhow::Error::new(e))
+            Some(Err(e)) => match &e {
+                RusotoError::Unknown(http) => match http.status.as_u16() {
+                    403 => {
+                        error!("Forbidden to access object {}", key);
+                        Err(anyhow::Error::new(e))
+                    }
+                    404 => {
+                        error!("Object {} not found", key);
+                        Err(anyhow::Error::new(e))
+                    }
+                    _ => {
+                        error!("Unhandleable HTTP code");
+                        Err(anyhow::Error::new(e))
+                    }
+                },
+                _ => {
+                    error!("Failed to archive object! See debug log for details.");
+                    debug!("{:?}", e);
+                    Err(anyhow::Error::new(e))
+                }
+            },
+            None => {
+                error!("Archiving object {} did not complete successfully! See debug log for more details.", key);
+                Err(anyhow::Error::msg("Archiving object ran out of retries"))
             }
         }
     }
