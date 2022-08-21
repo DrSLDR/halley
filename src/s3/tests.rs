@@ -238,3 +238,44 @@ async fn restore_object() {
         assert!(h.restore_object("foo".to_string()).await.is_err());
     }
 }
+
+#[tokio::test]
+async fn archive_object() {
+    let h = s3h!();
+    let v = h.archive_object("foo".to_string()).await;
+    assert!(v.is_ok());
+    assert!(v.unwrap() == ());
+
+    let rd = MockRequestDispatcher::with_status(412);
+    let h = s3h!(rd);
+    let v = h.archive_object("foo".to_string()).await;
+    assert!(v.is_err());
+
+    let rd = MockRequestDispatcher::with_status(403);
+    let h = s3h!(rd);
+    let v = h.archive_object("foo".to_string()).await;
+    assert!(v.is_err());
+
+    let rd = MockRequestDispatcher::with_status(404);
+    let h = s3h!(rd);
+    let v = h.archive_object("foo".to_string()).await;
+    assert!(v.is_err());
+
+    for code in retry_http!() {
+        let rd = MultipleMockRequestDispatcher::new([
+            MockRequestDispatcher::with_status(code),
+            MockRequestDispatcher::default(),
+        ]);
+        let h = s3h!(rd);
+        assert!(h.archive_object("foo".to_string()).await.is_ok())
+    }
+
+    for code in fail_http!() {
+        let rd = MultipleMockRequestDispatcher::new([
+            MockRequestDispatcher::with_status(code),
+            MockRequestDispatcher::default(),
+        ]);
+        let h = s3h!(rd);
+        assert!(h.archive_object("foo".to_string()).await.is_err());
+    }
+}
