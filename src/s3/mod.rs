@@ -517,26 +517,16 @@ impl S3Handler {
         objects.retain(|o| o.class == StorageClass::GLACIER);
 
         let log = self.logistic(objects.len());
-        let handles = (0..log)
-            .into_iter()
-            .map(|i: usize| {
-                debug!(
-                    "Creating object iterator {} of {}, starting from index {}",
-                    i + 1,
-                    log,
-                    i
-                );
-                let mut iter = objects.iter();
-                for _ in 0..i {
-                    iter.next();
-                }
-                debug!("Creating subset vector from step size {}", log);
-                let objects_subset: Vec<Object> = iter.step_by(log).map(|o| o.clone()).collect();
-                debug!("Got subset vector of length {}", objects_subset.len());
+        let chunk_size = self.chunk_size(objects.len(), log);
+        let handles = objects
+            .chunks(chunk_size)
+            .map(|c| {
+                let chunk = Vec::from(c);
+                debug!("Got a chunk vector of length {}", chunk.len());
 
                 let h = self.clone();
                 tokio::spawn(async move {
-                    for object in objects_subset {
+                    for object in chunk {
                         h.nospan_restore_object(object.key)
                             .await
                             .expect("Failed a parallel restoration task");
@@ -576,26 +566,16 @@ impl S3Handler {
         objects.retain(|o| o.class != StorageClass::GLACIER);
 
         let log = self.logistic(objects.len());
-        let handles = (0..log)
-            .into_iter()
-            .map(|i: usize| {
-                debug!(
-                    "Creating object iterator {} of {}, starting from index {}",
-                    i + 1,
-                    log,
-                    i
-                );
-                let mut iter = objects.iter();
-                for _ in 0..i {
-                    iter.next();
-                }
-                debug!("Creating subset vector from step size {}", log);
-                let objects_subset: Vec<Object> = iter.step_by(log).map(|o| o.clone()).collect();
-                debug!("Got subset vector of length {}", objects_subset.len());
+        let chunk_size = self.chunk_size(objects.len(), log);
+        let handles = objects
+            .chunks(chunk_size)
+            .map(|c| {
+                let chunk = Vec::from(c);
+                debug!("Got a chunk vector of length {}", chunk.len());
 
                 let h = self.clone();
                 tokio::spawn(async move {
-                    for object in objects_subset {
+                    for object in chunk {
                         h.nospan_archive_object(object.key)
                             .await
                             .expect("Failed a parallel archive task");
