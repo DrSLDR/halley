@@ -29,7 +29,9 @@ pub async fn test_real() -> anyhow::Result<()> {
         },
     });
 
-    // h.list_all_objects().await?;
+    h.list_all_objects().await?;
+    h.archive_all_objects().await?;
+    std::thread::sleep(std::time::Duration::from_secs(15));
     h.restore_all_objects().await?;
 
     Ok(())
