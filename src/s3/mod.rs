@@ -393,7 +393,11 @@ impl S3Handler {
     /// [`STANDARD`]: StorageClass::STANDARD
     pub async fn restore_object(&self, key: String) -> anyhow::Result<()> {
         trace_call!("restore_object", "called with key {:?}", key);
+        self.nospan_restore_object(key).await
+    }
 
+    /// [`restore_object`] without span logging
+    async fn nospan_restore_object(&self, key: String) -> anyhow::Result<()> {
         let bucket = self.bucket.clone();
         let key = Arc::new(key);
         let g = || {
@@ -530,7 +534,7 @@ impl S3Handler {
                 let h = self.clone();
                 tokio::spawn(async move {
                     for object in objects_subset {
-                        h.restore_object(object.key)
+                        h.nospan_restore_object(object.key)
                             .await
                             .expect("Failed a parallel restoration task");
                     }
