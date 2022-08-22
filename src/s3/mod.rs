@@ -628,4 +628,36 @@ impl S3Handler {
 
         Ok(())
     }
+
+    /// Computes number of worker threads, based on number of discrete _whatever_, using
+    /// magic math. In this case, a tuned(ish) logistic function
+    fn logistic(&self, count: usize) -> usize {
+        trace_call!("logistic", "called with {:?}", count);
+        // Short circuit if count is 0
+        if count == 0 {
+            return 0;
+        }
+
+        // Fundamental logistic values
+        // x_0, the midpoint
+        let x_0 = 1024i32;
+        // L, the highest value
+        let l = self.max_concurrent_tasks as u32;
+
+        // k, the growth rate, here tuned to give the first step to 2 workers, given 16
+        // max, around count 50. A more accurate number could probably be derived, but
+        // 2^(-8.5) was a good (and pretty) enough value.
+        let k = (-8.5f64).exp2();
+
+        // Calculating the logistic
+        let log = (l as f64) / (1.0f64 + (((count as i32 - x_0) as f64) * -k).exp());
+
+        // Get the ceiling value and cast that back to a usize
+        let r = log.ceil() as usize;
+
+        debug!("Calculated logistic {:?} from {:?}", r, count);
+
+        // Ensure the result is at least 1, not more than count, and return
+        r.max(1).min(count)
+    }
 }

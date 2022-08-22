@@ -278,3 +278,27 @@ async fn archive_object() {
         assert!(h.archive_object("foo".to_string()).await.is_err());
     }
 }
+
+#[test]
+fn logistic() {
+    let mut h = s3h!();
+    h.max_concurrent_tasks = 1;
+    assert_eq!(h.logistic(0), 0);
+    assert_eq!(h.logistic(1), 1);
+    assert_eq!(h.logistic(8), 1);
+    assert_eq!(h.logistic(511), 1);
+
+    let h = s3h!();
+    assert_eq!(h.logistic(0), 0);
+    assert_eq!(h.logistic(1), 1);
+    assert_eq!(h.logistic(30), 1);
+    assert_eq!(h.logistic(200), 2);
+    assert_eq!(h.logistic(1024), 8);
+    assert_eq!(h.logistic(2100), 16);
+
+    let mut h = s3h!();
+    h.max_concurrent_tasks = 128;
+    assert_eq!(h.logistic(0), 0);
+    assert_eq!(h.logistic(1), 1);
+    assert_eq!(h.logistic(3), 3);
+}
