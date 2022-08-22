@@ -509,8 +509,37 @@ impl S3Handler {
         let mut objects = self.list_all_objects().await?;
         objects.retain(|o| o.class == StorageClass::GLACIER);
 
-        for object in objects.iter() {
-            self.restore_object(object.key.clone()).await?;
+        let log = self.logistic(objects.len());
+        let handles = (0..log)
+            .into_iter()
+            .map(|i: usize| {
+                debug!(
+                    "Creating object iterator {} of {}, starting from index {}",
+                    i + 1,
+                    log,
+                    i
+                );
+                let mut iter = objects.iter();
+                for _ in 0..i {
+                    iter.next();
+                }
+                debug!("Creating subset vector from step size {}", log);
+                let objects_subset: Vec<Object> = iter.step_by(log).map(|o| o.clone()).collect();
+                debug!("Got subset vector of length {}", objects_subset.len());
+
+                let h = self.clone();
+                tokio::spawn(async move {
+                    for object in objects_subset {
+                        h.restore_object(object.key)
+                            .await
+                            .expect("Failed a parallel restoration task");
+                    }
+                })
+            })
+            .collect::<Vec<JoinHandle<()>>>();
+
+        for handle in handles {
+            handle.await?
         }
 
         let duration = start.elapsed();
@@ -538,27 +567,22 @@ impl S3Handler {
         let mut objects = self.list_all_objects().await?;
         objects.retain(|o| o.class != StorageClass::GLACIER);
 
-        let handles = (0..self.max_concurrent_tasks)
+        let log = self.logistic(objects.len());
+        let handles = (0..log)
             .into_iter()
             .map(|i: usize| {
                 debug!(
                     "Creating object iterator {} of {}, starting from index {}",
                     i + 1,
-                    self.max_concurrent_tasks,
+                    log,
                     i
                 );
                 let mut iter = objects.iter();
                 for _ in 0..i {
                     iter.next();
                 }
-                debug!(
-                    "Creating subset vector from step size {}",
-                    self.max_concurrent_tasks
-                );
-                let objects_subset: Vec<Object> = iter
-                    .step_by(self.max_concurrent_tasks)
-                    .map(|o| o.clone())
-                    .collect();
+                debug!("Creating subset vector from step size {}", log);
+                let objects_subset: Vec<Object> = iter.step_by(log).map(|o| o.clone()).collect();
                 debug!("Got subset vector of length {}", objects_subset.len());
 
                 let h = self.clone();
