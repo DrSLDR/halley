@@ -143,7 +143,6 @@ impl S3Handler {
     where
         G: Fn() -> A,
     {
-        trace_call!("call_retrying", "called for fptr {:?}", f);
         for _ in 0..self.retry_count {
             let args = generator();
             match f(&self.client, args).await {
@@ -549,9 +548,10 @@ impl S3Handler {
         let duration = start.elapsed();
 
         info!(
-            "Requested restoration of {} objects in {:?}",
+            "Requested restoration of {} objects in {:?} using {} tasks",
             objects.len(),
-            duration
+            duration,
+            log
         );
 
         Ok(objects)
@@ -607,9 +607,10 @@ impl S3Handler {
         let duration = start.elapsed();
 
         info!(
-            "Requested archival of {} objects in {:?}",
+            "Requested archival of {} objects in {:?} using {} tasks",
             objects.len(),
-            duration
+            duration,
+            log
         );
 
         Ok(objects)
