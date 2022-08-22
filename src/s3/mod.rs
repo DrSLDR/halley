@@ -35,7 +35,7 @@ pub(crate) struct S3Handler {
     _repo: Arc<S3Repo>,
     alloc_size: usize,
     hold_time: Arc<Duration>,
-    concurrent_tasks: usize,
+    max_concurrent_tasks: usize,
     retry_count: usize,
     retry_wait: Arc<Duration>,
     client: S3Client,
@@ -66,7 +66,7 @@ impl Clone for S3Handler {
             _repo: self._repo.clone(),
             alloc_size: self.alloc_size,
             hold_time: self.hold_time.clone(),
-            concurrent_tasks: self.concurrent_tasks,
+            max_concurrent_tasks: self.max_concurrent_tasks,
             retry_count: self.retry_count,
             retry_wait: self.retry_wait.clone(),
             client,
@@ -106,9 +106,9 @@ impl S3Handler {
                 warn!("Still using hardcoded, default hold time!");
                 Arc::new(Duration::from_secs(15))
             },
-            concurrent_tasks: {
-                warn!("Still using hardcoded, default concurrent tasks count!");
-                1
+            max_concurrent_tasks: {
+                warn!("Still using hardcoded, default concurrent max tasks count!");
+                16
             },
             retry_count: {
                 warn!("Still using hardcoded, default retry count!");
@@ -536,15 +536,15 @@ impl S3Handler {
         let start = Instant::now();
 
         let mut objects = self.list_all_objects().await?;
-        // objects.retain(|o| o.class != StorageClass::GLACIER);
+        objects.retain(|o| o.class != StorageClass::GLACIER);
 
-        let handles = (0..self.concurrent_tasks)
+        let handles = (0..self.max_concurrent_tasks)
             .into_iter()
             .map(|i: usize| {
                 debug!(
                     "Creating object iterator {} of {}, starting from index {}",
                     i + 1,
-                    self.concurrent_tasks,
+                    self.max_concurrent_tasks,
                     i
                 );
                 let mut iter = objects.iter();
@@ -553,10 +553,10 @@ impl S3Handler {
                 }
                 debug!(
                     "Creating subset vector from step size {}",
-                    self.concurrent_tasks
+                    self.max_concurrent_tasks
                 );
                 let objects_subset: Vec<Object> = iter
-                    .step_by(self.concurrent_tasks)
+                    .step_by(self.max_concurrent_tasks)
                     .map(|o| o.clone())
                     .collect();
                 debug!("Got subset vector of length {}", objects_subset.len());
