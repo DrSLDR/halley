@@ -720,6 +720,6 @@ impl S3Handler {
     /// chunks
     fn chunk_size(&self, size: usize, count: usize) -> usize {
         trace_call!("chunk_size", "called with {:?}, {:?}", size, count);
-        ((size as f32)/(count as f32)).ceil() as usize
+        ((size as f32) / (count as f32)).ceil() as usize
     }
 }
