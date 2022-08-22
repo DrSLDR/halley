@@ -659,9 +659,9 @@ impl S3Handler {
                     }
                 }
 
-                let log = self.logistic(objects.len());
+                let chunk_size = self.chunk_size(objects.len(), self.logistic(objects.len()));
                 let handles = objects
-                    .chunks(((objects.len() as f32) / (log as f32)).ceil() as usize)
+                    .chunks(chunk_size)
                     .map(|c| {
                         let mut chunk = Vec::from(c);
                         debug!("Got a chunk vector of length {}", chunk.len());
@@ -734,5 +734,12 @@ impl S3Handler {
 
         // Ensure the result is at least 1, not more than count, and return
         r.max(1).min(count)
+    }
+
+    /// Calculates the chunk size for a list of a given size and a given number of
+    /// chunks
+    fn chunk_size(&self, size: usize, count: usize) -> usize {
+        trace_call!("chunk_size", "called with {:?}, {:?}", size, count);
+        ((size as f32)/(count as f32)).ceil() as usize
     }
 }
