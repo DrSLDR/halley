@@ -337,7 +337,11 @@ impl S3Handler {
     /// Gets the [`StorageClass`] of the given key
     pub async fn get_storage_class(&self, key: String) -> anyhow::Result<StorageClass> {
         trace_call!("get_storage_class", "called with {:?}", key);
+        self.nospan_get_storage_class(key).await
+    }
 
+    /// [`get_storage_class`] without a span
+    async fn nospan_get_storage_class(&self, key: String) -> anyhow::Result<StorageClass> {
         let bucket = self.bucket.clone();
         let key = Arc::new(key);
         let g = || {
@@ -667,7 +671,7 @@ impl S3Handler {
                             loop {
                                 match chunk.pop() {
                                     Some(o) => match h
-                                        .get_storage_class(o.key.clone())
+                                        .nospan_get_storage_class(o.key.clone())
                                         .await
                                         .expect("Failed to get storage class")
                                     {
