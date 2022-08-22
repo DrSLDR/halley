@@ -635,20 +635,62 @@ impl S3Handler {
             debug!("Sleeping for {:?}", self.hold_time);
             thread::sleep(*self.hold_time);
 
-            'inner: loop {
-                match objects.pop() {
-                    Some(o) => match self.get_storage_class(o.key.clone()).await? {
-                        StorageClass::STANDARD => debug!("{:?} successfully restored", o.key),
-                        StorageClass::GLACIER => {
-                            debug!("{:?} still archived, placing it back in the stack", o.key);
-                            objects.push(o);
-                            break 'inner;
+            'pop: loop {
+                'peek: loop {
+                    match objects.last() {
+                        Some(o) => match self.get_storage_class(o.key.clone()).await? {
+                            StorageClass::STANDARD => {
+                                debug!("{:?} successfully restored", o.key);
+                                break 'peek;
+                            }
+                            StorageClass::GLACIER => {
+                                debug!("{:?} still archived, placing it back in the stack", o.key);
+                                break 'pop;
+                            }
+                        },
+                        None => {
+                            debug!("Reached end of object list, breaking blocking loop");
+                            break 'blocking;
                         }
-                    },
-                    None => {
-                        debug!("Reached end of object list, breaking blocking loop");
-                        break 'blocking;
                     }
+                }
+
+                let log = self.logistic(objects.len());
+                let handles = objects
+                    .chunks(((objects.len() as f32) / (log as f32)).ceil() as usize)
+                    .map(|c| {
+                        let mut chunk = Vec::from(c);
+                        debug!("Got a chunk vector of length {}", chunk.len());
+
+                        let h = self.clone();
+                        tokio::spawn(async move {
+                            loop {
+                                match chunk.pop() {
+                                    Some(o) => match h
+                                        .get_storage_class(o.key.clone())
+                                        .await
+                                        .expect("Failed to get storage class")
+                                    {
+                                        StorageClass::GLACIER => {
+                                            debug!("Still archived, stopping");
+                                            break;
+                                        }
+                                        StorageClass::STANDARD => {
+                                            debug!("Key {} has also been restored", o.key);
+                                        }
+                                    },
+                                    None => return vec![],
+                                }
+                            }
+                            chunk
+                        })
+                    })
+                    .collect::<Vec<JoinHandle<Vec<Object>>>>();
+
+                objects.clear();
+
+                for handle in handles {
+                    objects.append(&mut handle.await?)
                 }
             }
         }
