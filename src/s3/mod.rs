@@ -531,6 +531,7 @@ impl S3Handler {
                             .await
                             .expect("Failed a parallel restoration task");
                     }
+                    debug!("Tokio task completed successfully");
                 })
             })
             .collect::<Vec<JoinHandle<()>>>();
@@ -580,6 +581,7 @@ impl S3Handler {
                             .await
                             .expect("Failed a parallel archive task");
                     }
+                    debug!("Tokio task completed successfully");
                 })
             })
             .collect::<Vec<JoinHandle<()>>>();
@@ -624,11 +626,11 @@ impl S3Handler {
                     match objects.last() {
                         Some(o) => match self.get_storage_class(o.key.clone()).await? {
                             StorageClass::STANDARD => {
-                                debug!("{:?} successfully restored", o.key);
+                                debug!("{:?} successfully restored, chunking and filtering", o.key);
                                 break 'peek;
                             }
                             StorageClass::GLACIER => {
-                                debug!("{:?} still archived, placing it back in the stack", o.key);
+                                debug!("{:?} still archived, back to sleep", o.key);
                                 break 'pop;
                             }
                         },
@@ -676,6 +678,8 @@ impl S3Handler {
                 for handle in handles {
                     objects.append(&mut handle.await?)
                 }
+
+                debug!("Filtered objects list contains {:?} items", objects.len());
             }
         }
         let duration = start.elapsed();
