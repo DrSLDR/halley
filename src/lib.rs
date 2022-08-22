@@ -14,15 +14,15 @@ use crate::types::*;
 pub async fn test_real() -> anyhow::Result<()> {
     let h = s3::S3Handler::new(S3Repo {
         url: "s3.fr-par.scw.cloud".to_owned(),
-        bucket: "testbucket-2".to_owned(),
+        bucket: std::env::var("HALLEY_TEST_BUCKET").unwrap_or("testbucket-2".to_owned()),
         path: Some("bar".to_owned()),
         region: Region::Custom {
             name: "fr-par".to_owned(),
             endpoint: "s3.fr-par.scw.cloud".to_owned(),
         },
         key: AWSKey {
-            id: "[redacted]".to_owned(),
-            secret: "[redacted]".to_owned(),
+            id: std::env::var("HALLEY_TEST_KEY").unwrap_or("[redacted]".to_owned()),
+            secret: std::env::var("HALLEY_TEST_SECRET").unwrap_or("[redacted]".to_owned()),
         },
         common: RepoCommon {
             passwd: "test".to_owned(),
