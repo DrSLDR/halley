@@ -663,6 +663,7 @@ impl S3Handler {
                                     {
                                         StorageClass::GLACIER => {
                                             debug!("Still archived, stopping");
+                                            chunk.push(o);
                                             break;
                                         }
                                         StorageClass::STANDARD => {
@@ -684,6 +685,7 @@ impl S3Handler {
                 }
 
                 debug!("Filtered objects list contains {:?} items", objects.len());
+                break 'pop;
             }
         }
         let duration = start.elapsed();
