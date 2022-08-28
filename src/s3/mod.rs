@@ -517,27 +517,29 @@ impl S3Handler {
         objects.retain(|o| o.class == StorageClass::GLACIER);
 
         let log = self.logistic(objects.len());
-        let chunk_size = self.chunk_size(objects.len(), log);
-        let handles = objects
-            .chunks(chunk_size)
-            .map(|c| {
-                let chunk = Vec::from(c);
-                debug!("Got a chunk vector of length {}", chunk.len());
+        if log > 0 {
+            let chunk_size = self.chunk_size(objects.len(), log);
+            let handles = objects
+                .chunks(chunk_size)
+                .map(|c| {
+                    let chunk = Vec::from(c);
+                    debug!("Got a chunk vector of length {}", chunk.len());
 
-                let h = self.clone();
-                tokio::spawn(async move {
-                    for object in chunk {
-                        h.nospan_restore_object(object.key)
-                            .await
-                            .expect("Failed a parallel restoration task");
-                    }
-                    debug!("Tokio task completed successfully");
+                    let h = self.clone();
+                    tokio::spawn(async move {
+                        for object in chunk {
+                            h.nospan_restore_object(object.key)
+                                .await
+                                .expect("Failed a parallel restoration task");
+                        }
+                        debug!("Tokio task completed successfully");
+                    })
                 })
-            })
-            .collect::<Vec<JoinHandle<()>>>();
+                .collect::<Vec<JoinHandle<()>>>();
 
-        for handle in handles {
-            handle.await?
+            for handle in handles {
+                handle.await?
+            }
         }
 
         let duration = start.elapsed();
@@ -567,27 +569,29 @@ impl S3Handler {
         objects.retain(|o| o.class != StorageClass::GLACIER);
 
         let log = self.logistic(objects.len());
-        let chunk_size = self.chunk_size(objects.len(), log);
-        let handles = objects
-            .chunks(chunk_size)
-            .map(|c| {
-                let chunk = Vec::from(c);
-                debug!("Got a chunk vector of length {}", chunk.len());
+        if log > 0 {
+            let chunk_size = self.chunk_size(objects.len(), log);
+            let handles = objects
+                .chunks(chunk_size)
+                .map(|c| {
+                    let chunk = Vec::from(c);
+                    debug!("Got a chunk vector of length {}", chunk.len());
 
-                let h = self.clone();
-                tokio::spawn(async move {
-                    for object in chunk {
-                        h.nospan_archive_object(object.key)
-                            .await
-                            .expect("Failed a parallel archive task");
-                    }
-                    debug!("Tokio task completed successfully");
+                    let h = self.clone();
+                    tokio::spawn(async move {
+                        for object in chunk {
+                            h.nospan_archive_object(object.key)
+                                .await
+                                .expect("Failed a parallel archive task");
+                        }
+                        debug!("Tokio task completed successfully");
+                    })
                 })
-            })
-            .collect::<Vec<JoinHandle<()>>>();
+                .collect::<Vec<JoinHandle<()>>>();
 
-        for handle in handles {
-            handle.await?
+            for handle in handles {
+                handle.await?
+            }
         }
 
         let duration = start.elapsed();
