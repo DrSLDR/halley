@@ -681,7 +681,9 @@ impl S3Handler {
                 objects.clear();
 
                 for handle in handles {
-                    objects.append(&mut handle.await?)
+                    let mut items = handle.await?;
+                    debug!("Collected {:?} objects from a chunk-task", items.len());
+                    objects.append(&mut items)
                 }
 
                 debug!("Filtered objects list contains {:?} items", objects.len());
