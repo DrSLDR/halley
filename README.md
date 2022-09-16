@@ -13,7 +13,7 @@ First plan of action:
   * [ ] Forget - Filtering snapshots that are too old
   * [ ] Prune - Actually binning unused data
   * [ ] Stats - Getting repository statistics, for logging
-* [ ] Scaffolding to talk to S3
+* [x] Scaffolding to talk to S3
 
 Later on:
 * [ ] A CLI
