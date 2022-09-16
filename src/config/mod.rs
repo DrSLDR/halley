@@ -10,5 +10,5 @@ use crate::types::*;
 use toml;
 
 fn parse_config(text: &str) -> Config {
-    unimplemented!();
+    toml::from_str(text).unwrap()
 }

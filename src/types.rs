@@ -73,7 +73,18 @@ pub enum Repo {
 
 // Then, the configuration file types
 
-#[derive(Debug, Serialize, Deserialize)]
+/// Top-level configuration struct
+///
+/// Contains all the configuration for Halley
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Config {
     statefile_name: String,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            statefile_name: "halley".to_string(),
+        }
+    }
 }
