@@ -4,6 +4,7 @@
 //! also manages moving the relevant repository in and out of cold storage, for cost
 //! saving.
 
+mod config;
 mod restic;
 mod s3;
 mod types;
@@ -38,4 +39,8 @@ pub async fn test_real() -> anyhow::Result<()> {
     h.restore_all_objects_blocking().await?;
 
     Ok(())
+}
+
+pub fn test_config() -> anyhow::Result<()> {
+    unimplemented!();
 }

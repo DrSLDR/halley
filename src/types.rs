@@ -3,6 +3,7 @@
 use crate::trace_call;
 
 pub use rusoto_core::Region;
+use serde::{Deserialize, Serialize};
 use tracing::{trace, trace_span};
 
 // First off, the entire restic group of Repo types.
@@ -68,4 +69,11 @@ impl S3Repo {
 pub enum Repo {
     Local { data: LocalRepo },
     S3 { data: S3Repo },
+}
+
+// Then, the configuration file types
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Config {
+    statefile_name: String,
 }
