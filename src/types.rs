@@ -96,7 +96,7 @@ impl Default for Config {
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct BucketConfig {
     id: String,
-    endpoint: String,
+    endpoint: Option<String>,
     region: String,
     bucket_name: String,
 }
@@ -105,7 +105,7 @@ impl Default for BucketConfig {
     fn default() -> Self {
         Self {
             id: "a_bucket".to_string(),
-            endpoint: "s3.example.org".to_string(),
+            endpoint: Some("s3.example.org".to_string()),
             region: "eu-west-1".to_string(),
             bucket_name: "foo".to_string(),
         }
