@@ -10,12 +10,3 @@ fn log_init() {
         .with_test_writer()
         .try_init();
 }
-
-#[test]
-fn make_and_parse_default() {
-    log_init();
-    let c = Config::default();
-    let c_s = toml::to_string(&c).unwrap();
-    let c_p = parse_config(&c_s);
-    assert_eq!(c, c_p);
-}
