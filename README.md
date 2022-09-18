@@ -17,6 +17,10 @@ First plan of action:
 
 Later on:
 * [ ] A CLI
+  * [ ] Can write a default config file to a given location
+  * [ ] Can start, given a config file
+    * [ ] Can dry run
+    * [ ] Can run a specific repository
 * [ ] Configuration file handling
 * [ ] Scheduling (or whatever we'll call that)
 
