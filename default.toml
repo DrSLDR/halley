@@ -1,7 +1,23 @@
+# The statefile name determines what this config file's statefile should be called. This
+# is useful if you, for some reason, want to have more than one Halley configuration on
+# the same machine.
 statefile_name = "halley"
 
+# Table array of S3 buckets. Can be omitted if no S3 storage is used.
 [[s3_buckets]]
+# Halley-internal ID of the bucket. This is used when referencing it in a repository
+# later.
 id = "main"
+# Endpoint URL. Can be omitted if the "region" is a known AWS region.
 endpoint = "s3.example.org"
+# Region string.
 region = "eu-north-1"
+# Name of the bucket in S3.
 bucket_name = "hink"
+
+# Credentials tied to the bucket
+[s3_buckets.credentials]
+# The AWS_ACCESS_KEY_ID portion
+id = "AnID"
+# The AWS_SECRET_ACCESS_KEY portion
+secret = "ASecret"
