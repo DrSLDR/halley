@@ -18,6 +18,7 @@ First plan of action:
 Later on:
 * [ ] A CLI
   * [ ] Can write a default config file to a given location
+  * [ ] Can validate a config
   * [ ] Can start, given a config file
     * [ ] Can dry run
     * [ ] Can run a specific repository
