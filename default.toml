@@ -1,5 +1,7 @@
 statefile_name = "halley"
 
-s3_buckets = [
-    {id = "main", endpoint = "s3.example.org", region = "eu-north-1", bucket_name = "hink"}
-]
+[[s3_buckets]]
+id = "main"
+endpoint = "s3.example.org"
+region = "eu-north-1"
+bucket_name = "hink"
