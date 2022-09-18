@@ -12,7 +12,7 @@ use figment::{
     providers::{Env, Format, Toml},
     Figment,
 };
-use tracing::{debug, trace, trace_span};
+use tracing::debug;
 
 fn validate_config(cfg: Config) -> anyhow::Result<Config> {
     unimplemented!();
@@ -30,7 +30,7 @@ pub(crate) fn make_config(toml_path: String) -> anyhow::Result<Config> {
     let figment = Figment::new()
         .merge(Toml::file(&toml_path))
         .merge(Env::prefixed("HALLEY_"));
-    trace!("Raw configuration figment: {:?}", figment);
+    debug!("Raw configuration figment: {:?}", figment);
     let config: Config = figment.extract()?;
     debug!("Pre-validation configuration: {:?}", config);
 
