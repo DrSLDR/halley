@@ -37,3 +37,14 @@ password = "kiitos"
 bucket = "main"
 # Optional prefix used in the bucket. A good idea is to use the repo id.
 prefix = "spann"
+
+# A second repository configuration
+[[repositories]]
+id = "local_bucket"
+paths = ["/home/other_user"]
+password = "dolphin"
+
+# A local repository configuration
+[repositories.backend.Local]
+# (Absolute) path to the local repository
+path = "/tmp/tump/tamp"
