@@ -129,8 +129,6 @@ impl Default for BucketConfig {
 pub struct RepoConfig {
     id: String,
     paths: Vec<String>,
-    bucket: String,
-    prefix: Option<String>,
     password: String,
     backend: StorageBackend,
 }
@@ -140,8 +138,6 @@ impl Default for RepoConfig {
         Self {
             id: "a_repo".to_string(),
             paths: vec!["/home".to_string()],
-            bucket: "a_bucket".to_string(),
-            prefix: None,
             password: "foo".to_string(),
             backend: StorageBackend::Local(LocalStorageBackend {
                 path: "/tmp/foo".to_string(),
