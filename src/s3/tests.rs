@@ -15,6 +15,7 @@ macro_rules! get_s3_repo {
 
 #[test]
 fn spawn_handler() {
+    log_init();
     let repo = get_s3_repo!();
     let _h: S3Handler = S3Handler::new(repo);
 }
@@ -43,9 +44,10 @@ macro_rules! make_s3_client {
 }
 
 macro_rules! s3h {
-    ($rd:expr, $repo:expr) => {
+    ($rd:expr, $repo:expr) => {{
+        log_init();
         S3Handler::new_with_client($repo, make_s3_client!($rd, $repo.region))
-    };
+    }};
     ($rd:expr) => {
         s3h!($rd, get_s3_repo!())
     };

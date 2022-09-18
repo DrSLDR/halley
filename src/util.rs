@@ -42,6 +42,8 @@ pub(crate) mod test_utils {
 
     use crate::types::*;
 
+    use tracing::Level;
+
     pub(crate) fn common_repo_def() -> RepoCommon {
         RepoCommon {
             passwd: "test".to_string(),
@@ -75,5 +77,12 @@ pub(crate) mod test_utils {
                 common: common_repo_def(),
             },
         }
+    }
+
+    pub fn log_init() {
+        let _ = tracing_subscriber::fmt()
+            .with_max_level(Level::TRACE)
+            .with_test_writer()
+            .try_init();
     }
 }
