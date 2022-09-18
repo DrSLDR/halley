@@ -2,7 +2,6 @@
 
 use crate::trace_call;
 
-use figment::{providers::Toml, Figment};
 pub use rusoto_core::Region;
 use serde::{Deserialize, Serialize};
 use tracing::{trace, trace_span};
