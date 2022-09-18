@@ -106,7 +106,7 @@ impl Default for BucketConfig {
         Self {
             id: "a_bucket".to_string(),
             endpoint: "s3.example.org".to_string(),
-            region: "EuWest1".to_string(),
+            region: "eu-west-1".to_string(),
             bucket_name: "foo".to_string(),
         }
     }
