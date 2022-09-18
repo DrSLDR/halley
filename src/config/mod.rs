@@ -5,10 +5,34 @@
 #[cfg(test)]
 mod tests;
 
+use crate::trace_call;
 use crate::types::*;
 
-use toml;
+use figment::{
+    providers::{Env, Format, Toml},
+    Figment,
+};
+use tracing::{debug, trace, trace_span};
 
-fn parse_config(text: &str) -> Config {
-    toml::from_str(text).unwrap()
+fn validate_config(cfg: Config) -> anyhow::Result<Config> {
+    unimplemented!();
+}
+
+/// Collects a Config from the available sources
+///
+/// The sources in use are the provided toml configuration file as well as the
+/// environment.
+///
+/// This Config could be internally inconsistent, so validation is needed before it is
+/// used.
+pub(crate) fn make_config(toml_path: String) -> anyhow::Result<Config> {
+    trace_call!("make_config", "called with conf. file {}", toml_path);
+    let figment = Figment::new()
+        .merge(Toml::file(&toml_path))
+        .merge(Env::prefixed("HALLEY_"));
+    trace!("Raw configuration figment: {:?}", figment);
+    let config: Config = figment.extract()?;
+    debug!("Pre-validation configuration: {:?}", config);
+
+    anyhow::Ok(config)
 }

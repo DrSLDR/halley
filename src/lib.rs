@@ -47,10 +47,7 @@ pub async fn test_real() -> anyhow::Result<()> {
 }
 
 pub fn test_config() -> anyhow::Result<()> {
-    let figment = Figment::from(Toml::file("default.toml"));
-    println!("{:?}", figment);
-    let config: Config = figment.extract()?;
-    println!("{:?}", config);
+    let c = config::make_config("default.toml".to_owned())?;
 
     Ok(())
 }
