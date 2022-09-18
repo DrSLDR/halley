@@ -32,7 +32,7 @@ pub(crate) fn make_config(toml_path: String) -> anyhow::Result<Config> {
         .merge(Env::prefixed("HALLEY_"));
     debug!("Raw configuration figment: {:?}", figment);
     let config: Config = figment.extract()?;
-    debug!("Pre-validation configuration: {:?}", config);
+    debug!("Pre-validation configuration: {:#?}", config);
 
     anyhow::Ok(config)
 }
