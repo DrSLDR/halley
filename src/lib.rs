@@ -12,6 +12,11 @@ mod util;
 
 use crate::types::*;
 
+use figment::{
+    providers::{Format, Toml},
+    Figment,
+};
+
 pub async fn test_real() -> anyhow::Result<()> {
     let h = s3::S3Handler::new(S3Repo {
         url: "s3.fr-par.scw.cloud".to_owned(),
@@ -42,5 +47,10 @@ pub async fn test_real() -> anyhow::Result<()> {
 }
 
 pub fn test_config() -> anyhow::Result<()> {
-    unimplemented!();
+    let figment = Figment::from(Toml::file("default.toml"));
+    println!("{:?}", figment);
+    let config: Config = figment.extract()?;
+    println!("{:?}", config);
+
+    Ok(())
 }

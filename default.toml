@@ -1,0 +1,5 @@
+statefile_name = "halley"
+
+s3_buckets = [
+    {id = "main", endpoint = "s3.example.org", region = "EuNorth1", bucket_name = "hink"}
+]

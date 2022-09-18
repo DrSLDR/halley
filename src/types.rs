@@ -95,15 +95,19 @@ impl Default for Config {
 /// Configuration for an S3 bucket
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct BucketConfig {
-    name: String,
-    base_url: String,
+    id: String,
+    endpoint: String,
+    region: String,
+    bucket_name: String,
 }
 
 impl Default for BucketConfig {
     fn default() -> Self {
         Self {
-            name: "a_bucket".to_string(),
-            base_url: "s3.example.org".to_string(),
+            id: "a_bucket".to_string(),
+            endpoint: "s3.example.org".to_string(),
+            region: "EuWest1".to_string(),
+            bucket_name: "foo".to_string(),
         }
     }
 }
