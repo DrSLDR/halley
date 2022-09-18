@@ -132,6 +132,7 @@ pub struct RepoConfig {
     bucket: String,
     prefix: Option<String>,
     password: String,
+    backend: StorageBackend,
 }
 
 impl Default for RepoConfig {
@@ -142,6 +143,29 @@ impl Default for RepoConfig {
             bucket: "a_bucket".to_string(),
             prefix: None,
             password: "foo".to_string(),
+            backend: StorageBackend::Local(LocalStorageBackend {
+                path: "/tmp/foo".to_string(),
+            }),
         }
     }
+}
+
+/// Allowed storage backends
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub enum StorageBackend {
+    Local(LocalStorageBackend),
+    S3(S3StorageBackend),
+}
+
+/// Local storage backend
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct LocalStorageBackend {
+    path: String,
+}
+
+/// S3 Backend configuration
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct S3StorageBackend {
+    bucket: String,
+    prefix: Option<String>,
 }
