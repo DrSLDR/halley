@@ -28,9 +28,12 @@ secret = "ASecret"
 id = "spann"
 # Array of paths that will be backed up
 paths = ["/home/user", "/etc/that/one/service"]
+# Password to the repository
+password = "kiitos"
+
+# Backend configuration for the repository, here using S3
+[repositories.backend.S3]
 # Bucket ID of a bucket defined above where this will all be backed up
 bucket = "main"
 # Optional prefix used in the bucket. A good idea is to use the repo id.
 prefix = "spann"
-# Password to the repository
-password = "kiitos"
