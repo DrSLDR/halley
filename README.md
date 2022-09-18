@@ -23,6 +23,15 @@ Later on:
     * [ ] Can dry run
     * [ ] Can run a specific repository
 * [ ] Configuration file handling
+  * [x] Can open and read a file
+  * [x] Understand S3 details
+  * [x] Understand one or more repositories
+  * [ ] Allow globbing in repository paths
+  * [ ] Also want to define:
+    * [ ] S3Handler internal settings
+    * [ ] Retention policies
+    * [ ] Defaults for all repositories
+    * [ ] Maybe possibly Deep Magic™ restic settings
 * [ ] Scheduling (or whatever we'll call that)
 
 ## License
