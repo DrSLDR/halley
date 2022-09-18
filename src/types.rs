@@ -80,12 +80,30 @@ pub enum Repo {
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Config {
     statefile_name: String,
+    s3_buckets: Option<Vec<BucketConfig>>,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
             statefile_name: "halley".to_string(),
+            s3_buckets: Some(vec![BucketConfig::default()]),
+        }
+    }
+}
+
+/// Configuration for an S3 bucket
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct BucketConfig {
+    name: String,
+    base_url: String,
+}
+
+impl Default for BucketConfig {
+    fn default() -> Self {
+        Self {
+            name: "a_bucket".to_string(),
+            base_url: "s3.example.org".to_string(),
         }
     }
 }
