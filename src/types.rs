@@ -10,12 +10,21 @@ use tracing::{trace, trace_span};
 // First off, the entire restic group of Repo types.
 
 /// Container for an AWS key pair
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub(crate) struct AWSKey {
     /// The `AWS_ACCESS_KEY_ID` portion
     pub(crate) id: String,
     /// The `AWS_SECRET_ACCESS_KEY` portion
     pub(crate) secret: String,
+}
+
+impl Default for AWSKey {
+    fn default() -> Self {
+        Self {
+            id: "id".to_string(),
+            secret: "secret".to_string(),
+        }
+    }
 }
 
 /// Container for data common to any type of repository
@@ -99,6 +108,7 @@ pub struct BucketConfig {
     endpoint: Option<String>,
     region: String,
     bucket_name: String,
+    credentials: AWSKey,
 }
 
 impl Default for BucketConfig {
@@ -108,6 +118,7 @@ impl Default for BucketConfig {
             endpoint: Some("s3.example.org".to_string()),
             region: "eu-west-1".to_string(),
             bucket_name: "foo".to_string(),
+            credentials: AWSKey::default(),
         }
     }
 }
