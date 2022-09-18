@@ -21,3 +21,16 @@ bucket_name = "hink"
 id = "AnID"
 # The AWS_SECRET_ACCESS_KEY portion
 secret = "ASecret"
+
+[[repositories]]
+# Halley-internal ID of the repository. Will be used when tracking its state and in
+# logging.
+id = "spann"
+# Array of paths that will be backed up
+paths = ["/home/user", "/etc/that/one/service"]
+# Bucket ID of a bucket defined above where this will all be backed up
+bucket = "main"
+# Optional prefix used in the bucket. A good idea is to use the repo id.
+prefix = "spann"
+# Password to the repository
+password = "kiitos"
