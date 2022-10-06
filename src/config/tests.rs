@@ -48,3 +48,16 @@ fn no_backend_validation() {
     password = 'b'";
     let _: ReadConfig = figment_read!(toml_string);
 }
+
+#[test]
+fn single_validation() {
+    let toml_string = "version = 1
+    statefile_name = 'foo'
+    [[repositories]]
+    id = 'a'
+    paths = ['/home']
+    password = 'b'
+    [repositories.backend.local]
+    path = '/tmp'";
+    let _: ReadConfig = figment_read!(toml_string);
+}
