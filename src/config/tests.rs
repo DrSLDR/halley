@@ -24,9 +24,13 @@ fn integration_default_readback() {
 #[test]
 #[should_panic]
 fn no_repo_validation() {
+    log_init();
     let toml_string = "version = 1
     statefile_name = 'foo'";
-    let _: ReadConfig = toml::from_str(&toml_string).unwrap();
+    let _: ReadConfig = Figment::new()
+        .join(Toml::string(toml_string))
+        .extract()
+        .unwrap();
 }
 
 #[test]
