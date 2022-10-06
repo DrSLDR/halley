@@ -51,6 +51,7 @@ fn no_backend_validation() {
 
 #[test]
 fn single_validation() {
+    log_init();
     let toml_string = "version = 1
     statefile_name = 'foo'
     [[repositories]]
@@ -66,6 +67,7 @@ fn single_validation() {
 
 #[test]
 fn single_validation_s3_no_bucket() {
+    log_init();
     let toml_string = "version = 1
     statefile_name = 'foo'
     [[repositories]]
