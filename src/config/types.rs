@@ -64,9 +64,7 @@ impl Default for RepoConfig {
             id: "a_repo".to_string(),
             paths: vec!["/home".to_string()],
             password: "foo".to_string(),
-            backend: StorageBackend::local(LocalStorageBackend {
-                path: "/tmp/foo".to_string(),
-            }),
+            backend: StorageBackend::dummy,
         }
     }
 }
@@ -75,6 +73,8 @@ impl Default for RepoConfig {
 #[allow(non_camel_case_types)]
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub enum StorageBackend {
+    /// Used for readback tests only, since enums can't be serialized
+    dummy,
     local(LocalStorageBackend),
     s3(S3StorageBackend),
 }
