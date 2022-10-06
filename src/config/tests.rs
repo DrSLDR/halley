@@ -59,5 +59,7 @@ fn single_validation() {
     password = 'b'
     [repositories.backend.local]
     path = '/tmp'";
-    let _: ReadConfig = figment_read!(toml_string);
+    let rc: ReadConfig = figment_read!(toml_string);
+    let c = validate_config(rc);
+    assert!(c.is_ok());
 }
