@@ -29,3 +29,18 @@ fn simple_validation() {
     let c = validate_config(rc);
     assert!(c.is_err());
 }
+
+#[test]
+fn single_validation() {
+    let toml_string = "version = 1
+    statefile_name = 'foo'
+    [[repositories]]
+    id = 'a'
+    paths = ['/home']
+    password = 'b'
+    [repositories.backend.local]
+    path = '/tmp'";
+    let rc: ReadConfig = toml::from_str(&toml_string).unwrap();
+    let c = validate_config(rc);
+    assert!(c.is_ok());
+}
