@@ -17,7 +17,7 @@ use figment::{
 };
 use tracing::debug;
 
-fn validate_config(cfg: Config) -> anyhow::Result<Config> {
+fn validate_config(cfg: ReadConfig) -> anyhow::Result<Config> {
     unimplemented!();
 }
 
@@ -28,13 +28,13 @@ fn validate_config(cfg: Config) -> anyhow::Result<Config> {
 ///
 /// This Config could be internally inconsistent, so validation is needed before it is
 /// used.
-pub(crate) fn make_config(toml_path: String) -> anyhow::Result<Config> {
+pub(crate) fn make_config(toml_path: String) -> anyhow::Result<ReadConfig> {
     trace_call!("make_config", "called with conf. file {}", toml_path);
     let figment = Figment::new()
         .merge(Toml::file(&toml_path))
         .merge(Env::prefixed("HALLEY_"));
     debug!("Raw configuration figment: {:?}", figment);
-    let config: Config = figment.extract()?;
+    let config: ReadConfig = figment.extract()?;
     debug!("Pre-validation configuration: {:#?}", config);
 
     anyhow::Ok(config)

@@ -4,18 +4,19 @@ use crate::types::*;
 
 use serde::{Deserialize, Serialize};
 
-/// Top-level configuration struct
+/// Top-level configuration struct as read from a configuration file
 ///
-/// Contains all the configuration for Halley
+/// Contains all the configuration for Halley, prior to it being processed and
+/// validated. Defines the structure of the `toml` configuration file.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
-pub struct Config {
+pub struct ReadConfig {
     version: u32,
     statefile_name: String,
     s3_buckets: Option<Vec<BucketConfig>>,
     repositories: Option<Vec<RepoConfig>>,
 }
 
-impl Default for Config {
+impl Default for ReadConfig {
     fn default() -> Self {
         Self {
             version: 1,
@@ -89,4 +90,13 @@ pub struct LocalStorageBackend {
 pub struct S3StorageBackend {
     bucket: String,
     prefix: Option<String>,
+}
+
+/// Top-level validated configuration struct
+///
+/// This is Halley's internal configuration object, which will be used to inform how it
+/// runs.
+#[derive(Debug)]
+pub struct Config {
+    origin: ReadConfig,
 }

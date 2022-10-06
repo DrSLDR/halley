@@ -10,7 +10,7 @@ use tracing::{error, trace};
 #[ignore]
 fn integration_default_readback() {
     log_init();
-    let c = Config::default();
+    let c = ReadConfig::default();
     let c_string = toml::to_string_pretty(&c).unwrap();
     let cf = assert_fs::NamedTempFile::new("test.toml").unwrap();
     let mut cf_handle = File::create(cf.path()).unwrap();
