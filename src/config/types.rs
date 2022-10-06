@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 /// Contains all the configuration for Halley
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Config {
+    version: u32,
     statefile_name: String,
     s3_buckets: Option<Vec<BucketConfig>>,
     repositories: Option<Vec<RepoConfig>>,
@@ -17,6 +18,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            version: 1,
             statefile_name: "halley".to_string(),
             s3_buckets: Some(vec![BucketConfig::default()]),
             repositories: Some(vec![RepoConfig::default()]),
