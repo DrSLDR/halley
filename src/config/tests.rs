@@ -22,12 +22,11 @@ fn integration_default_readback() {
 }
 
 #[test]
-fn simple_validation() {
+#[should_panic]
+fn no_repo_validation() {
     let toml_string = "version = 1
     statefile_name = 'foo'";
     let rc: ReadConfig = toml::from_str(&toml_string).unwrap();
-    let c = validate_config(rc);
-    assert!(c.is_err());
 }
 
 #[test]
