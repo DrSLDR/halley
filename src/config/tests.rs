@@ -21,16 +21,19 @@ fn integration_default_readback() {
     assert_eq!(c, c_parsed);
 }
 
+macro_rules! figment_read {
+    ($s:ident) => {
+        Figment::new().join(Toml::string($s)).extract().unwrap()
+    };
+}
+
 #[test]
 #[should_panic]
 fn no_repo_validation() {
     log_init();
     let toml_string = "version = 1
     statefile_name = 'foo'";
-    let _: ReadConfig = Figment::new()
-        .join(Toml::string(toml_string))
-        .extract()
-        .unwrap();
+    let _: ReadConfig = figment_read!(toml_string);
 }
 
 #[test]
