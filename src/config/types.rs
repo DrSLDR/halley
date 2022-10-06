@@ -98,5 +98,5 @@ pub struct S3StorageBackend {
 /// runs.
 #[derive(Debug)]
 pub struct Config {
-    origin: ReadConfig,
+    pub(crate) origin: ReadConfig,
 }

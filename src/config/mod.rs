@@ -17,8 +17,11 @@ use figment::{
 };
 use tracing::debug;
 
-fn validate_config(cfg: ReadConfig) -> anyhow::Result<Config> {
-    unimplemented!();
+fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
+    trace_call!("validate_config", "called with rc {:?}", rc);
+    let c = Config { origin: rc };
+
+    anyhow::Ok(c)
 }
 
 /// Collects a Config from the available sources
