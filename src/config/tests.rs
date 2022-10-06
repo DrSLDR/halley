@@ -20,3 +20,12 @@ fn integration_default_readback() {
     let c_parsed = make_config(cf.path().to_string_lossy().to_string()).unwrap();
     assert_eq!(c, c_parsed);
 }
+
+#[test]
+fn simple_validation() {
+    let toml_string = "version = 1
+    statefile_name = 'foo'";
+    let rc: ReadConfig = toml::from_str(&toml_string).unwrap();
+    let c = validate_config(rc);
+    assert!(c.is_err());
+}
