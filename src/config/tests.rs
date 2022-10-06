@@ -63,3 +63,18 @@ fn single_validation() {
     let c = validate_config(rc);
     assert!(c.is_ok());
 }
+
+#[test]
+fn single_validation_s3_no_bucket() {
+    let toml_string = "version = 1
+    statefile_name = 'foo'
+    [[repositories]]
+    id = 'a'
+    paths = ['/home']
+    password = 'b'
+    [repositories.backend.s3]
+    bucket = 'c'";
+    let rc: ReadConfig = figment_read!(toml_string);
+    let c = validate_config(rc);
+    assert!(c.is_err());
+}
