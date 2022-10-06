@@ -5,7 +5,7 @@
 #[cfg(test)]
 mod tests;
 
-mod types;
+pub mod types;
 use types::*;
 
 use crate::trace_call;
