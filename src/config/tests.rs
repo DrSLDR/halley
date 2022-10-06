@@ -30,16 +30,13 @@ fn no_repo_validation() {
 }
 
 #[test]
-fn single_validation() {
+#[should_panic]
+fn no_backend_validation() {
     let toml_string = "version = 1
     statefile_name = 'foo'
     [[repositories]]
     id = 'a'
     paths = ['/home']
-    password = 'b'
-    [repositories.backend.local]
-    path = '/tmp'";
-    let rc: ReadConfig = toml::from_str(&toml_string).unwrap();
-    let c = validate_config(rc);
-    assert!(c.is_ok());
+    password = 'b'";
+    let _: ReadConfig = toml::from_str(&toml_string).unwrap();
 }
