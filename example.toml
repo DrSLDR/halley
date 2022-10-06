@@ -54,3 +54,15 @@ password = "dolphin"
 [repositories.backend.local]
 # (Absolute) path to the local repository
 path = "/tmp/tump/tamp"
+
+
+# A third repository, using the same S3 bucket as above, but with a different prefix
+[[repositories]]
+id = "globule"
+# Paths, demonstrating that globbing is possible
+paths = ["/mnt/bigstore/[A-Ea-e]*"]
+password = "bulbous"
+
+[repositories.backend.s3]
+bucket = "main"
+prefix = "glob"
