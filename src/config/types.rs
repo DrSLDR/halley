@@ -13,7 +13,7 @@ pub struct ReadConfig {
     version: u32,
     statefile_name: String,
     s3_buckets: Option<Vec<BucketConfig>>,
-    repositories: Option<Vec<RepoConfig>>,
+    repositories: Vec<RepoConfig>,
 }
 
 impl Default for ReadConfig {
@@ -22,7 +22,7 @@ impl Default for ReadConfig {
             version: 1,
             statefile_name: "halley".to_string(),
             s3_buckets: Some(vec![BucketConfig::default()]),
-            repositories: Some(vec![RepoConfig::default()]),
+            repositories: vec![RepoConfig::default()],
         }
     }
 }
