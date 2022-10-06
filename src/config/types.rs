@@ -2,6 +2,8 @@
 
 use crate::types as general;
 
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 /// Top-level configuration struct as read from a configuration file
@@ -99,4 +101,11 @@ pub struct S3StorageBackend {
 #[derive(Debug)]
 pub struct Config {
     pub(crate) origin: ReadConfig,
+    pub(crate) repositories: HashMap<String, Repo>,
 }
+
+/// Validated configuration for a repo
+///
+/// Contains both local and remote (restic) components
+#[derive(Debug)]
+pub struct Repo {}
