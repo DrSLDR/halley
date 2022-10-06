@@ -39,11 +39,12 @@ fn no_repo_validation() {
 #[test]
 #[should_panic]
 fn no_backend_validation() {
+    log_init();
     let toml_string = "version = 1
     statefile_name = 'foo'
     [[repositories]]
     id = 'a'
     paths = ['/home']
     password = 'b'";
-    let _: ReadConfig = toml::from_str(&toml_string).unwrap();
+    let _: ReadConfig = figment_read!(toml_string);
 }
