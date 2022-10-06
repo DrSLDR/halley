@@ -1,3 +1,9 @@
+# This is an example configuration file for Halley
+
+# Configuration version. This is mandatory, and helps Halley determine how it should
+# process the config.
+version = 1
+
 # The statefile name determines what this config file's statefile should be called. This
 # is useful if you, for some reason, want to have more than one Halley configuration on
 # the same machine.
@@ -32,7 +38,7 @@ paths = ["/home/user", "/etc/that/one/service"]
 password = "kiitos"
 
 # Backend configuration for the repository, here using S3
-[repositories.backend.S3]
+[repositories.backend.s3]
 # Bucket ID of a bucket defined above where this will all be backed up
 bucket = "main"
 # Optional prefix used in the bucket. A good idea is to use the repo id.
@@ -45,6 +51,6 @@ paths = ["/home/other_user"]
 password = "dolphin"
 
 # A local repository configuration
-[repositories.backend.Local]
+[repositories.backend.local]
 # (Absolute) path to the local repository
 path = "/tmp/tump/tamp"
