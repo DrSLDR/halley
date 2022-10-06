@@ -1,6 +1,6 @@
 //! Types belonging to the configuration processor
 
-use crate::types::*;
+use crate::types as general;
 
 use serde::{Deserialize, Serialize};
 
@@ -34,7 +34,7 @@ pub struct BucketConfig {
     endpoint: Option<String>,
     region: String,
     bucket_name: String,
-    credentials: AWSKey,
+    credentials: general::AWSKey,
 }
 
 impl Default for BucketConfig {
@@ -44,7 +44,7 @@ impl Default for BucketConfig {
             endpoint: Some("s3.example.org".to_string()),
             region: "eu-west-1".to_string(),
             bucket_name: "foo".to_string(),
-            credentials: AWSKey::default(),
+            credentials: general::AWSKey::default(),
         }
     }
 }
