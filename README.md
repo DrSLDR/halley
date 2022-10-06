@@ -17,7 +17,10 @@ First plan of action:
 
 Later on:
 * [ ] A CLI
-  * [ ] Can write a default config file to a given location
+  * [ ] ~~Can write a default config file to a given location~~
+
+    Nope, due to limitations in the `toml` serializer, that won't be possible.
+
   * [ ] Can validate a config
   * [ ] Can start, given a config file
     * [ ] Can dry run
