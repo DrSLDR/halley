@@ -26,7 +26,7 @@ fn integration_default_readback() {
 fn no_repo_validation() {
     let toml_string = "version = 1
     statefile_name = 'foo'";
-    let rc: ReadConfig = toml::from_str(&toml_string).unwrap();
+    let _: ReadConfig = toml::from_str(&toml_string).unwrap();
 }
 
 #[test]
