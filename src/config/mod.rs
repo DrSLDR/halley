@@ -19,7 +19,7 @@ use figment::{
     providers::{Env, Format, Toml},
     Figment,
 };
-use tracing::{debug, error};
+use tracing::{debug, error, info, warn};
 
 /// Processes a `ReadConfig` into a valid `Config`
 fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
@@ -45,10 +45,21 @@ fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
     }
     debug!("Mapped repositories: {:?}", repos);
 
+    for (k, v) in buckets.iter() {
+        if !v.used {
+            warn!("Bucket {} is defined but never used!", k);
+        };
+    }
+
     let c = Config {
         origin: rc,
         repositories: repos,
     };
+
+    info!(
+        "Validated configuration with {} repositories",
+        c.repositories.len()
+    );
 
     anyhow::Ok(c)
 }
