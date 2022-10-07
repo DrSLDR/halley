@@ -25,12 +25,23 @@ fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
 
     let mut repos: HashMap<String, Repo> = HashMap::new();
 
+    for repo in &rc.repositories {
+        debug!("Processing repo {:?}", repo);
+        let key = repo.id.clone();
+        repos.insert(key, process_repo(repo)?);
+    }
+
     let c = Config {
         origin: rc,
         repositories: repos,
     };
 
     anyhow::Ok(c)
+}
+
+/// Processes a single repo configuration
+fn process_repo(r: &RepoConfig) -> anyhow::Result<Repo> {
+    anyhow::Ok(Repo {})
 }
 
 /// Collects a Config from the available sources
