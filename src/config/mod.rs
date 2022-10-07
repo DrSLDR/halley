@@ -133,7 +133,7 @@ fn process_repo(
     }
 }
 
-/// Collects a Config from the available sources
+/// Collects a ReadConfig from the available sources
 ///
 /// The sources in use are the provided toml configuration file as well as the
 /// environment.
@@ -148,6 +148,21 @@ pub(crate) fn make_config(toml_path: String) -> anyhow::Result<ReadConfig> {
     debug!("Raw configuration figment: {:?}", figment);
     let config: ReadConfig = figment.extract()?;
     debug!("Pre-validation configuration: {:#?}", config);
+
+    Ok(config)
+}
+
+/// Collects a Config from the available sources
+///
+/// Does the same thing as `make_config`, but also runs validation
+pub(crate) fn make_and_validate_config(toml_path: String) -> anyhow::Result<Config> {
+    trace_call!(
+        "make_and_validate_config",
+        "called with conf. file {}",
+        toml_path
+    );
+    let config = validate_config(make_config(toml_path)?)?;
+    debug!("Validated configuration: {:#?}", config);
 
     Ok(config)
 }

@@ -47,7 +47,7 @@ pub async fn test_real() -> anyhow::Result<()> {
 }
 
 pub fn test_config() -> anyhow::Result<()> {
-    let c = config::make_config("example.toml".to_owned())?;
+    let c = config::make_and_validate_config("example.toml".to_owned())?;
 
     Ok(())
 }
