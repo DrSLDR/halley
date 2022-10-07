@@ -82,3 +82,29 @@ fn single_validation_s3_no_bucket() {
     let c = validate_config(rc);
     assert!(c.is_err());
 }
+
+#[test]
+fn single_validation_s3() {
+    log_init();
+    let toml_string = "version = 1
+    statefile_name = 'foo'
+    [[repositories]]
+    id = 'a'
+    paths = ['/home']
+    password = 'b'
+    [repositories.backend.s3]
+    bucket = 'c'
+    [[s3_buckets]]
+    id = 'c'
+    endpoint = 's3.eu-west-1.amazonaws.com'
+    region = 'eu-west-1'
+    bucket_name = 'bar'
+    [s3_buckets.credentials]
+    id = 'id'
+    secret = 'secret'";
+    let rc: ReadConfig = figment_read!(toml_string);
+    let c = validate_config(rc);
+    assert!(c.is_ok());
+    let c = c.unwrap();
+    assert!(c.repositories.contains_key("a"))
+}
