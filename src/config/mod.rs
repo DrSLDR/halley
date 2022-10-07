@@ -41,7 +41,7 @@ fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
     for repo in &rc.repositories {
         debug!("Processing repo {:?}", repo);
         let key = repo.id.clone();
-        repos.insert(key, process_repo(repo)?);
+        repos.insert(key, process_repo(repo, &buckets)?);
     }
     debug!("Mapped repositories: {:?}", repos);
 
@@ -71,7 +71,7 @@ fn process_bucket(b: &BucketConfig) -> PartialBucket {
 }
 
 /// Processes a single repo configuration
-fn process_repo(r: &RepoConfig) -> anyhow::Result<Repo> {
+fn process_repo(r: &RepoConfig, buckets: &HashMap<String, PartialBucket>) -> anyhow::Result<Repo> {
     trace_call!("process_repo", "called with {:?}", r);
 
     let common = general::RepoCommon {
@@ -91,7 +91,27 @@ fn process_repo(r: &RepoConfig) -> anyhow::Result<Repo> {
                 },
             },
         }),
-        s3(data) => unimplemented!(),
+        s3(data) => match buckets.get(&data.bucket) {
+            Some(bucket) => Ok(Repo {
+                restic: general::Repo::S3 {
+                    data: general::S3Repo {
+                        bucket: bucket.bucket.clone(),
+                        url: bucket.endpoint.clone(),
+                        region: bucket.region.clone(),
+                        path: data.prefix.clone(),
+                        key: bucket.key.clone(),
+                        common,
+                    },
+                },
+            }),
+            None => {
+                error!(
+                    "Repository {} references unknown bucket {}",
+                    &r.id, data.bucket
+                );
+                Err(anyhow::Error::msg("Repository reference to unknown bucket"))
+            }
+        },
     }
 }
 
