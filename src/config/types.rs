@@ -111,3 +111,15 @@ pub struct Config {
 pub struct Repo {
     pub(crate) restic: general::Repo,
 }
+
+/// Validated, partial configuration for a bucket
+///
+/// This will then be used to construct an `S3Repo`, but we need an intermediate struct
+/// to hold the data we can read from the configuration.
+#[derive(Debug)]
+pub struct PartialBucket {
+    pub(crate) region: general::Region,
+    pub(crate) bucket: String,
+    pub(crate) endpoint: String,
+    pub(crate) key: general::AWSKey,
+}

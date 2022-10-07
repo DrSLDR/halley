@@ -24,6 +24,17 @@ use tracing::{debug, error};
 fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
     trace_call!("validate_config", "called with rc {:?}", rc);
 
+    let mut buckets: HashMap<String, PartialBucket> = HashMap::new();
+
+    if rc.s3_buckets.is_some() {
+        for bucket in rc.s3_buckets.as_ref().unwrap() {
+            debug!("Processing bucket {:?}", bucket);
+            let key = bucket.id.clone();
+            buckets.insert(key, process_bucket(&bucket)?);
+        }
+    }
+    debug!("Mapped S3 buckets: {:?}", buckets);
+
     let mut repos: HashMap<String, Repo> = HashMap::new();
 
     for repo in &rc.repositories {
@@ -39,6 +50,11 @@ fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
     };
 
     anyhow::Ok(c)
+}
+
+/// Processes a single bucket configuration
+fn process_bucket(b: &BucketConfig) -> anyhow::Result<PartialBucket> {
+    unimplemented!()
 }
 
 /// Processes a single repo configuration
