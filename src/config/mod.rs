@@ -6,6 +6,7 @@
 mod tests;
 
 pub mod types;
+use types::StorageBackend::*;
 use types::*;
 
 use crate::trace_call;
@@ -30,6 +31,7 @@ fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
         let key = repo.id.clone();
         repos.insert(key, process_repo(repo)?);
     }
+    debug!("Mapped repositories: {:?}", repos);
 
     let c = Config {
         origin: rc,
@@ -41,7 +43,26 @@ fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
 
 /// Processes a single repo configuration
 fn process_repo(r: &RepoConfig) -> anyhow::Result<Repo> {
-    anyhow::Ok(Repo {})
+    trace_call!("process_repo", "called with {:?}", r);
+
+    let common = general::RepoCommon {
+        passwd: r.password.clone(),
+    };
+
+    match &r.backend {
+        dummy => Err(anyhow::Error::msg("Dummy backends not validatable!")),
+        local(data) => Ok(Repo {
+            restic: general::Repo::Local {
+                data: general::LocalRepo {
+                    path: data.path.clone(),
+                    common,
+                },
+            },
+        }),
+        s3(data) => {
+            unimplemented!()
+        }
+    }
 }
 
 /// Collects a Config from the available sources

@@ -108,4 +108,6 @@ pub struct Config {
 ///
 /// Contains both local and remote (restic) components
 #[derive(Debug)]
-pub struct Repo {}
+pub struct Repo {
+    pub(crate) restic: general::Repo,
+}
