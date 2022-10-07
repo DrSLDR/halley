@@ -13,6 +13,7 @@ use crate::trace_call;
 use crate::types as general;
 
 use std::collections::HashMap;
+use std::str::FromStr;
 
 use figment::{
     providers::{Env, Format, Toml},
@@ -54,7 +55,22 @@ fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
 
 /// Processes a single bucket configuration
 fn process_bucket(b: &BucketConfig) -> anyhow::Result<PartialBucket> {
-    unimplemented!()
+    let region = match general::Region::from_str(&b.region) {
+        Ok(region) => region,
+        Err(err) => match &b.endpoint {
+            Some(endpoint) => Ok(general::Region::Custom {
+                name: b.region.clone(),
+                endpoint: endpoint.clone(),
+            }),
+            None => {
+                error!(
+                    "Bucket {} has unrecognized region ({}) and no endpoint!",
+                    &b.id, &b.region
+                );
+                Err(anyhow::Error::msg("Bucket could not be validated"))
+            }
+        }?,
+    };
 }
 
 /// Processes a single repo configuration
