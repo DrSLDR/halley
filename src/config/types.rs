@@ -32,11 +32,11 @@ impl Default for ReadConfig {
 /// Configuration for an S3 bucket
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct BucketConfig {
-    id: String,
-    endpoint: Option<String>,
-    region: String,
-    bucket_name: String,
-    credentials: general::AWSKey,
+    pub(crate) id: String,
+    pub(crate) endpoint: Option<String>,
+    pub(crate) region: String,
+    pub(crate) bucket_name: String,
+    pub(crate) credentials: general::AWSKey,
 }
 
 impl Default for BucketConfig {
@@ -54,10 +54,10 @@ impl Default for BucketConfig {
 /// Configuration for a repository
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct RepoConfig {
-    id: String,
-    paths: Vec<String>,
-    password: String,
-    backend: StorageBackend,
+    pub(crate) id: String,
+    pub(crate) paths: Vec<String>,
+    pub(crate) password: String,
+    pub(crate) backend: StorageBackend,
 }
 
 impl Default for RepoConfig {
@@ -84,14 +84,14 @@ pub enum StorageBackend {
 /// Local storage backend
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct LocalStorageBackend {
-    path: String,
+    pub(crate) path: String,
 }
 
 /// S3 Backend configuration
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct S3StorageBackend {
-    bucket: String,
-    prefix: Option<String>,
+    pub(crate) bucket: String,
+    pub(crate) prefix: Option<String>,
 }
 
 /// Top-level validated configuration struct
