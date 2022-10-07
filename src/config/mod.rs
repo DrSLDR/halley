@@ -18,7 +18,7 @@ use figment::{
     providers::{Env, Format, Toml},
     Figment,
 };
-use tracing::debug;
+use tracing::{debug, error};
 
 /// Processes a `ReadConfig` into a valid `Config`
 fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
@@ -50,7 +50,10 @@ fn process_repo(r: &RepoConfig) -> anyhow::Result<Repo> {
     };
 
     match &r.backend {
-        dummy => Err(anyhow::Error::msg("Dummy backends not validatable!")),
+        dummy => {
+            error!("Repository {} is using the dummy backend!", &r.id);
+            Err(anyhow::Error::msg("Dummy backends not validatable!"))
+        }
         local(data) => Ok(Repo {
             restic: general::Repo::Local {
                 data: general::LocalRepo {
@@ -59,9 +62,7 @@ fn process_repo(r: &RepoConfig) -> anyhow::Result<Repo> {
                 },
             },
         }),
-        s3(data) => {
-            unimplemented!()
-        }
+        s3(data) => unimplemented!(),
     }
 }
 
