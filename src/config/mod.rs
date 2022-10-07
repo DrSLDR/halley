@@ -60,5 +60,5 @@ pub(crate) fn make_config(toml_path: String) -> anyhow::Result<ReadConfig> {
     let config: ReadConfig = figment.extract()?;
     debug!("Pre-validation configuration: {:#?}", config);
 
-    anyhow::Ok(config)
+    Ok(config)
 }
