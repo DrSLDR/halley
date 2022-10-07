@@ -14,7 +14,7 @@ statefile_name = "halley"
 # Halley-internal ID of the bucket. This is used when referencing it in a repository
 # later.
 id = "main"
-# Endpoint URL. Can be omitted if the "region" is a known AWS region.
+# Endpoint URL. Mandatory, even if the "region" is a known AWS region.
 endpoint = "s3.example.org"
 # Region string.
 region = "eu-north-1"
