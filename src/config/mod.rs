@@ -52,7 +52,6 @@ fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
     }
 
     let c = Config {
-        origin: rc,
         repositories: repos,
     };
 

@@ -100,7 +100,6 @@ pub struct S3StorageBackend {
 /// runs.
 #[derive(Debug)]
 pub struct Config {
-    pub(crate) origin: ReadConfig,
     pub(crate) repositories: HashMap<String, Repo>,
 }
 
