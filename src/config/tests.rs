@@ -63,6 +63,8 @@ fn single_validation() {
     let rc: ReadConfig = figment_read!(toml_string);
     let c = validate_config(rc);
     assert!(c.is_ok());
+    let c = c.unwrap();
+    assert!(c.repositories.contains_key("a"));
 }
 
 #[test]

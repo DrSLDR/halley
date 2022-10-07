@@ -9,7 +9,9 @@ pub mod types;
 use types::*;
 
 use crate::trace_call;
-use crate::types::*;
+use crate::types as general;
+
+use std::collections::HashMap;
 
 use figment::{
     providers::{Env, Format, Toml},
@@ -17,9 +19,16 @@ use figment::{
 };
 use tracing::debug;
 
+/// Processes a `ReadConfig` into a valid `Config`
 fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
     trace_call!("validate_config", "called with rc {:?}", rc);
-    let c = Config { origin: rc };
+
+    let mut repos: HashMap<String, Repo> = HashMap::new();
+
+    let c = Config {
+        origin: rc,
+        repositories: repos,
+    };
 
     anyhow::Ok(c)
 }
