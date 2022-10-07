@@ -41,7 +41,7 @@ fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
     for repo in &rc.repositories {
         debug!("Processing repo {:?}", repo);
         let key = repo.id.clone();
-        repos.insert(key, process_repo(repo, &buckets)?);
+        repos.insert(key, process_repo(repo, &mut buckets)?);
     }
     debug!("Mapped repositories: {:?}", repos);
 
@@ -67,11 +67,15 @@ fn process_bucket(b: &BucketConfig) -> PartialBucket {
         endpoint: b.endpoint.clone(),
         region,
         key: b.credentials.clone(),
+        used: false,
     }
 }
 
 /// Processes a single repo configuration
-fn process_repo(r: &RepoConfig, buckets: &HashMap<String, PartialBucket>) -> anyhow::Result<Repo> {
+fn process_repo(
+    r: &RepoConfig,
+    buckets: &mut HashMap<String, PartialBucket>,
+) -> anyhow::Result<Repo> {
     trace_call!("process_repo", "called with {:?}", r);
 
     let common = general::RepoCommon {
@@ -91,19 +95,22 @@ fn process_repo(r: &RepoConfig, buckets: &HashMap<String, PartialBucket>) -> any
                 },
             },
         }),
-        s3(data) => match buckets.get(&data.bucket) {
-            Some(bucket) => Ok(Repo {
-                restic: general::Repo::S3 {
-                    data: general::S3Repo {
-                        bucket: bucket.bucket.clone(),
-                        url: bucket.endpoint.clone(),
-                        region: bucket.region.clone(),
-                        path: data.prefix.clone(),
-                        key: bucket.key.clone(),
-                        common,
+        s3(data) => match buckets.get_mut(&data.bucket) {
+            Some(bucket) => {
+                bucket.used = true;
+                Ok(Repo {
+                    restic: general::Repo::S3 {
+                        data: general::S3Repo {
+                            bucket: bucket.bucket.clone(),
+                            url: bucket.endpoint.clone(),
+                            region: bucket.region.clone(),
+                            path: data.prefix.clone(),
+                            key: bucket.key.clone(),
+                            common,
+                        },
                     },
-                },
-            }),
+                })
+            }
             None => {
                 error!(
                     "Repository {} references unknown bucket {}",

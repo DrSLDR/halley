@@ -122,4 +122,5 @@ pub struct PartialBucket {
     pub(crate) bucket: String,
     pub(crate) endpoint: String,
     pub(crate) key: general::AWSKey,
+    pub(crate) used: bool,
 }
