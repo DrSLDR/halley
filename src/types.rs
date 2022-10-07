@@ -9,7 +9,7 @@ use tracing::{trace, trace_span};
 // First off, the entire restic group of Repo types.
 
 /// Container for an AWS key pair
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub(crate) struct AWSKey {
     /// The `AWS_ACCESS_KEY_ID` portion
     pub(crate) id: String,

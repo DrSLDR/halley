@@ -33,7 +33,7 @@ impl Default for ReadConfig {
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct BucketConfig {
     pub(crate) id: String,
-    pub(crate) endpoint: Option<String>,
+    pub(crate) endpoint: String,
     pub(crate) region: String,
     pub(crate) bucket_name: String,
     pub(crate) credentials: general::AWSKey,
@@ -43,7 +43,7 @@ impl Default for BucketConfig {
     fn default() -> Self {
         Self {
             id: "a_bucket".to_string(),
-            endpoint: Some("s3.example.org".to_string()),
+            endpoint: "s3.example.org".to_string(),
             region: "eu-west-1".to_string(),
             bucket_name: "foo".to_string(),
             credentials: general::AWSKey::default(),

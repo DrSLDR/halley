@@ -31,7 +31,7 @@ fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
         for bucket in rc.s3_buckets.as_ref().unwrap() {
             debug!("Processing bucket {:?}", bucket);
             let key = bucket.id.clone();
-            buckets.insert(key, process_bucket(&bucket)?);
+            buckets.insert(key, process_bucket(&bucket));
         }
     }
     debug!("Mapped S3 buckets: {:?}", buckets);
@@ -54,23 +54,20 @@ fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
 }
 
 /// Processes a single bucket configuration
-fn process_bucket(b: &BucketConfig) -> anyhow::Result<PartialBucket> {
+fn process_bucket(b: &BucketConfig) -> PartialBucket {
     let region = match general::Region::from_str(&b.region) {
         Ok(region) => region,
-        Err(err) => match &b.endpoint {
-            Some(endpoint) => Ok(general::Region::Custom {
-                name: b.region.clone(),
-                endpoint: endpoint.clone(),
-            }),
-            None => {
-                error!(
-                    "Bucket {} has unrecognized region ({}) and no endpoint!",
-                    &b.id, &b.region
-                );
-                Err(anyhow::Error::msg("Bucket could not be validated"))
-            }
-        }?,
+        Err(err) => general::Region::Custom {
+            name: b.region.clone(),
+            endpoint: b.endpoint.clone(),
+        },
     };
+    PartialBucket {
+        bucket: b.bucket_name.clone(),
+        endpoint: b.endpoint.clone(),
+        region,
+        key: b.credentials.clone(),
+    }
 }
 
 /// Processes a single repo configuration
