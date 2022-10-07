@@ -57,7 +57,7 @@ fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
 fn process_bucket(b: &BucketConfig) -> PartialBucket {
     let region = match general::Region::from_str(&b.region) {
         Ok(region) => region,
-        Err(err) => general::Region::Custom {
+        Err(_) => general::Region::Custom {
             name: b.region.clone(),
             endpoint: b.endpoint.clone(),
         },
