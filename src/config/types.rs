@@ -12,10 +12,10 @@ use serde::{Deserialize, Serialize};
 /// validated. Defines the structure of the `toml` configuration file.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ReadConfig {
-    version: u32,
-    statefile_name: String,
-    s3_buckets: Option<Vec<BucketConfig>>,
-    repositories: Vec<RepoConfig>,
+    pub(crate) version: u32,
+    pub(crate) statefile_name: String,
+    pub(crate) s3_buckets: Option<Vec<BucketConfig>>,
+    pub(crate) repositories: Vec<RepoConfig>,
 }
 
 impl Default for ReadConfig {
