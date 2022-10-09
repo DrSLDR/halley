@@ -29,7 +29,7 @@ Later on:
   * [x] Can open and read a file
   * [x] Understand S3 details
   * [x] Understand one or more repositories
-  * [ ] Allow globbing in repository paths
+  * [x] Allow globbing in repository paths
   * [ ] Also want to define:
     * [ ] S3Handler internal settings
     * [ ] Retention policies
