@@ -50,6 +50,22 @@ fn no_backend_validation() {
 }
 
 #[test]
+fn no_path_validation() {
+    log_init();
+    let toml_string = "version = 1
+    statefile_name = 'anchor'
+    [[repositories]]
+    id = 'scrapbook'
+    paths = []
+    password = 'unopened'
+    [repositories.backend.local]
+    path = '/tmp'";
+    let rc: ReadConfig = figment_read!(toml_string);
+    let c = validate_config(rc);
+    assert!(c.is_err());
+}
+
+#[test]
 fn single_validation() {
     log_init();
     let toml_string = "version = 1
