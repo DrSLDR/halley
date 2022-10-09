@@ -109,6 +109,7 @@ pub struct Config {
 #[derive(Debug)]
 pub struct Repo {
     pub(crate) restic: general::Repo,
+    pub(crate) paths: Vec<String>,
 }
 
 /// Validated, partial configuration for a bucket

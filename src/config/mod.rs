@@ -92,6 +92,15 @@ fn process_repo(
         passwd: r.password.clone(),
     };
 
+    let mut paths: Vec<String> = Vec::new();
+    for path in &r.paths {
+        paths.push(path.to_owned());
+    }
+    if paths.is_empty() {
+        error!("Repository {} lists no paths", &r.id);
+        return Err(anyhow::anyhow!("Repository lists no paths!"));
+    }
+
     match &r.backend {
         dummy => {
             error!("Repository {} is using the dummy backend!", &r.id);
@@ -104,6 +113,7 @@ fn process_repo(
                     common,
                 },
             },
+            paths,
         }),
         s3(data) => match buckets.get_mut(&data.bucket) {
             Some(bucket) => {
@@ -119,6 +129,7 @@ fn process_repo(
                             common,
                         },
                     },
+                    paths,
                 })
             }
             None => {
