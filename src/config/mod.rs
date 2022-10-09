@@ -15,6 +15,7 @@ use crate::types as general;
 use std::collections::HashMap;
 use std::str::FromStr;
 
+use anyhow::anyhow;
 use figment::{
     providers::{Env, Format, Toml},
     Figment,
@@ -98,13 +99,13 @@ fn process_repo(
     }
     if paths.is_empty() {
         error!("Repository {} lists no paths", &r.id);
-        return Err(anyhow::anyhow!("Repository lists no paths!"));
+        return Err(anyhow!("Repository lists no paths!"));
     }
 
     match &r.backend {
         dummy => {
             error!("Repository {} is using the dummy backend!", &r.id);
-            Err(anyhow::Error::msg("Dummy backends not validatable!"))
+            Err(anyhow!("Dummy backends not validatable!"))
         }
         local(data) => Ok(Repo {
             restic: general::Repo::Local {
@@ -137,7 +138,7 @@ fn process_repo(
                     "Repository {} references unknown bucket {}",
                     &r.id, data.bucket
                 );
-                Err(anyhow::Error::msg("Repository reference to unknown bucket"))
+                Err(anyhow!("Repository reference to unknown bucket"))
             }
         },
     }
