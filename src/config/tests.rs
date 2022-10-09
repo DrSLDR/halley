@@ -32,7 +32,7 @@ macro_rules! figment_read {
 fn no_repo_validation() {
     log_init();
     let toml_string = "version = 1
-    statefile_name = 'foo'";
+    statefile_name = 'anchor'";
     let _: ReadConfig = figment_read!(toml_string);
 }
 
@@ -41,11 +41,11 @@ fn no_repo_validation() {
 fn no_backend_validation() {
     log_init();
     let toml_string = "version = 1
-    statefile_name = 'foo'
+    statefile_name = 'anchor'
     [[repositories]]
-    id = 'a'
+    id = 'scrapbook'
     paths = ['/home']
-    password = 'b'";
+    password = 'unopened'";
     let _: ReadConfig = figment_read!(toml_string);
 }
 
@@ -53,31 +53,31 @@ fn no_backend_validation() {
 fn single_validation() {
     log_init();
     let toml_string = "version = 1
-    statefile_name = 'foo'
+    statefile_name = 'anchor'
     [[repositories]]
-    id = 'a'
+    id = 'scrapbook'
     paths = ['/home']
-    password = 'b'
+    password = 'unopened'
     [repositories.backend.local]
     path = '/tmp'";
     let rc: ReadConfig = figment_read!(toml_string);
     let c = validate_config(rc);
     assert!(c.is_ok());
     let c = c.unwrap();
-    assert!(c.repositories.contains_key("a"));
+    assert!(c.repositories.contains_key("scrapbook"));
 }
 
 #[test]
 fn single_validation_s3_no_bucket() {
     log_init();
     let toml_string = "version = 1
-    statefile_name = 'foo'
+    statefile_name = 'anchor'
     [[repositories]]
-    id = 'a'
+    id = 'scrapbook'
     paths = ['/home']
-    password = 'b'
+    password = 'unopened'
     [repositories.backend.s3]
-    bucket = 'c'";
+    bucket = 'human'";
     let rc: ReadConfig = figment_read!(toml_string);
     let c = validate_config(rc);
     assert!(c.is_err());
@@ -87,24 +87,24 @@ fn single_validation_s3_no_bucket() {
 fn single_validation_s3() {
     log_init();
     let toml_string = "version = 1
-    statefile_name = 'foo'
+    statefile_name = 'anchor'
     [[repositories]]
-    id = 'a'
+    id = 'scrapbook'
     paths = ['/home']
-    password = 'b'
+    password = 'unopened'
     [repositories.backend.s3]
-    bucket = 'c'
+    bucket = 'human'
     [[s3_buckets]]
-    id = 'c'
+    id = 'human'
     endpoint = 's3.eu-west-1.amazonaws.com'
     region = 'eu-west-1'
-    bucket_name = 'bar'
+    bucket_name = 'feasibly'
     [s3_buckets.credentials]
-    id = 'id'
-    secret = 'secret'";
+    id = 'upkeep'
+    secret = 'lightbulb'";
     let rc: ReadConfig = figment_read!(toml_string);
     let c = validate_config(rc);
     assert!(c.is_ok());
     let c = c.unwrap();
-    assert!(c.repositories.contains_key("a"))
+    assert!(c.repositories.contains_key("scrapbook"))
 }
