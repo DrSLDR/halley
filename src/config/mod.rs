@@ -172,7 +172,7 @@ pub(crate) fn make_and_validate_config(toml_path: String) -> anyhow::Result<Conf
         toml_path
     );
     let config = validate_config(make_config(toml_path)?)?;
-    debug!("Validated configuration: {:#?}", config);
+    debug!("Validated configuration:\n{:#?}", config);
 
     Ok(config)
 }
