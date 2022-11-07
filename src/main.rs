@@ -14,9 +14,8 @@ async fn main() -> anyhow::Result<()> {
     #[cfg(not(debug_assertions))]
     tracing_subscriber::fmt().compact().init();
 
-    // test_config()?;
-
-    cli::parse();
+    let c = cli::parse();
+    println!("{:?}", c);
 
     Ok(())
 }
