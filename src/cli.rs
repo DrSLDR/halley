@@ -9,13 +9,21 @@ pub struct Args {
     #[arg(short, long)]
     config: Option<PathBuf>,
 
+    /// Quiet (sets log level to ERROR)
+    ///
+    /// Takes precedence over -v or -d
+    #[arg(short, long)]
+    quiet: bool,
+
     /// Verbose (sets log level to INFO)
     #[arg(short, long)]
     verbose: bool,
 
     /// Debug (sets log level to DEBUG, or TRACE if given twice)
     ///
-    /// Be aware that these log levels can leak credentials
+    /// Takes precedence over -v
+    ///
+    /// Be aware that these log levels WILL leak credentials
     #[arg(short, long, action = clap::ArgAction::Count)]
     debug: u8,
 }
