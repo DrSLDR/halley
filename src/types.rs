@@ -3,17 +3,27 @@
 use crate::trace_call;
 
 pub use rusoto_core::Region;
+use serde::{Deserialize, Serialize};
 use tracing::{trace, trace_span};
 
 // First off, the entire restic group of Repo types.
 
 /// Container for an AWS key pair
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub(crate) struct AWSKey {
     /// The `AWS_ACCESS_KEY_ID` portion
     pub(crate) id: String,
     /// The `AWS_SECRET_ACCESS_KEY` portion
     pub(crate) secret: String,
+}
+
+impl Default for AWSKey {
+    fn default() -> Self {
+        Self {
+            id: "id".to_string(),
+            secret: "secret".to_string(),
+        }
+    }
 }
 
 /// Container for data common to any type of repository

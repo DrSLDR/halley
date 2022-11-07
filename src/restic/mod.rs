@@ -12,7 +12,7 @@ use crate::restic::types::{ResticCall, WrappedCall};
 use crate::trace_call;
 use crate::types::{Repo, RepoCommon};
 
-use tracing::{debug, trace, trace_span};
+use tracing::debug;
 
 fn prepare_present<C: WrappedCall>(wc: &mut C) -> &mut C {
     trace_call!("prepare_present");

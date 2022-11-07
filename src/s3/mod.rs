@@ -25,7 +25,7 @@ use rusoto_s3::{
 };
 use tokio;
 use tokio::task::JoinHandle;
-use tracing::{debug, error, info, trace, trace_span, warn};
+use tracing::{debug, error, info, warn};
 
 /// Struct containing the `S3Client` and relevant helper data
 pub(crate) struct S3Handler {

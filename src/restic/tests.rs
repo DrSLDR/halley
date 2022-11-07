@@ -6,14 +6,7 @@ use types::*;
 use assert_fs::prelude::*;
 use predicates::prelude::*;
 use std::process::Output;
-use tracing::{error, trace, Level};
-
-fn log_init() {
-    let _ = tracing_subscriber::fmt()
-        .with_max_level(Level::TRACE)
-        .with_test_writer()
-        .try_init();
-}
+use tracing::{error, trace};
 
 /*
     TEST BLOCK FOR THE HANDCRAFTED MOCK

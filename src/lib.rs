@@ -4,12 +4,18 @@
 //! also manages moving the relevant repository in and out of cold storage, for cost
 //! saving.
 
+mod config;
 mod restic;
 mod s3;
 mod types;
 mod util;
 
 use crate::types::*;
+
+use figment::{
+    providers::{Format, Toml},
+    Figment,
+};
 
 pub async fn test_real() -> anyhow::Result<()> {
     let h = s3::S3Handler::new(S3Repo {
@@ -36,6 +42,12 @@ pub async fn test_real() -> anyhow::Result<()> {
     h.archive_all_objects().await?;
     std::thread::sleep(std::time::Duration::from_secs(15));
     h.restore_all_objects_blocking().await?;
+
+    Ok(())
+}
+
+pub fn test_config() -> anyhow::Result<()> {
+    let c = config::make_and_validate_config("example.toml".to_owned())?;
 
     Ok(())
 }

@@ -1,0 +1,68 @@
+# This is an example configuration file for Halley
+
+# Configuration version. This is mandatory, and helps Halley determine how it should
+# process the config.
+version = 1
+
+# The statefile name determines what this config file's statefile should be called. This
+# is useful if you, for some reason, want to have more than one Halley configuration on
+# the same machine.
+statefile_name = "halley"
+
+# Table array of S3 buckets. Can be omitted if no S3 storage is used.
+[[s3_buckets]]
+# Halley-internal ID of the bucket. This is used when referencing it in a repository
+# later.
+id = "main"
+# Endpoint URL. Mandatory, even if the "region" is a known AWS region.
+endpoint = "s3.example.org"
+# Region string.
+region = "eu-north-1"
+# Name of the bucket in S3.
+bucket_name = "hink"
+
+# Credentials tied to the bucket
+[s3_buckets.credentials]
+# The AWS_ACCESS_KEY_ID portion
+id = "AnID"
+# The AWS_SECRET_ACCESS_KEY portion
+secret = "ASecret"
+
+[[repositories]]
+# Halley-internal ID of the repository. Will be used when tracking its state and in
+# logging.
+id = "spann"
+# Array of paths that will be backed up
+paths = ["/home/user", "/etc/that/one/service"]
+# Password to the repository
+password = "kiitos"
+
+# Backend configuration for the repository, here using S3
+[repositories.backend.s3]
+# Bucket ID of a bucket defined above where this will all be backed up
+bucket = "main"
+# Optional prefix used in the bucket. A good idea is to use the repo id.
+prefix = "spann"
+
+# A second repository configuration
+[[repositories]]
+id = "local_bucket"
+paths = ["/home/other_user"]
+password = "dolphin"
+
+# A local repository configuration
+[repositories.backend.local]
+# (Absolute) path to the local repository
+path = "/tmp/tump/tamp"
+
+
+# A third repository, using the same S3 bucket as above, but with a different prefix
+[[repositories]]
+id = "globule"
+# Paths, demonstrating that globbing is possible
+paths = ["/mnt/bigstore/[A-Ea-e]*"]
+password = "bulbous"
+
+[repositories.backend.s3]
+bucket = "main"
+prefix = "glob"

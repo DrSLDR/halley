@@ -4,14 +4,15 @@
 ///
 /// Takes a mandatory function name, as well as optionally a format string and one or
 /// more arguments. This allows tracing function calls with the called arguments. E.g.
-/// ```ignore
-/// fn f_name(foo, bar) {
+/// ```
+/// # #[macro_use] extern crate halley;
+/// fn f_name(foo: &str, bar: String) {
 ///     trace_call!("f_name","called with {:?}, {:?}", foo, bar);
-///     ...
 /// }
 /// ```
 /// or
-/// ```ignore
+/// ```
+/// # #[macro_use] extern crate halley;
 /// fn g() {
 ///     trace_call!("g");
 /// }
@@ -20,16 +21,19 @@
 #[macro_export]
 macro_rules! trace_call {
     ($fn:literal) => {
+        use tracing::{trace, trace_span};
         let _span = trace_span!($fn);
         let _guard = _span.enter();
         trace!("called");
     };
     ($fn:literal, $estr:literal) => {
+        use tracing::{trace, trace_span};
         let _span = trace_span!($fn);
         let _guard = _span.enter();
         trace!($estr);
     };
     ($fn:literal, $estr:literal, $($arg:ident),+) => {
+        use tracing::{trace, trace_span};
         let _span = trace_span!($fn);
         let _guard = _span.enter();
         trace!($estr, $($arg),+);
@@ -41,6 +45,8 @@ pub(crate) mod test_utils {
     //! Common utilities for several test modules
 
     use crate::types::*;
+
+    use tracing::Level;
 
     pub(crate) fn common_repo_def() -> RepoCommon {
         RepoCommon {
@@ -75,5 +81,12 @@ pub(crate) mod test_utils {
                 common: common_repo_def(),
             },
         }
+    }
+
+    pub fn log_init() {
+        let _ = tracing_subscriber::fmt()
+            .with_max_level(Level::TRACE)
+            .with_test_writer()
+            .try_init();
     }
 }

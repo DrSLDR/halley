@@ -14,7 +14,7 @@ async fn main() -> anyhow::Result<()> {
 
     println!("Hello, world!");
 
-    test_real().await?;
+    test_config()?;
 
     Ok(())
 }
