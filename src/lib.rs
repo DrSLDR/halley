@@ -12,12 +12,13 @@ mod util;
 
 use crate::types::*;
 
+use anyhow::anyhow;
 use figment::{
     providers::{Format, Toml},
     Figment,
 };
 use std::path::PathBuf;
-use tracing::debug;
+use tracing::{debug, error};
 
 pub async fn test_real() -> anyhow::Result<()> {
     let h = s3::S3Handler::new(S3Repo {
@@ -48,9 +49,30 @@ pub async fn test_real() -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Ensures a configuration file exists and is readable
+fn usable_config_file(path: PathBuf) -> anyhow::Result<PathBuf> {
+    match std::fs::File::open(&path) {
+        Ok(_) => Ok(path),
+        Err(e) => {
+            match e.kind() {
+                std::io::ErrorKind::NotFound => {
+                    error!("The config file at {:?} does not exist", path);
+                }
+                std::io::ErrorKind::PermissionDenied => {
+                    error!("The config file at {:?} could not be opened", path);
+                }
+                _ => {
+                    error!("Unhandled IO error when opening config file!");
+                }
+            }
+            Err(anyhow!("Failed to open config file!"))
+        }
+    }
+}
+
 /// Reads, and validates the configuration at the provided path
 pub fn validate_config(path: PathBuf) -> anyhow::Result<config::Config> {
-    let c = config::make_and_validate_config(path)?;
+    let c = config::make_and_validate_config(usable_config_file(path)?)?;
     Ok(c)
 }
 
