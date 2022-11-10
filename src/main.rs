@@ -8,9 +8,7 @@ use halley::*;
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     #[cfg(debug_assertions)]
-    tracing_subscriber::fmt()
-        .with_max_level(Level::TRACE)
-        .init();
+    log::init_trace_logging();
     #[cfg(not(debug_assertions))]
     tracing_subscriber::fmt().compact().init();
 

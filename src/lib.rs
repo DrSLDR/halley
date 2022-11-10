@@ -51,3 +51,14 @@ pub fn test_config() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+pub mod log {
+    use tracing::Level;
+    use tracing_subscriber;
+
+    pub fn init_trace_logging() {
+        tracing_subscriber::fmt()
+            .with_max_level(Level::TRACE)
+            .init();
+    }
+}
