@@ -14,6 +14,7 @@ async fn main() -> anyhow::Result<()> {
     match &args.command {
         cli::Commands::Validate => {
             validate_config(args.config.unwrap())?;
+            println!("Ok!");
         }
     }
 
