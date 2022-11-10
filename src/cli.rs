@@ -31,10 +31,14 @@ pub struct Args {
 pub fn parse() -> Args {
     let mut args = Args::parse();
 
+    // Enforce default on config file path
     args.config = match args.config {
         None => Some(PathBuf::from("~/.halley/config.toml")),
         Some(p) => Some(p),
     };
+
+    // Clamp number of debug flags
+    args.debug = if args.debug > 2 { 2 } else { args.debug };
 
     args
 }
