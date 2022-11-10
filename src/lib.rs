@@ -69,6 +69,22 @@ pub mod log {
         }
     }
 
+    pub fn init_error_logging() {
+        init_logging(Level::ERROR);
+    }
+
+    pub fn init_warn_logging() {
+        init_logging(Level::WARN);
+    }
+
+    pub fn init_info_logging() {
+        init_logging(Level::INFO);
+    }
+
+    pub fn init_debug_logging() {
+        init_logging(Level::DEBUG);
+    }
+
     pub fn init_trace_logging() {
         init_logging(Level::TRACE);
     }
