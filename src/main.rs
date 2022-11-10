@@ -10,12 +10,12 @@ async fn main() -> anyhow::Result<()> {
     let c = cli::parse();
     println!("{:?}", c);
 
-    handle_logging(c);
+    handle_logging(&c);
 
     Ok(())
 }
 
-fn handle_logging(args: cli::Args) {
+fn handle_logging(args: &cli::Args) {
     // Default logging level check
     if !args.quiet && !args.verbose && args.debug == 0 {
         #[cfg(debug_assertions)]
