@@ -2,6 +2,9 @@ mod cli;
 
 use halley::*;
 
+use anyhow::anyhow;
+use tracing::error;
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = cli::parse();
@@ -9,9 +12,15 @@ async fn main() -> anyhow::Result<()> {
 
     handle_logging(&args);
 
+    let config_file = args.config.unwrap();
+    if !config_file.is_file() {
+        error!("The config file at {:?} does not exist", config_file);
+        return Err(anyhow!("Failed to open config file!"));
+    }
+
     match &args.command {
         cli::Commands::Validate => {
-            validate_config(args.config.unwrap())?;
+            validate_config(config_file)?;
         }
     }
 
