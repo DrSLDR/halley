@@ -1,6 +1,3 @@
-use tracing::Level;
-use tracing_subscriber;
-
 mod cli;
 
 use halley::*;
