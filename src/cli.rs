@@ -4,7 +4,11 @@ use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
+#[command(propagate_version = true)]
 pub struct Args {
+    #[command(subcommand)]
+    command: Commands,
+
     /// Config file, ~/.halley/config.toml by default
     #[arg(short, long)]
     pub config: Option<PathBuf>,
@@ -26,6 +30,12 @@ pub struct Args {
     /// Be aware that these log levels WILL leak credentials
     #[arg(short, long, action = clap::ArgAction::Count)]
     pub debug: u8,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum Commands {
+    /// Validate a configuration file
+    Validate,
 }
 
 pub fn parse() -> Args {
