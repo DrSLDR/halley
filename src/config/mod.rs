@@ -6,6 +6,7 @@
 mod tests;
 
 pub mod types;
+pub use types::Config;
 use types::StorageBackend::*;
 use types::*;
 
@@ -13,6 +14,7 @@ use crate::trace_call;
 use crate::types as general;
 
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::str::FromStr;
 
 use anyhow::anyhow;
@@ -151,8 +153,8 @@ fn process_repo(
 ///
 /// This Config could be internally inconsistent, so validation is needed before it is
 /// used.
-pub(crate) fn make_config(toml_path: String) -> anyhow::Result<ReadConfig> {
-    trace_call!("make_config", "called with conf. file {}", toml_path);
+pub(crate) fn make_config(toml_path: PathBuf) -> anyhow::Result<ReadConfig> {
+    trace_call!("make_config", "called with conf. file {:?}", toml_path);
     let figment = Figment::new()
         .merge(Toml::file(&toml_path))
         .merge(Env::prefixed("HALLEY_"));
@@ -166,10 +168,10 @@ pub(crate) fn make_config(toml_path: String) -> anyhow::Result<ReadConfig> {
 /// Collects a Config from the available sources
 ///
 /// Does the same thing as `make_config`, but also runs validation
-pub(crate) fn make_and_validate_config(toml_path: String) -> anyhow::Result<Config> {
+pub(crate) fn make_and_validate_config(toml_path: PathBuf) -> anyhow::Result<Config> {
     trace_call!(
         "make_and_validate_config",
-        "called with conf. file {}",
+        "called with conf. file {:?}",
         toml_path
     );
     let config = validate_config(make_config(toml_path)?)?;

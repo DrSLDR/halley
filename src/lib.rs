@@ -16,6 +16,7 @@ use figment::{
     providers::{Format, Toml},
     Figment,
 };
+use std::path::PathBuf;
 use tracing::debug;
 
 pub async fn test_real() -> anyhow::Result<()> {
@@ -47,10 +48,10 @@ pub async fn test_real() -> anyhow::Result<()> {
     Ok(())
 }
 
-pub fn test_config() -> anyhow::Result<()> {
-    let c = config::make_and_validate_config("example.toml".to_owned())?;
-
-    Ok(())
+/// Reads, and validates the configuration at the provided path
+pub fn validate_config(path: PathBuf) -> anyhow::Result<config::Config> {
+    let c = config::make_and_validate_config(path)?;
+    Ok(c)
 }
 
 pub mod log {
