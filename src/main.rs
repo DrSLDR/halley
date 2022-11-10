@@ -16,11 +16,18 @@ async fn main() -> anyhow::Result<()> {
 }
 
 fn handle_logging(args: &cli::Args) {
-    // Default logging level check
-    if !args.quiet && !args.verbose && args.debug == 0 {
-        #[cfg(debug_assertions)]
-        log::init_trace_logging();
-        #[cfg(not(debug_assertions))]
-        log::init_info_logging();
+    // Godforsaken matcher for the log flag combinations
+    match (args.quiet, args.verbose, args.debug) {
+        (false, false, 0) => {
+            #[cfg(debug_assertions)]
+            log::init_trace_logging();
+            #[cfg(not(debug_assertions))]
+            log::init_warn_logging();
+        }
+        (true, _, _) => log::init_error_logging(),
+        (false, _, 1) => log::init_debug_logging(),
+        (false, _, 2) => log::init_trace_logging(),
+        (false, true, 0) => log::init_info_logging(),
+        _ => panic!("Somehow got an illegal log flag combination!"),
     }
 }
