@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
+use shellexpand::tilde;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -42,10 +43,14 @@ pub fn parse() -> Args {
     let mut args = Args::parse();
 
     // Enforce default on config file path
-    args.config = match args.config {
-        None => Some(PathBuf::from("~/.halley/config.toml")),
-        Some(p) => Some(p),
-    };
+    // Also make sure we do any tilde expansion we may need to do
+    args.config = Some({
+        let pb = match args.config {
+            None => PathBuf::from("~/.halley/config.toml"),
+            Some(p) => p,
+        };
+        PathBuf::from(tilde(&pb.to_string_lossy().into_owned()).into_owned())
+    });
 
     // Clamp number of debug flags
     args.debug = if args.debug > 2 { 2 } else { args.debug };
