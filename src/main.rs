@@ -2,12 +2,14 @@ mod cli;
 
 use halley::*;
 
+use tracing::debug;
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = cli::parse();
-    println!("{:?}", args);
 
     handle_logging(&args);
+    debug!("Got args\n{:#?}", args);
 
     match &args.command {
         cli::Commands::Validate => {
