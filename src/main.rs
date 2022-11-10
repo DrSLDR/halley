@@ -7,13 +7,20 @@ use halley::*;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    #[cfg(debug_assertions)]
-    log::init_trace_logging();
-    #[cfg(not(debug_assertions))]
-    tracing_subscriber::fmt().compact().init();
-
     let c = cli::parse();
     println!("{:?}", c);
 
+    handle_logging(c);
+
     Ok(())
+}
+
+fn handle_logging(args: cli::Args) {
+    // Default logging level check
+    if !args.quiet && !args.verbose && args.debug == 0 {
+        #[cfg(debug_assertions)]
+        log::init_trace_logging();
+        #[cfg(not(debug_assertions))]
+        log::init_info_logging();
+    }
 }
