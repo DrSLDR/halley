@@ -7,7 +7,7 @@ use clap::{Parser, Subcommand};
 #[command(propagate_version = true)]
 pub struct Args {
     #[command(subcommand)]
-    command: Commands,
+    pub command: Commands,
 
     /// Config file, ~/.halley/config.toml by default
     #[arg(short, long)]

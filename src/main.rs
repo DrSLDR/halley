@@ -4,10 +4,16 @@ use halley::*;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let c = cli::parse();
-    println!("{:?}", c);
+    let args = cli::parse();
+    println!("{:?}", args);
 
-    handle_logging(&c);
+    handle_logging(&args);
+
+    match &args.command {
+        cli::Commands::Validate => {
+            validate_config(args.config.unwrap())?;
+        }
+    }
 
     Ok(())
 }
