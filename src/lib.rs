@@ -16,6 +16,7 @@ use figment::{
     providers::{Format, Toml},
     Figment,
 };
+use tracing::debug;
 
 pub async fn test_real() -> anyhow::Result<()> {
     let h = s3::S3Handler::new(S3Repo {
@@ -53,12 +54,22 @@ pub fn test_config() -> anyhow::Result<()> {
 }
 
 pub mod log {
+    use super::*;
+
     use tracing::Level;
     use tracing_subscriber;
 
+    fn init_logging(level: Level) {
+        let sb = tracing_subscriber::fmt().with_max_level(level);
+        if level < Level::DEBUG {
+            sb.compact().init();
+        } else {
+            sb.init();
+            debug!("Logging started");
+        }
+    }
+
     pub fn init_trace_logging() {
-        tracing_subscriber::fmt()
-            .with_max_level(Level::TRACE)
-            .init();
+        init_logging(Level::TRACE);
     }
 }
