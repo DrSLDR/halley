@@ -39,21 +39,25 @@ pub enum Commands {
     Validate,
 }
 
-pub fn parse() -> Args {
-    let mut args = Args::parse();
-
-    // Enforce default on config file path
-    // Also make sure we do any tilde expansion we may need to do
+/// Enforce the defaults in the arguments
+fn enforce_defaults(args: &mut Args) {
+    // Handle the config file and do any needed tilde expansion
     args.config = Some({
-        let pb = match args.config {
+        let pb = match &args.config {
             None => PathBuf::from("~/.halley/config.toml"),
-            Some(p) => p,
+            Some(p) => p.to_owned(),
         };
         PathBuf::from(tilde(&pb.to_string_lossy().into_owned()).into_owned())
     });
 
-    // Clamp number of debug flags
+    // Clamp the number of debug flags
     args.debug = if args.debug > 2 { 2 } else { args.debug };
+}
+
+pub fn parse() -> Args {
+    let mut args = Args::parse();
+
+    enforce_defaults(&mut args);
 
     args
 }
