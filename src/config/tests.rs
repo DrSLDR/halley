@@ -17,7 +17,7 @@ fn integration_default_readback() {
     cf_handle.write_all(c_string.as_bytes()).unwrap();
     cf_handle.flush().unwrap();
     drop(cf_handle);
-    let c_parsed = make_config(cf.path().to_string_lossy().to_string()).unwrap();
+    let c_parsed = make_config(cf.to_path_buf()).unwrap();
     assert_eq!(c, c_parsed);
 }
 
