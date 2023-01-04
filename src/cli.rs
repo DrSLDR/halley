@@ -1,12 +1,12 @@
 use std::path::PathBuf;
 
-use clap::{Parser, Subcommand};
+use clap::{Args, Parser, Subcommand};
 use shellexpand::tilde;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
-pub struct Args {
+pub struct Arguments {
     #[command(subcommand)]
     pub command: Commands,
 
@@ -36,11 +36,18 @@ pub struct Args {
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     /// Validate a configuration file
-    Validate,
+    Validate(ValidateArgs),
+}
+
+#[derive(Args, Debug)]
+pub struct ValidateArgs {
+    /// Config file, ~/.halley/config.toml by default
+    #[arg(short, long)]
+    pub config: Option<PathBuf>,
 }
 
 /// Enforce the defaults in the arguments
-fn enforce_defaults(args: &mut Args) {
+fn enforce_defaults(args: &mut Arguments) {
     // Handle the config file and do any needed tilde expansion
     args.config = Some({
         let pb = match &args.config {
@@ -54,8 +61,8 @@ fn enforce_defaults(args: &mut Args) {
     args.debug = if args.debug > 2 { 2 } else { args.debug };
 }
 
-pub fn parse() -> Args {
-    let mut args = Args::parse();
+pub fn parse() -> Arguments {
+    let mut args = Arguments::parse();
 
     enforce_defaults(&mut args);
 

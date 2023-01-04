@@ -12,7 +12,7 @@ async fn main() -> anyhow::Result<()> {
     debug!("Got args\n{:#?}", args);
 
     match &args.command {
-        cli::Commands::Validate => {
+        cli::Commands::Validate(_) => {
             validate_config(args.config.unwrap())?;
             println!("Ok!");
         }
@@ -21,7 +21,7 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn handle_logging(args: &cli::Args) {
+fn handle_logging(args: &cli::Arguments) {
     // Godforsaken matcher for the log flag combinations
     match (args.quiet, args.verbose, args.debug) {
         (false, false, 0) => {
