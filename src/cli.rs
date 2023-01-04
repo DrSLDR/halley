@@ -35,6 +35,9 @@ pub struct Arguments {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
+    /// Output an example configuration file
+    InitConfig,
+
     /// Validate a configuration file
     Validate(ValidateArgs),
 }
@@ -63,6 +66,7 @@ fn enforce_default_config(args: &mut Arguments) {
     let default = PathBuf::from("~/.halley/config.toml");
     let subc_config = match &args.command {
         Commands::Validate(ValidateArgs { config }) => config,
+        _ => &None,
     };
     let config = match &subc_config {
         None => &args.config,

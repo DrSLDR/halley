@@ -16,6 +16,7 @@ async fn main() -> anyhow::Result<()> {
             validate_config(args.config.unwrap())?;
             println!("Ok!");
         }
+        cli::Commands::InitConfig => unimplemented!(),
     }
 
     Ok(())
