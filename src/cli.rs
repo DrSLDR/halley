@@ -49,16 +49,33 @@ pub struct ValidateArgs {
 /// Enforce the defaults in the arguments
 fn enforce_defaults(args: &mut Arguments) {
     // Handle the config file and do any needed tilde expansion
+    enforce_default_config(args);
+
+    // Clamp the number of debug flags
+    args.debug = if args.debug > 2 { 2 } else { args.debug };
+}
+
+/// Enforce default specifically when handling the configuration file
+///
+/// The config flag, when given to subcommands that support it, take priority over the
+/// "global" flag
+fn enforce_default_config(args: &mut Arguments) {
+    let default = PathBuf::from("~/.halley/config.toml");
+    let subc_config = match &args.command {
+        Commands::Validate(ValidateArgs { config }) => config,
+    };
+    let config = match &subc_config {
+        None => &args.config,
+        Some(_) => subc_config,
+    };
+
     args.config = Some({
-        let pb = match &args.config {
-            None => PathBuf::from("~/.halley/config.toml"),
+        let pb = match config {
+            None => default,
             Some(p) => p.to_owned(),
         };
         PathBuf::from(tilde(&pb.to_string_lossy().into_owned()).into_owned())
     });
-
-    // Clamp the number of debug flags
-    args.debug = if args.debug > 2 { 2 } else { args.debug };
 }
 
 pub fn parse() -> Arguments {
