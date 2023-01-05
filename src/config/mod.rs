@@ -179,3 +179,9 @@ pub(crate) fn make_and_validate_config(toml_path: PathBuf) -> anyhow::Result<Con
 
     Ok(config)
 }
+
+/// Returns the minimal, default configuration as a string
+pub(crate) fn minimal_config() -> String {
+    trace_call!("minimal_config");
+    toml::to_string_pretty(&ReadConfig::default()).unwrap()
+}
