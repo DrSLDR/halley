@@ -16,13 +16,14 @@ async fn main() -> anyhow::Result<()> {
             validate_config(args.config.unwrap())?;
             println!("Ok!");
         }
-        cli::Commands::InitConfig(args) => {
-            if args.minimal {
+        cli::Commands::InitConfig(c_args) => {
+            if c_args.minimal {
                 println!("{}", minimal_config());
             } else {
                 println!("{}", example_config());
             }
         }
+        cli::Commands::Run(c_args) => unimplemented!(),
     }
 
     Ok(())

@@ -40,6 +40,14 @@ pub enum Commands {
 
     /// Validate a configuration file
     Validate(ValidateArgs),
+
+    /// Run Halley
+    ///
+    /// By default, this will look at the configuration file, check the states of each
+    /// of the defined repositories, and run against the one that's been without an
+    /// update the longest. This can be modified using the options, like doing a dry
+    /// run, forcibly running a specific repository, and so on.
+    Run(RunArgs),
 }
 
 #[derive(Args, Debug)]
@@ -54,6 +62,13 @@ pub struct InitArgs {
     /// Print the minimal configuration instead of the more verbose example
     #[arg(short, long)]
     pub minimal: bool,
+}
+
+#[derive(Args, Debug)]
+pub struct RunArgs {
+    /// Config file, ~/.halley/config.toml by default
+    #[arg(short, long)]
+    pub config: Option<PathBuf>,
 }
 
 /// Enforce the defaults in the arguments
@@ -72,7 +87,8 @@ fn enforce_defaults(args: &mut Arguments) {
 fn enforce_default_config(args: &mut Arguments) {
     let default = PathBuf::from("~/.halley/config.toml");
     let subc_config = match &args.command {
-        Commands::Validate(ValidateArgs { config }) => config,
+        Commands::Validate(c_args) => &c_args.config,
+        Commands::Run(c_args) => &c_args.config,
         _ => &None,
     };
     let config = match &subc_config {
