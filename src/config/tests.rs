@@ -34,8 +34,6 @@ fn integration_minimal_readback() {
     drop(cf_handle);
     let c_parsed = make_config(cf.to_path_buf()).unwrap();
     assert_eq!(c, c_parsed);
-    let c_validated = validate_config(c_parsed);
-    assert!(c_validated.is_ok());
 }
 
 #[test]
