@@ -24,6 +24,8 @@ use figment::{
 };
 use tracing::{debug, error, info, warn};
 
+static EXAMPLE_CONFIG: &'static str = include_str!("./example.toml");
+
 /// Processes a `ReadConfig` into a valid `Config`
 fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
     trace_call!("validate_config", "called with rc {:?}", rc);
