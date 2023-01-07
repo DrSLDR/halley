@@ -76,6 +76,16 @@ pub fn validate_config(path: PathBuf) -> anyhow::Result<config::Config> {
     Ok(c)
 }
 
+/// Returns the most basic, minimal configuration file
+pub fn minimal_config() -> String {
+    config::minimal_config()
+}
+
+/// Returns the example configuration file, if you don't have it to hand
+pub fn example_config() -> String {
+    config::example_config()
+}
+
 pub mod log {
     use super::*;
 
