@@ -66,9 +66,34 @@ pub struct InitArgs {
 
 #[derive(Args, Debug)]
 pub struct RunArgs {
+    /// Dry run
+    ///
+    /// When running dry, Halley will attempt to do as much as it possibly can without
+    /// ever writing anything to disk. Since some operations may be impossible against
+    /// certain backends (e.g. S3 glacier storage), it can't guarantee that it will do
+    /// everything.
+    #[arg(short, long)]
+    pub dry: bool,
+
     /// Config file, ~/.halley/config.toml by default
     #[arg(short, long)]
     pub config: Option<PathBuf>,
+
+    /// Statefile directory, ~/.halley by default
+    ///
+    /// This does not really make sense unless you also specify a config file, since the
+    /// name of the statefile is given in it. But you do you.
+    #[arg(long)]
+    pub state_dir: Option<PathBuf>,
+
+    /// Force a specific repository to update
+    ///
+    /// This overrides the last-to-update check and forces a specific repository to
+    /// update, even if the update schedule says otherwise.
+    ///
+    /// This can be useful to combine with dry run.
+    #[arg(long)]
+    pub force_repo: Option<String>,
 }
 
 /// Enforce the defaults in the arguments
