@@ -34,6 +34,8 @@ fn integration_minimal_readback() {
     drop(cf_handle);
     let c_parsed = make_config(cf.to_path_buf()).unwrap();
     assert_eq!(c, c_parsed);
+    let c_validated = validate_config(c_parsed);
+    assert!(c_validated.is_ok());
 }
 
 #[test]
@@ -48,6 +50,8 @@ fn integration_example_readback() {
     drop(cf_handle);
     let c_parsed = make_config(cf.to_path_buf());
     assert!(c_parsed.is_ok());
+    let c_validated = validate_config(c_parsed.unwrap());
+    assert!(c_validated.is_ok());
 }
 
 macro_rules! figment_read {
