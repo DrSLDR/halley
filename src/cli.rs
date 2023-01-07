@@ -36,7 +36,7 @@ pub struct Arguments {
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     /// Output an example configuration file
-    InitConfig,
+    InitConfig(InitArgs),
 
     /// Validate a configuration file
     Validate(ValidateArgs),
@@ -47,6 +47,13 @@ pub struct ValidateArgs {
     /// Config file, ~/.halley/config.toml by default
     #[arg(short, long)]
     pub config: Option<PathBuf>,
+}
+
+#[derive(Args, Debug)]
+pub struct InitArgs {
+    /// Print the minimal configuration instead of the more verbose example
+    #[arg(short, long)]
+    pub minimal: bool,
 }
 
 /// Enforce the defaults in the arguments
