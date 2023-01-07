@@ -187,3 +187,9 @@ pub(crate) fn minimal_config() -> String {
     trace_call!("minimal_config");
     toml::to_string_pretty(&ReadConfig::default()).unwrap()
 }
+
+/// Returns the example configuration as a string
+pub(crate) fn example_config() -> String {
+    trace_call!("example_config");
+    EXAMPLE_CONFIG.to_owned()
+}

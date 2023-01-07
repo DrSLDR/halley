@@ -36,6 +36,20 @@ fn integration_minimal_readback() {
     assert_eq!(c, c_parsed);
 }
 
+#[test]
+#[ignore]
+fn integration_example_readback() {
+    log_init();
+    let c_string = example_config();
+    let cf = assert_fs::NamedTempFile::new("test.toml").unwrap();
+    let mut cf_handle = File::create(cf.path()).unwrap();
+    cf_handle.write_all(c_string.as_bytes()).unwrap();
+    cf_handle.flush().unwrap();
+    drop(cf_handle);
+    let c_parsed = make_config(cf.to_path_buf());
+    assert!(c_parsed.is_ok());
+}
+
 macro_rules! figment_read {
     ($s:ident) => {
         Figment::new().join(Toml::string($s)).extract().unwrap()
