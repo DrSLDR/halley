@@ -1,5 +1,4 @@
 use super::*;
-use crate::types::{AWSKey, LocalRepo, Region, S3Repo};
 use crate::util::test_utils::*;
 use types::*;
 

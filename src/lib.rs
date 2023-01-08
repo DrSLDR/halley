@@ -11,13 +11,8 @@ mod types;
 mod util;
 
 pub use crate::types::RunSpec;
-use crate::types::*;
 
 use anyhow::anyhow;
-use figment::{
-    providers::{Format, Toml},
-    Figment,
-};
 use std::path::PathBuf;
 use tracing::{debug, error};
 

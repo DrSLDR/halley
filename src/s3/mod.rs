@@ -11,7 +11,7 @@ mod types;
 use types::*;
 
 use crate::trace_call;
-use crate::types::{AWSKey, RepoCommon, S3Repo};
+use crate::types::S3Repo;
 
 use std::sync::Arc;
 use std::thread;
