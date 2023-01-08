@@ -4,6 +4,7 @@ use crate::trace_call;
 
 pub use rusoto_core::Region;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use tracing::{trace, trace_span};
 
 // First off, the entire restic group of Repo types.
@@ -78,4 +79,13 @@ impl S3Repo {
 pub enum Repo {
     Local { data: LocalRepo },
     S3 { data: S3Repo },
+}
+
+/// Struct for feeding in the information needed to invoke Halley
+#[derive(Debug)]
+pub struct RunSpec {
+    pub dry: bool,
+    pub specific_repo: Option<String>,
+    pub config: PathBuf,
+    pub state_dir: PathBuf,
 }

@@ -17,8 +17,39 @@ fn integration_default_readback() {
     cf_handle.write_all(c_string.as_bytes()).unwrap();
     cf_handle.flush().unwrap();
     drop(cf_handle);
-    let c_parsed = make_config(cf.path().to_string_lossy().to_string()).unwrap();
+    let c_parsed = make_config(cf.to_path_buf()).unwrap();
     assert_eq!(c, c_parsed);
+}
+
+#[test]
+#[ignore]
+fn integration_minimal_readback() {
+    log_init();
+    let c = ReadConfig::default();
+    let c_string = minimal_config();
+    let cf = assert_fs::NamedTempFile::new("test.toml").unwrap();
+    let mut cf_handle = File::create(cf.path()).unwrap();
+    cf_handle.write_all(c_string.as_bytes()).unwrap();
+    cf_handle.flush().unwrap();
+    drop(cf_handle);
+    let c_parsed = make_config(cf.to_path_buf()).unwrap();
+    assert_eq!(c, c_parsed);
+}
+
+#[test]
+#[ignore]
+fn integration_example_readback() {
+    log_init();
+    let c_string = example_config();
+    let cf = assert_fs::NamedTempFile::new("test.toml").unwrap();
+    let mut cf_handle = File::create(cf.path()).unwrap();
+    cf_handle.write_all(c_string.as_bytes()).unwrap();
+    cf_handle.flush().unwrap();
+    drop(cf_handle);
+    let c_parsed = make_config(cf.to_path_buf());
+    assert!(c_parsed.is_ok());
+    let c_validated = validate_config(c_parsed.unwrap());
+    assert!(c_validated.is_ok());
 }
 
 macro_rules! figment_read {

@@ -1,20 +1,47 @@
-use tracing::Level;
-use tracing_subscriber;
+mod cli;
 
 use halley::*;
 
+use tracing::debug;
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    #[cfg(debug_assertions)]
-    tracing_subscriber::fmt()
-        .with_max_level(Level::TRACE)
-        .init();
-    #[cfg(not(debug_assertions))]
-    tracing_subscriber::fmt().compact().init();
+    let args = cli::parse();
 
-    println!("Hello, world!");
+    handle_logging(&args);
+    debug!("Got args\n{:#?}", args);
 
-    test_config()?;
+    match &args.command {
+        cli::Commands::Validate(_) => {
+            validate_config(args.config.unwrap())?;
+            println!("Ok!");
+        }
+        cli::Commands::InitConfig(c_args) => {
+            if c_args.minimal {
+                println!("{}", minimal_config());
+            } else {
+                println!("{}", example_config());
+            }
+        }
+        cli::Commands::Run(c_args) => unimplemented!(),
+    }
 
     Ok(())
+}
+
+fn handle_logging(args: &cli::Arguments) {
+    // Godforsaken matcher for the log flag combinations
+    match (args.quiet, args.verbose, args.debug) {
+        (false, false, 0) => {
+            #[cfg(debug_assertions)]
+            log::init_trace_logging();
+            #[cfg(not(debug_assertions))]
+            log::init_warn_logging();
+        }
+        (true, _, _) => log::init_error_logging(),
+        (false, _, 1) => log::init_debug_logging(),
+        (false, _, 2) => log::init_trace_logging(),
+        (false, true, 0) => log::init_info_logging(),
+        _ => panic!("Somehow got an illegal log flag combination!"),
+    }
 }
