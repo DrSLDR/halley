@@ -1,3 +1,6 @@
+// #[cfg(test)]
+// mod tests;
+
 use std::path::PathBuf;
 
 use clap::{Args, Parser, Subcommand};
