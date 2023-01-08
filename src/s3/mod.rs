@@ -340,7 +340,7 @@ impl S3Handler {
         self.nospan_get_storage_class(key).await
     }
 
-    /// [`get_storage_class`] without a span
+    /// [`S3Handler::get_storage_class`] without a span
     async fn nospan_get_storage_class(&self, key: String) -> anyhow::Result<StorageClass> {
         let bucket = self.bucket.clone();
         let key = Arc::new(key);
@@ -399,7 +399,7 @@ impl S3Handler {
         self.nospan_restore_object(key).await
     }
 
-    /// [`restore_object`] without span logging
+    /// [`S3Handler::restore_object`] without span logging
     async fn nospan_restore_object(&self, key: String) -> anyhow::Result<()> {
         let bucket = self.bucket.clone();
         let key = Arc::new(key);
@@ -456,7 +456,7 @@ impl S3Handler {
         self.nospan_archive_object(key).await
     }
 
-    /// [`archive_object`] without span logging
+    /// [`S3Handler::archive_object`] without span logging
     async fn nospan_archive_object(&self, key: String) -> anyhow::Result<()> {
         let bucket = Arc::new(self.bucket.clone());
         let key = Arc::new(key.clone());
