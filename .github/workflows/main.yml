@@ -21,6 +21,8 @@ jobs:
         with:
           toolchain: stable
           components: clippy
+      - name: Install restic
+        run: sudo apt install restic
 
       - name: Build Halley's documentation
         uses: actions-rs/cargo@v1
