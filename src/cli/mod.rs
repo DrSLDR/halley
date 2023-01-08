@@ -104,6 +104,9 @@ fn enforce_defaults(args: &mut Arguments) {
     // Handle the config file and do any needed tilde expansion
     enforce_default_config(args);
 
+    // Handle Run-specific statepath enforecement
+    enforce_default_statepath(args);
+
     // Clamp the number of debug flags
     args.debug = if args.debug > 2 { 2 } else { args.debug };
 }
@@ -133,6 +136,13 @@ fn enforce_default_statepath(args: &mut Arguments) {
         Commands::Run(c_args) => {
             let default = PathBuf::from("~/.halley");
             let state_dir = Some(unwrap_or_default_and_expand(&c_args.state_dir, default));
+            let new_args = RunArgs {
+                dry: c_args.dry,
+                config: c_args.config.clone(),
+                force_repo: c_args.force_repo.clone(),
+                state_dir,
+            };
+            args.command = Commands::Run(new_args);
         }
         _ => (),
     }
