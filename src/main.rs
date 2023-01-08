@@ -23,7 +23,18 @@ async fn main() -> anyhow::Result<()> {
                 println!("{}", example_config());
             }
         }
-        cli::Commands::Run(c_args) => unimplemented!(),
+        cli::Commands::Run(c_args) => {
+            let spec = RunSpec {
+                dry: c_args.dry,
+                config: args.config.expect("RUN: Could not unwrap top-level config"),
+                state_dir: c_args
+                    .state_dir
+                    .clone()
+                    .expect("RUN: Could not unwrap state directory"),
+                specific_repo: c_args.force_repo.clone(),
+            };
+            run(spec)?;
+        }
     }
 
     Ok(())

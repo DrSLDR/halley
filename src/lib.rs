@@ -10,6 +10,7 @@ mod s3;
 mod types;
 mod util;
 
+pub use crate::types::RunSpec;
 use crate::types::*;
 
 use anyhow::anyhow;
@@ -22,6 +23,7 @@ use tracing::{debug, error};
 
 /// Invoke Halley
 pub fn run(spec: RunSpec) -> anyhow::Result<()> {
+    trace_call!("run", "spec: {:?}", spec);
     Ok(())
 }
 
