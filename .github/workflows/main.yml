@@ -21,6 +21,11 @@ jobs:
         with:
           components: clippy
 
+      - name: Build Halley's documentation
+        uses: actions-rs/cargo@v1
+        with:
+          command: doc --document-private-items
+
       - name: Check Halley
         uses: actions-rs/cargo@v1
         with:
