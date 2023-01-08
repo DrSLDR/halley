@@ -130,6 +130,14 @@ fn enforce_default_config(args: &mut Arguments) {
     });
 }
 
+fn enforce_default_statepath(args: &mut Arguments) {
+    match &args.command {
+        Commands::Run(c_args) => unimplemented!(),
+        _ => (),
+    }
+    let default = PathBuf::from("~/.halley");
+}
+
 pub fn parse() -> Arguments {
     let mut args = Arguments::parse();
 
