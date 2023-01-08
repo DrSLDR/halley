@@ -124,21 +124,27 @@ fn enforce_default_config(args: &mut Arguments) {
         Some(_) => subc_config,
     };
 
-    args.config = Some({
-        let pb = match config {
-            None => default,
-            Some(p) => p.to_owned(),
-        };
-        PathBuf::from(tilde(&pb.to_string_lossy().into_owned()).into_owned())
-    });
+    args.config = Some(unwrap_or_default_and_expand(config, default));
 }
 
+/// Enforces a default statepath
 fn enforce_default_statepath(args: &mut Arguments) {
     match &args.command {
-        Commands::Run(c_args) => unimplemented!(),
+        Commands::Run(c_args) => {
+            let default = PathBuf::from("~/.halley");
+            let state_dir = Some(unwrap_or_default_and_expand(&c_args.state_dir, default));
+        }
         _ => (),
     }
-    let default = PathBuf::from("~/.halley");
+}
+
+/// Helper function to do PathBuf tilde expansion
+fn unwrap_or_default_and_expand(data: &Option<PathBuf>, default: PathBuf) -> PathBuf {
+    let interim = match data {
+        Some(p) => p,
+        None => &default,
+    };
+    PathBuf::from(tilde(interim.to_string_lossy().as_ref()).into_owned())
 }
 
 pub fn parse() -> Arguments {
