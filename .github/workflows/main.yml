@@ -1,0 +1,58 @@
+name: Verification flow
+on:
+  push:
+    branches:
+      - "main"
+      - "dev"
+      - "dev-ci-*"
+  pull_request:
+    branches:
+      - "main"
+      - "dev"
+jobs:
+  test_all_the_things:
+    name: General test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy
+      - name: Install restic
+        run: sudo apt install restic
+
+      - name: Build Halley's documentation
+        uses: actions-rs/cargo@v1
+        with:
+          command: doc
+          args: --document-private-items
+
+      - name: Check Halley
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --all-targets --profile=test
+
+      - name: Test Halley
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+      - name: Test Halley's integration tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: -- --ignored
+
+      - name: Build Halley
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+
+      - name: Build Halley with optimizations
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
