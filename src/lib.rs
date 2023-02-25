@@ -20,7 +20,8 @@ use tracing::{debug, error};
 /// Invoke Halley
 pub fn run(spec: RunSpec) -> anyhow::Result<()> {
     trace_call!("run", "spec: {:?}", spec);
-    Ok(())
+    debug!("Starting the engine");
+    engine::run(spec)
 }
 
 /// Ensures a configuration file exists and is readable
