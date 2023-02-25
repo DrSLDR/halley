@@ -75,7 +75,7 @@ pub struct RunArgs {
     /// ever writing anything to disk. Since some operations may be impossible against
     /// certain backends (e.g. S3 glacier storage), it can't guarantee that it will do
     /// everything.
-    #[arg(short, long)]
+    #[arg(short = 'n', long)]
     pub dry: bool,
 
     /// Config file, ~/.halley/config.toml by default
