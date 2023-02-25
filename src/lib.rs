@@ -5,6 +5,7 @@
 //! saving.
 
 mod config;
+mod engine;
 mod restic;
 mod s3;
 mod types;
