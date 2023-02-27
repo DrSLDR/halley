@@ -20,24 +20,28 @@ pub(crate) fn run(spec: RunSpec) -> anyhow::Result<()> {
 
     let dry = spec.dry;
     let specific_repo = spec.specific_repo;
-    let mut state_dir = spec.state_dir;
+
     let conf = config::make_and_validate_config(spec.config)?;
 
-    state_dir.push(conf.statefile_name.clone());
-    debug!("Will check statefile at {:?}", state_dir);
+    let statefile = {
+        let mut state_dir = spec.state_dir;
+        state_dir.push(conf.statefile_name.clone());
+        state_dir
+    };
+    debug!("Will check statefile at {:?}", statefile);
 
     match state::check(state::CheckArgs {
-        statefile: state_dir,
-        config: conf,
-        dry: dry,
-        specific_repo,
+        statefile,
+        config: &conf,
+        dry,
+        specific_repo: &specific_repo,
     }) {
         Ok(StateStatus::NothingToDo) => {
             info!("State manager reported there is nothing to do!");
             Ok(())
         }
-        Ok(StateStatus::NextRepo(data)) => {
-            info!("State manager reports repository '{}' is up next", data.id);
+        Ok(StateStatus::NextRepo(id)) => {
+            info!("State manager reports repository '{}' is up next", id);
             unimplemented!()
         }
         Err(_) => unimplemented!(),

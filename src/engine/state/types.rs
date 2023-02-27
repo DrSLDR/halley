@@ -44,26 +44,16 @@ impl Default for RepoState {
 ///
 /// Looks a lot like `RunSpec`, but isn't really
 #[derive(Debug)]
-pub(crate) struct CheckArgs {
+pub(crate) struct CheckArgs<'a> {
     pub statefile: PathBuf,
-    pub config: Config,
+    pub config: &'a Config,
     pub dry: bool,
-    pub specific_repo: Option<String>,
-}
-
-/// Struct returned from the `check` function if there is something to do
-///
-/// Mainly used so we can return ownership of the `config`
-#[derive(Debug)]
-pub(crate) struct CheckData {
-    pub id: String,
-    pub config: Config,
-    pub specific_repo: Option<String>,
+    pub specific_repo: &'a Option<String>,
 }
 
 /// Return Enum from the `check` function
 #[derive(Debug)]
 pub(crate) enum StateStatus {
     NothingToDo,
-    NextRepo(CheckData),
+    NextRepo(String),
 }
