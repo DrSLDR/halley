@@ -22,6 +22,7 @@ pub(crate) fn run(spec: RunSpec) -> anyhow::Result<()> {
     let conf = config::make_and_validate_config(spec.config)?;
 
     state_dir.push(conf.statefile_name);
+    debug!("Will check statefile at {:?}", state_dir);
 
     Ok(())
 }
