@@ -1,6 +1,10 @@
 //! Types belonging to the statefile processor
 
+use std::path::PathBuf;
+
 use serde::{Deserialize, Serialize};
+
+use crate::config::Config;
 
 /// Top-level statefile representation
 #[derive(Debug, Serialize, Deserialize)]
@@ -34,6 +38,16 @@ impl Default for RepoState {
             digest: "xxx".to_string(),
         }
     }
+}
+
+/// Struct used to call the `check` function
+///
+/// Looks a lot like `RunSpec`, but isn't really
+pub(crate) struct CheckArgs {
+    statefile: PathBuf,
+    config: Config,
+    dry: bool,
+    specific_repo: Option<String>,
 }
 
 /// Return Enum from the `check` function
