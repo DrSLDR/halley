@@ -12,10 +12,16 @@ use anyhow::anyhow;
 
 use tracing::debug;
 
+/// Entrypoint to the Engine
 pub(crate) fn run(spec: RunSpec) -> anyhow::Result<()> {
     trace_call!("run", "called with conf {:?}", spec);
 
+    let dry = spec.dry;
+    let specific_repo = spec.specific_repo;
+    let mut state_dir = spec.state_dir;
     let conf = config::make_and_validate_config(spec.config)?;
+
+    state_dir.push(conf.statefile_name);
 
     Ok(())
 }
