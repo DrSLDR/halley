@@ -56,8 +56,9 @@ pub(crate) struct CheckArgs {
 /// Mainly used so we can return ownership of the `config`
 #[derive(Debug)]
 pub(crate) struct CheckData {
-    config: Config,
-    specific_repo: Option<String>,
+    pub id: String,
+    pub config: Config,
+    pub specific_repo: Option<String>,
 }
 
 /// Return Enum from the `check` function

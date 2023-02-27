@@ -5,12 +5,14 @@
 
 mod state;
 
+use state::StateStatus;
+
 use crate::config;
 use crate::{trace_call, RunSpec};
 
 use anyhow::anyhow;
 
-use tracing::debug;
+use tracing::{debug, info};
 
 /// Entrypoint to the Engine
 pub(crate) fn run(spec: RunSpec) -> anyhow::Result<()> {
@@ -24,12 +26,20 @@ pub(crate) fn run(spec: RunSpec) -> anyhow::Result<()> {
     state_dir.push(conf.statefile_name.clone());
     debug!("Will check statefile at {:?}", state_dir);
 
-    let status = state::check(state::CheckArgs {
+    match state::check(state::CheckArgs {
         statefile: state_dir,
         config: conf,
         dry: dry,
         specific_repo,
-    })?;
-
-    Ok(())
+    }) {
+        Ok(StateStatus::NothingToDo) => {
+            info!("State manager reported there is nothing to do!");
+            Ok(())
+        }
+        Ok(StateStatus::NextRepo(data)) => {
+            info!("State manager reports repository '{}' is up next", data.id);
+            unimplemented!()
+        }
+        Err(_) => unimplemented!(),
+    }
 }
