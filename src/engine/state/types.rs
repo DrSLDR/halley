@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 /// Top-level statefile representation
 #[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct State {
+struct State {
     pub(crate) version: u32,
     pub(crate) states: Vec<RepoState>,
 }
@@ -20,7 +20,7 @@ impl Default for State {
 
 /// Representation of an individual repository state
 #[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct RepoState {
+struct RepoState {
     pub(crate) id: String,
     pub(crate) time: u64,
     pub(crate) digest: String,
@@ -34,4 +34,10 @@ impl Default for RepoState {
             digest: "xxx".to_string(),
         }
     }
+}
+
+/// Return Enum from the `check` function
+pub(crate) enum StateStatus {
+    NothingToDo,
+    NextRepo(String),
 }
