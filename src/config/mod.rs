@@ -30,6 +30,9 @@ static EXAMPLE_CONFIG: &'static str = include_str!("./example.toml");
 fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
     trace_call!("validate_config", "called with rc {:?}", rc);
 
+    let statefile = format!("{}.hstate.toml", rc.statefile_name);
+    debug!("Derived statefile name {}", statefile);
+
     let mut buckets: HashMap<String, PartialBucket> = HashMap::new();
 
     if rc.s3_buckets.is_some() {
@@ -57,6 +60,7 @@ fn validate_config(rc: ReadConfig) -> anyhow::Result<Config> {
     }
 
     let c = Config {
+        statefile_name: statefile,
         repositories: repos,
     };
 

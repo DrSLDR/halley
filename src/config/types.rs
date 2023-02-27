@@ -100,6 +100,7 @@ pub struct S3StorageBackend {
 /// runs.
 #[derive(Debug)]
 pub struct Config {
+    pub(crate) statefile_name: String,
     pub(crate) repositories: HashMap<String, Repo>,
 }
 
