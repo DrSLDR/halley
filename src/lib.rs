@@ -15,17 +15,19 @@ pub use crate::types::RunSpec;
 
 use anyhow::anyhow;
 use std::path::PathBuf;
-use tracing::{debug, error};
+use tracing::{debug, error, info};
 
 /// Invoke Halley
 pub fn run(spec: RunSpec) -> anyhow::Result<()> {
     trace_call!("run", "spec: {:?}", spec);
-    debug!("Starting the engine");
+    usable_config_file(spec.config.clone())?;
+    info!("Starting the engine");
     engine::run(spec)
 }
 
 /// Ensures a configuration file exists and is readable
 fn usable_config_file(path: PathBuf) -> anyhow::Result<PathBuf> {
+    trace_call!("usable_config_file", "called on path {:?}", path);
     match std::fs::File::open(&path) {
         Ok(_) => Ok(path),
         Err(e) => {
