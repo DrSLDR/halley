@@ -44,14 +44,22 @@ impl Default for RepoState {
 ///
 /// Looks a lot like `RunSpec`, but isn't really
 pub(crate) struct CheckArgs {
-    statefile: PathBuf,
+    pub statefile: PathBuf,
+    pub config: Config,
+    pub dry: bool,
+    pub specific_repo: Option<String>,
+}
+
+/// Struct returned from the `check` function if there is something to do
+///
+/// Mainly used so we can return ownership of the `config`
+pub(crate) struct CheckData {
     config: Config,
-    dry: bool,
     specific_repo: Option<String>,
 }
 
 /// Return Enum from the `check` function
 pub(crate) enum StateStatus {
     NothingToDo,
-    NextRepo(String),
+    NextRepo(CheckData),
 }

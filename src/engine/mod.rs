@@ -21,8 +21,15 @@ pub(crate) fn run(spec: RunSpec) -> anyhow::Result<()> {
     let mut state_dir = spec.state_dir;
     let conf = config::make_and_validate_config(spec.config)?;
 
-    state_dir.push(conf.statefile_name);
+    state_dir.push(conf.statefile_name.clone());
     debug!("Will check statefile at {:?}", state_dir);
+
+    let status = state::check(state::CheckArgs {
+        statefile: state_dir,
+        config: conf,
+        dry: dry,
+        specific_repo,
+    })?;
 
     Ok(())
 }
