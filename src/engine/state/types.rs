@@ -59,6 +59,7 @@ pub(crate) enum StateStatus {
 /// Special error types related to state management
 #[derive(Debug)]
 pub(crate) enum StateError {
+    Glob(glob::GlobError),
     IO(std::io::Error),
     TOMLD(toml::de::Error),
     TOMLS(toml::ser::Error),
@@ -71,6 +72,7 @@ impl Display for StateError {
             StateError::Internal(ref err) => {
                 write!(f, "An internal error occurred: {:?}", err)
             }
+            StateError::Glob(ref err) => err.fmt(f),
             StateError::IO(ref err) => err.fmt(f),
             StateError::TOMLD(ref err) => err.fmt(f),
             StateError::TOMLS(ref err) => err.fmt(f),
@@ -93,6 +95,12 @@ impl From<toml::de::Error> for StateError {
 impl From<toml::ser::Error> for StateError {
     fn from(err: toml::ser::Error) -> StateError {
         StateError::TOMLS(err)
+    }
+}
+
+impl From<glob::GlobError> for StateError {
+    fn from(err: glob::GlobError) -> StateError {
+        StateError::Glob(err)
     }
 }
 
