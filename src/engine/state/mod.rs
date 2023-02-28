@@ -8,6 +8,7 @@ use std::path::PathBuf;
 use std::{collections::HashMap, fs};
 
 use crate::config::types::Repo;
+use crate::config::Config;
 use crate::trace_call;
 
 pub(crate) use self::types::{CheckArgs, ErrorKind, RepoState, State, StateError, StateStatus};
@@ -44,7 +45,7 @@ pub(crate) fn check(args: CheckArgs) -> anyhow::Result<StateStatus> {
         Err(e) => Err(e),
     }?;
 
-    let status = next_up(&mut state, specific_repo)?;
+    let status = next_up(&mut state, config, specific_repo)?;
 
     if dry {
         warn!("DRY RUN: Will not update state file on disk!")
@@ -160,6 +161,47 @@ fn write_statefile<'a>(path: &'a PathBuf, state: &'a State) -> Result<(), StateE
 ///
 /// If given a specific_repo, short circuits comparison and just checks the specified
 /// repo
-fn next_up(state: &mut State, specific: &Option<String>) -> Result<StateStatus, StateError> {
+fn next_up(
+    state: &mut State,
+    config: &Config,
+    specific: &Option<String>,
+) -> Result<StateStatus, StateError> {
+    trace_call!(
+        "next_up",
+        "called with state {:?}, config {:?}, specific repo {:?}",
+        state,
+        config,
+        specific
+    );
+    let mut state_repos = &state.states;
+    let config_repos = &config.repositories;
+    match specific {
+        Some(id) => {
+            if config_repos.contains_key(id) {
+                unimplemented!()
+            } else {
+                warn!(
+                    "Repository with id '{}' is not defined in configuration",
+                    id
+                );
+                Ok(StateStatus::NothingToDo)
+            }
+        }
+        None => unimplemented!(),
+    }
+}
+
+/// Checks the given repo to see if it needs updating
+///
+/// Calculates the recursive directory hash on the paths, then checks that against the
+/// digest kept in the state. Returns `true` if the repo needs to be updated, `false`
+/// otherwise.
+fn needs_update(state: RepoState, config: &Repo) -> Result<bool, StateError> {
+    trace_call!(
+        "needs_update",
+        "called with repo-state {:?}, config {:?}",
+        state,
+        config
+    );
     unimplemented!()
 }
