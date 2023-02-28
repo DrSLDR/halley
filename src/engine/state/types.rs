@@ -1,6 +1,6 @@
 //! Types belonging to the statefile processor
 
-use std::{error::Error, fmt::Display, path::PathBuf};
+use std::{collections::HashMap, error::Error, fmt::Display, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
@@ -10,14 +10,14 @@ use crate::config::Config;
 #[derive(Debug, Serialize, Deserialize)]
 struct State {
     pub(crate) version: u32,
-    pub(crate) states: Vec<RepoState>,
+    pub(crate) states: HashMap<String, RepoState>,
 }
 
 impl Default for State {
     fn default() -> Self {
         Self {
             version: 1,
-            states: Vec::new(),
+            states: HashMap::new(),
         }
     }
 }

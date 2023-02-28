@@ -4,10 +4,11 @@
 //! reading the Halley state files. It also includes scheduling logic, as it determines
 //! which repo will be updated next, if any.
 
-use std::fs;
 use std::path::PathBuf;
+use std::{collections::HashMap, fs};
 
-use crate::{config::Config, trace_call};
+use crate::config::types::Repo;
+use crate::trace_call;
 
 pub(crate) use self::types::{CheckArgs, ErrorKind, StateError, StateStatus};
 
@@ -30,7 +31,7 @@ pub(crate) fn check(args: CheckArgs) -> anyhow::Result<StateStatus> {
                 warn!("DRY RUN: No statefile exists, will not create one, so cannot continue");
                 Err(StateError::Internal(ErrorKind::StateFileDoesNotExist))
             } else {
-                create_statefile(&args.statefile, args.config)
+                create_statefile(&args.statefile, &args.config.repositories)
             }
         }
         Err(e) => Err(e),
@@ -58,7 +59,15 @@ fn usable_state_file(path: &PathBuf) -> Result<&PathBuf, StateError> {
 }
 
 /// Create and populate a statefile with some default data
-fn create_statefile<'a>(path: &'a PathBuf, config: &Config) -> Result<&'a PathBuf, StateError> {
-    trace_call!("create_statefile");
+fn create_statefile<'a>(
+    path: &'a PathBuf,
+    repos: &HashMap<String, Repo>,
+) -> Result<&'a PathBuf, StateError> {
+    trace_call!(
+        "create_statefile",
+        "called with path {:?}, repos {:?}",
+        path,
+        repos
+    );
     Ok(path)
 }
