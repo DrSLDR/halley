@@ -1,6 +1,6 @@
 //! Types belonging to the statefile processor
 
-use std::path::PathBuf;
+use std::{error::Error, fmt::Display, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
@@ -56,4 +56,38 @@ pub(crate) struct CheckArgs<'a> {
 pub(crate) enum StateStatus {
     NothingToDo,
     NextRepo(String),
+}
+
+/// Special error types related to state management
+#[derive(Debug)]
+pub(crate) enum StateError {
+    Io(std::io::Error),
+    Internal(ErrorKind),
+}
+
+impl Display for StateError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            StateError::Internal(ref err) => {
+                write!(f, "An internal error occurred: {:?}", err)
+            }
+            StateError::Io(ref err) => err.fmt(f),
+        }
+    }
+}
+
+impl Error for StateError {}
+
+/// Error flavors
+#[derive(Clone, Debug)]
+pub(crate) enum ErrorKind {
+    StateFileDoesNotExist,
+}
+
+impl ErrorKind {
+    fn as_str(&self) -> &str {
+        match *self {
+            ErrorKind::StateFileDoesNotExist => "state file does not exist",
+        }
+    }
 }
