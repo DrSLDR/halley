@@ -13,8 +13,11 @@ use crate::trace_call;
 
 pub(crate) use self::types::{CheckArgs, ErrorKind, RepoState, State, StateError, StateStatus};
 
+use directory_hasher;
+use glob;
+use shellexpand;
 use toml;
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 
 mod types;
 
@@ -213,5 +216,29 @@ fn needs_update(
         state,
         config
     );
+
+    let repo_state = state.get(&id).unwrap();
+    let repo_paths = &config.get(&id).unwrap().paths;
+    debug!(
+        "Got the relevant repo-state {:?} and paths {:?}",
+        repo_state, repo_paths
+    );
+
+    let mut paths: Vec<PathBuf> = Vec::new();
+    for path in repo_paths {
+        let expanded = shellexpand::tilde(path).into_owned();
+        for globbed in glob::glob(&expanded).expect("Failed to read glob pattern") {
+            match globbed {
+                Ok(p) => {
+                    paths.push(p);
+                    Ok(())
+                }
+                Err(e) => Err(e),
+            }?;
+        }
+    }
+
+    debug!("Glob-expanded to the paths: {:#?}", paths);
+
     unimplemented!()
 }
