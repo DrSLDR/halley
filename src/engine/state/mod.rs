@@ -11,7 +11,7 @@ use std::{collections::HashMap, fs};
 use crate::config::types::Repo;
 use crate::trace_call;
 
-pub(crate) use self::types::{CheckArgs, ErrorKind, State, StateError, StateStatus};
+pub(crate) use self::types::{CheckArgs, ErrorKind, RepoState, State, StateError, StateStatus};
 
 use toml;
 use tracing::{error, info, warn};
@@ -73,6 +73,12 @@ fn create_statefile<'a>(
     );
 
     let mut state = State::default();
+
+    for (id, _) in repos.iter() {
+        let mut repo_state = RepoState::default();
+        repo_state.id = id.clone();
+        state.states.insert(id.clone(), repo_state);
+    }
 
     let mut file = fs::File::create(path)?;
     file.write_all(toml::to_string_pretty(&state).unwrap().as_bytes())?;
