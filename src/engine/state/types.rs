@@ -76,6 +76,12 @@ impl Display for StateError {
     }
 }
 
+impl From<std::io::Error> for StateError {
+    fn from(err: std::io::Error) -> StateError {
+        StateError::Io(err)
+    }
+}
+
 impl Error for StateError {}
 
 /// Error flavors

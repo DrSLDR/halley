@@ -52,7 +52,7 @@ fn usable_state_file(path: &PathBuf) -> Result<&PathBuf, StateError> {
             }
             _ => {
                 error!("An unhandled IO error occured in trying to open the statefile!");
-                Err(StateError::Io(e))
+                Err(StateError::from(e))
             }
         },
     }
