@@ -178,7 +178,12 @@ fn next_up(
     match specific {
         Some(id) => {
             if config_repos.contains_key(id) {
-                unimplemented!()
+                info!("Short-circuiting on repository {}", id);
+                if needs_update(id.to_string(), &mut state.states, &config_repos)? {
+                    Ok(StateStatus::NextRepo(id.to_string()))
+                } else {
+                    Ok(StateStatus::NothingToDo)
+                }
             } else {
                 warn!(
                     "Repository with id '{}' is not defined in configuration",
@@ -196,10 +201,15 @@ fn next_up(
 /// Calculates the recursive directory hash on the paths, then checks that against the
 /// digest kept in the state. Returns `true` if the repo needs to be updated, `false`
 /// otherwise.
-fn needs_update(state: RepoState, config: &Repo) -> Result<bool, StateError> {
+fn needs_update(
+    id: String,
+    state: &mut HashMap<String, RepoState>,
+    config: &HashMap<String, Repo>,
+) -> Result<bool, StateError> {
     trace_call!(
         "needs_update",
-        "called with repo-state {:?}, config {:?}",
+        "called with id {}, repo-state {:?}, config {:?}",
+        id,
         state,
         config
     );
