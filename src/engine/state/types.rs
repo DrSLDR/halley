@@ -8,7 +8,7 @@ use crate::config::Config;
 
 /// Top-level statefile representation
 #[derive(Debug, Serialize, Deserialize)]
-struct State {
+pub(crate) struct State {
     pub(crate) version: u32,
     pub(crate) states: HashMap<String, RepoState>,
 }
@@ -24,7 +24,7 @@ impl Default for State {
 
 /// Representation of an individual repository state
 #[derive(Debug, Serialize, Deserialize)]
-struct RepoState {
+pub(crate) struct RepoState {
     pub(crate) id: String,
     pub(crate) time: u64,
     pub(crate) digest: String,

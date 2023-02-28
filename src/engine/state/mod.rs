@@ -4,14 +4,16 @@
 //! reading the Halley state files. It also includes scheduling logic, as it determines
 //! which repo will be updated next, if any.
 
+use std::io::Write;
 use std::path::PathBuf;
 use std::{collections::HashMap, fs};
 
 use crate::config::types::Repo;
 use crate::trace_call;
 
-pub(crate) use self::types::{CheckArgs, ErrorKind, StateError, StateStatus};
+pub(crate) use self::types::{CheckArgs, ErrorKind, State, StateError, StateStatus};
 
+use toml;
 use tracing::{error, info, warn};
 
 mod types;
@@ -69,5 +71,11 @@ fn create_statefile<'a>(
         path,
         repos
     );
+
+    let mut state = State::default();
+
+    let mut file = fs::File::create(path)?;
+    file.write_all(toml::to_string_pretty(&state).unwrap().as_bytes())?;
+
     Ok(path)
 }
