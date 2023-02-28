@@ -4,7 +4,6 @@
 //! reading the Halley state files. It also includes scheduling logic, as it determines
 //! which repo will be updated next, if any.
 
-use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::{collections::HashMap, fs};
 
