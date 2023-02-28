@@ -25,7 +25,6 @@ impl Default for State {
 /// Representation of an individual repository state
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct RepoState {
-    pub(crate) id: String,
     pub(crate) time: u64,
     pub(crate) digest: String,
 }
@@ -33,7 +32,6 @@ pub(crate) struct RepoState {
 impl Default for RepoState {
     fn default() -> Self {
         Self {
-            id: "a_repo".to_string(),
             time: 0,
             digest: "xxx".to_string(),
         }

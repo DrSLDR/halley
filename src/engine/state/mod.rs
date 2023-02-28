@@ -75,9 +75,7 @@ fn create_statefile<'a>(
     let mut state = State::default();
 
     for (id, _) in repos.iter() {
-        let mut repo_state = RepoState::default();
-        repo_state.id = id.clone();
-        state.states.insert(id.clone(), repo_state);
+        state.states.insert(id.clone(), RepoState::default());
     }
 
     let mut file = fs::File::create(path)?;
