@@ -26,18 +26,30 @@ mod types;
 pub(crate) fn check(args: CheckArgs) -> anyhow::Result<StateStatus> {
     trace_call!("check", "called with {:?}", args);
 
-    let state = match usable_state_file(&args.statefile) {
-        Ok(p) => open_statefile(p, &args.config.repositories),
+    // Local bindings
+    let statefile = args.statefile;
+    let config = args.config;
+    let specific_repo = args.specific_repo;
+    let dry = args.dry;
+
+    let state = match usable_state_file(&statefile) {
+        Ok(p) => open_statefile(p, &config.repositories),
         Err(StateError::Internal(ErrorKind::StateFileDoesNotExist)) => {
             if args.dry {
                 warn!("DRY RUN: No statefile exists, will not create one, so cannot continue");
                 Err(StateError::Internal(ErrorKind::StateFileDoesNotExist))
             } else {
-                create_statefile(&args.statefile, &args.config.repositories)
+                create_statefile(&statefile, &config.repositories)
             }
         }
         Err(e) => Err(e),
     }?;
+
+    if dry {
+        warn!("DRY RUN: Will not update state file on disk!")
+    } else {
+        write_statefile(&statefile, &state)?;
+    }
 
     Ok(StateStatus::NothingToDo)
 }
