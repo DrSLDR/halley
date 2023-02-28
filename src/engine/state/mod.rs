@@ -78,8 +78,7 @@ fn create_statefile<'a>(
         state.states.insert(id.clone(), RepoState::default());
     }
 
-    let mut file = fs::File::create(path)?;
-    file.write_all(toml::to_string_pretty(&state).unwrap().as_bytes())?;
+    write_statefile(path, &state)?;
 
     info!(
         "Initialized statefile with {} repositories",
@@ -129,4 +128,17 @@ fn open_statefile<'a>(
     }
 
     Ok(state)
+}
+
+/// Write out the statefile
+fn write_statefile<'a>(path: &'a PathBuf, state: &'a State) -> Result<(), StateError> {
+    trace_call!(
+        "write_statefile",
+        "called with path {:?}, state {:?}",
+        path,
+        state
+    );
+
+    fs::write(path, toml::to_string_pretty(state)?)?;
+    Ok(())
 }
