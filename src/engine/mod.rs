@@ -44,6 +44,6 @@ pub(crate) fn run(spec: RunSpec) -> anyhow::Result<()> {
             info!("State manager reports repository '{}' is up next", id);
             unimplemented!()
         }
-        Err(_) => unimplemented!(),
+        Err(e) => Err(e),
     }
 }

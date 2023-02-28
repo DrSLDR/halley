@@ -83,11 +83,3 @@ impl Error for StateError {}
 pub(crate) enum ErrorKind {
     StateFileDoesNotExist,
 }
-
-impl ErrorKind {
-    fn as_str(&self) -> &str {
-        match *self {
-            ErrorKind::StateFileDoesNotExist => "state file does not exist",
-        }
-    }
-}
