@@ -60,7 +60,8 @@ pub(crate) enum StateStatus {
 #[derive(Debug)]
 pub(crate) enum StateError {
     IO(std::io::Error),
-    TOML(toml::de::Error),
+    TOMLD(toml::de::Error),
+    TOMLS(toml::ser::Error),
     Internal(ErrorKind),
 }
 
@@ -71,7 +72,8 @@ impl Display for StateError {
                 write!(f, "An internal error occurred: {:?}", err)
             }
             StateError::IO(ref err) => err.fmt(f),
-            StateError::TOML(ref err) => err.fmt(f),
+            StateError::TOMLD(ref err) => err.fmt(f),
+            StateError::TOMLS(ref err) => err.fmt(f),
         }
     }
 }
@@ -84,7 +86,13 @@ impl From<std::io::Error> for StateError {
 
 impl From<toml::de::Error> for StateError {
     fn from(err: toml::de::Error) -> StateError {
-        StateError::TOML(err)
+        StateError::TOMLD(err)
+    }
+}
+
+impl From<toml::ser::Error> for StateError {
+    fn from(err: toml::ser::Error) -> StateError {
+        StateError::TOMLS(err)
     }
 }
 
