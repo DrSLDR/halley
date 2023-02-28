@@ -4,7 +4,7 @@
 //! reading the Halley state files. It also includes scheduling logic, as it determines
 //! which repo will be updated next, if any.
 
-use std::io::Write;
+use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::{collections::HashMap, fs};
 
@@ -26,8 +26,8 @@ mod types;
 pub(crate) fn check(args: CheckArgs) -> anyhow::Result<StateStatus> {
     trace_call!("check", "called with {:?}", args);
 
-    let statefile = match usable_state_file(&args.statefile) {
-        Ok(p) => Ok(p),
+    let state = match usable_state_file(&args.statefile) {
+        Ok(p) => open_statefile(p, &args.config.repositories),
         Err(StateError::Internal(ErrorKind::StateFileDoesNotExist)) => {
             if args.dry {
                 warn!("DRY RUN: No statefile exists, will not create one, so cannot continue");
@@ -64,7 +64,7 @@ fn usable_state_file(path: &PathBuf) -> Result<&PathBuf, StateError> {
 fn create_statefile<'a>(
     path: &'a PathBuf,
     repos: &HashMap<String, Repo>,
-) -> Result<&'a PathBuf, StateError> {
+) -> Result<State, StateError> {
     trace_call!(
         "create_statefile",
         "called with path {:?}, repos {:?}",
@@ -81,5 +81,52 @@ fn create_statefile<'a>(
     let mut file = fs::File::create(path)?;
     file.write_all(toml::to_string_pretty(&state).unwrap().as_bytes())?;
 
-    Ok(path)
+    info!(
+        "Initialized statefile with {} repositories",
+        state.states.len()
+    );
+
+    Ok(state)
+}
+
+/// Opens and reads a statefile
+///
+/// Also verifies that all the configured repositories are present
+fn open_statefile<'a>(
+    path: &'a PathBuf,
+    repos: &HashMap<String, Repo>,
+) -> Result<State, StateError> {
+    trace_call!(
+        "open_statefile",
+        "called with path {:?}, repos {:?}",
+        path,
+        repos
+    );
+
+    let data = fs::read(path)?;
+    let mut state: State = toml::from_slice(&data)?;
+    info!("Read statefile with {} repositories", state.states.len());
+
+    // Check if all configured states are present
+    for (id, _) in repos.iter() {
+        if !state.states.contains_key(id) {
+            warn!(
+                "Repository {} was not present in statefile, adding it...",
+                id
+            );
+            state.states.insert(id.clone(), RepoState::default());
+        }
+    }
+
+    // Check if any unconfigured states are present
+    for (id, _) in state.states.iter() {
+        if !repos.contains_key(id) {
+            warn!(
+                "Repository {} has a state, but is not in configuration!",
+                id
+            );
+        }
+    }
+
+    Ok(state)
 }
