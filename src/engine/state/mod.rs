@@ -32,7 +32,7 @@ pub(crate) fn check(args: CheckArgs) -> anyhow::Result<StateStatus> {
     let specific_repo = args.specific_repo;
     let dry = args.dry;
 
-    let state = match usable_state_file(&statefile) {
+    let mut state = match usable_state_file(&statefile) {
         Ok(p) => open_statefile(p, &config.repositories),
         Err(StateError::Internal(ErrorKind::StateFileDoesNotExist)) => {
             if args.dry {
@@ -44,6 +44,8 @@ pub(crate) fn check(args: CheckArgs) -> anyhow::Result<StateStatus> {
         }
         Err(e) => Err(e),
     }?;
+
+    let status = next_up(&mut state, specific_repo)?;
 
     if dry {
         warn!("DRY RUN: Will not update state file on disk!")
@@ -153,4 +155,12 @@ fn write_statefile<'a>(path: &'a PathBuf, state: &'a State) -> Result<(), StateE
 
     fs::write(path, toml::to_string_pretty(state)?)?;
     Ok(())
+}
+
+/// Given a state, returns the repo that's waited the longest for an update
+///
+/// If given a specific_repo, short circuits comparison and just checks the specified
+/// repo
+fn next_up(state: &mut State, specific: &Option<String>) -> Result<StateStatus, StateError> {
+    unimplemented!()
 }
