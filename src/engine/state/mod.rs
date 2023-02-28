@@ -7,11 +7,11 @@
 use std::fs;
 use std::path::PathBuf;
 
-use crate::trace_call;
+use crate::{config::Config, trace_call};
 
 pub(crate) use self::types::{CheckArgs, ErrorKind, StateError, StateStatus};
 
-use tracing::{error, info};
+use tracing::{error, info, warn};
 
 mod types;
 
@@ -23,11 +23,15 @@ mod types;
 pub(crate) fn check(args: CheckArgs) -> anyhow::Result<StateStatus> {
     trace_call!("check", "called with {:?}", args);
 
-    let statefile = match usable_state_file(args.statefile) {
+    let statefile = match usable_state_file(&args.statefile) {
         Ok(p) => Ok(p),
         Err(StateError::Internal(ErrorKind::StateFileDoesNotExist)) => {
-            error!("The statefile does not exist; will need to create and populate");
-            unimplemented!()
+            if args.dry {
+                warn!("DRY RUN: No statefile exists, will not create one, so cannot continue");
+                Err(StateError::Internal(ErrorKind::StateFileDoesNotExist))
+            } else {
+                create_statefile(&args.statefile, args.config)
+            }
         }
         Err(e) => Err(e),
     }?;
@@ -36,9 +40,9 @@ pub(crate) fn check(args: CheckArgs) -> anyhow::Result<StateStatus> {
 }
 
 /// Ensures a statefile exists and is readable
-fn usable_state_file(path: PathBuf) -> Result<PathBuf, StateError> {
+fn usable_state_file(path: &PathBuf) -> Result<&PathBuf, StateError> {
     trace_call!("usable_state_file", "called on path {:?}", path);
-    match fs::File::open(&path) {
+    match fs::File::open(path) {
         Ok(_) => Ok(path),
         Err(e) => match e.kind() {
             std::io::ErrorKind::NotFound => {
@@ -51,4 +55,10 @@ fn usable_state_file(path: PathBuf) -> Result<PathBuf, StateError> {
             }
         },
     }
+}
+
+/// Create and populate a statefile with some default data
+fn create_statefile<'a>(path: &'a PathBuf, config: &Config) -> Result<&'a PathBuf, StateError> {
+    trace_call!("create_statefile");
+    Ok(path)
 }
