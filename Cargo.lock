@@ -311,6 +311,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "dasher"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e16acaff4f347e31405ef58af08259da6562b2d1912a61e5d15ea8aa4c7406d"
+dependencies = [
+ "anyhow",
+ "sha3",
+ "walkdir",
+]
+
+[[package]]
 name = "difflib"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -333,16 +344,6 @@ checksum = "8168378f4e5023e7218c89c891c0fd8ecdb5e5e4f18cb78f38cf245dd021e76f"
 dependencies = [
  "block-buffer 0.10.3",
  "crypto-common",
-]
-
-[[package]]
-name = "directory-hasher"
-version = "0.1.0"
-source = "git+https://github.com/DrSLDR/directory-hasher#3dd7bf8ad0d0eb2ad33581d76aaa2111044c80f1"
-dependencies = [
- "sha3",
- "thiserror",
- "walkdir",
 ]
 
 [[package]]
@@ -639,7 +640,7 @@ dependencies = [
  "assert_fs",
  "async-recursion",
  "clap",
- "directory-hasher",
+ "dasher",
  "figment",
  "glob",
  "predicates",
