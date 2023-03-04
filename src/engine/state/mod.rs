@@ -65,7 +65,7 @@ pub(crate) fn check(args: CheckArgs) -> anyhow::Result<StateStatus> {
 /// Ensures a statefile exists and is readable
 fn usable_state_file(path: &PathBuf) -> Result<&PathBuf, StateError> {
     trace_call!("usable_state_file", "called on path {:?}", path);
-    if !path.is_file() {
+    if path.is_dir() {
         return Err(StateError::Internal(ErrorKind::BadPath));
     }
     match fs::File::open(path) {
