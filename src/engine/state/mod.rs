@@ -285,7 +285,7 @@ fn needs_update(
 
 fn dash_check_and_update(state: &mut RepoState, paths: Vec<PathBuf>) -> Result<bool, StateError> {
     trace_call!(
-        "dash_update",
+        "dash_check_and_update",
         "called with state {:?}, paths {:?}",
         state,
         paths
