@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use crate::config::Config;
 
 /// Top-level statefile representation
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub(crate) struct State {
     pub(crate) version: u32,
     pub(crate) states: HashMap<String, RepoState>,
@@ -23,7 +23,7 @@ impl Default for State {
 }
 
 /// Representation of an individual repository state
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub(crate) struct RepoState {
     pub(crate) time: u64,
     pub(crate) digest: String,
