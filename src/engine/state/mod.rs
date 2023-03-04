@@ -237,8 +237,38 @@ fn needs_update(
             }?;
         }
     }
-
     debug!("Glob-expanded to the paths: {:#?}", paths);
 
-    unimplemented!()
+    // Short circuit on uninitialized repository
+    if repo_state.time == RepoState::default().time {
+        info!(
+            "Repository {} has an uninitialized state - short circuiting it for update",
+            id
+        );
+        return Ok(true);
+    }
+
+    let current_digest = &repo_state.digest;
+    debug!("Checking digest of repo {}, calling dasher...", id);
+    let new_digest = dasher::hash_directories(paths)?
+        .iter()
+        .map(|b| format!("{:02x}", b))
+        .collect::<String>();
+    debug!(
+        "Got digests:\nFrom state:  {}\nFrom dasher: {}",
+        current_digest, new_digest
+    );
+    if current_digest == &new_digest {
+        info!(
+            "Digest match - Repository {} is NOT in need of an update",
+            id
+        );
+        Ok(false)
+    } else {
+        info!(
+            "Digest mismatch - Repository {} is in need of an update!",
+            id
+        );
+        Ok(true)
+    }
 }
