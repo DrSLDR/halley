@@ -256,17 +256,6 @@ fn needs_update(
     }
     debug!("Glob-expanded to the paths: {:#?}", paths);
 
-    // Short circuit on uninitialized repository
-    if repo_state.time == RepoState::default().time {
-        info!(
-            "Repository {} has an uninitialized state - short circuiting it for update",
-            id
-        );
-        debug!("Updating state first, though...");
-        dash_check_and_update(repo_state, paths)?;
-        return Ok(true);
-    }
-
     debug!("Checking digest of repo {}, calling dasher...", id);
     let need = dash_check_and_update(repo_state, paths)?;
     if need {
