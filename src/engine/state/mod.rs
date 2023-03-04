@@ -127,7 +127,7 @@ fn open_statefile<'a>(
     for (id, _) in repos.iter() {
         if !state.states.contains_key(id) {
             warn!(
-                "Repository {} was not present in statefile, adding it...",
+                "Repository {:?} was not present in statefile, adding it...",
                 id
             );
             state.states.insert(id.clone(), RepoState::default());
@@ -138,7 +138,7 @@ fn open_statefile<'a>(
     for (id, _) in state.states.iter() {
         if !repos.contains_key(id) {
             warn!(
-                "Repository {} has a state, but is not in configuration!",
+                "Repository {:?} has a state, but is not in configuration!",
                 id
             );
         }
@@ -189,7 +189,7 @@ fn next_up(
                 }
             } else {
                 warn!(
-                    "Repository with id '{}' is not defined in configuration",
+                    "Repository with id {:?} is not defined in configuration",
                     id
                 );
                 Ok(StateStatus::NothingToDo)
@@ -228,7 +228,7 @@ fn needs_update(
 ) -> Result<bool, StateError> {
     trace_call!(
         "needs_update",
-        "called with id {}, repo-state {:?}, config {:?}",
+        "called with id {:?}, repo-state {:?}, config {:?}",
         id,
         state,
         config
@@ -256,16 +256,16 @@ fn needs_update(
     }
     debug!("Glob-expanded to the paths: {:#?}", paths);
 
-    debug!("Checking digest of repo {}, calling dasher...", id);
+    debug!("Checking digest of repo {:?}, calling dasher...", id);
     let need = dash_check_and_update(repo_state, paths)?;
     if need {
         info!(
-            "Digest mismatch - Repository {} is in need of an update!",
+            "Digest mismatch - Repository {:?} is in need of an update!",
             id
         );
     } else {
         info!(
-            "Digest match - Repository {} is NOT in need of an update",
+            "Digest match - Repository {:?} is NOT in need of an update",
             id
         );
     }
