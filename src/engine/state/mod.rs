@@ -5,7 +5,7 @@
 //! which repo will be updated next, if any.
 
 use std::path::PathBuf;
-use std::{collections::HashMap, fs};
+use std::{collections::HashMap, fs, time};
 
 use crate::config::types::Repo;
 use crate::config::Config;
@@ -265,27 +265,45 @@ fn needs_update(
         return Ok(true);
     }
 
-    let current_digest = &repo_state.digest;
     debug!("Checking digest of repo {}, calling dasher...", id);
-    let new_digest = dasher::hash_directories(paths)?
-        .iter()
-        .map(|b| format!("{:02x}", b))
-        .collect::<String>();
-    debug!(
-        "Got digests:\nFrom state:  {}\nFrom dasher: {}",
-        current_digest, new_digest
-    );
-    if current_digest == &new_digest {
+    let need = dash_check_and_update(state.get_mut(&id).unwrap(), paths)?;
+    if need {
         info!(
             "Digest match - Repository {} is NOT in need of an update",
             id
         );
-        Ok(false)
     } else {
         info!(
             "Digest mismatch - Repository {} is in need of an update!",
             id
         );
-        Ok(true)
     }
+    Ok(need)
+}
+
+fn dash_check_and_update(state: &mut RepoState, paths: Vec<PathBuf>) -> Result<bool, StateError> {
+    trace_call!(
+        "dash_update",
+        "called with state {:?}, paths {:?}",
+        state,
+        paths
+    );
+
+    let current_digest = state.digest.clone();
+    let new_digest = dasher::hash_directories(paths)?
+        .iter()
+        .map(|b| format!("{:02x}", b))
+        .collect::<String>();
+    let timestamp = time::SystemTime::now()
+        .duration_since(time::SystemTime::UNIX_EPOCH)
+        .expect("EPOCH ERROR")
+        .as_secs();
+    debug!(
+        "Got digests:\nFrom state:  {}\nFrom dasher: {}",
+        current_digest, new_digest
+    );
+    state.digest = new_digest.clone();
+    state.time = timestamp;
+    debug!("Updated repository state to {:?}", state);
+    Ok(current_digest == new_digest)
 }
