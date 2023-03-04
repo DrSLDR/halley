@@ -56,7 +56,7 @@ pub(crate) fn check(args: CheckArgs) -> anyhow::Result<StateStatus> {
         write_statefile(&statefile, &state)?;
     }
 
-    Ok(StateStatus::NothingToDo)
+    Ok(status)
 }
 
 /// Ensures a statefile exists and is readable
@@ -176,7 +176,7 @@ fn next_up(
         config,
         specific
     );
-    let mut state_repos = &state.states;
+    let state_repos = &state.states;
     let config_repos = &config.repositories;
     match specific {
         Some(id) => {
@@ -195,7 +195,24 @@ fn next_up(
                 Ok(StateStatus::NothingToDo)
             }
         }
-        None => unimplemented!(),
+        None => {
+            debug!("No specific repository defined, so checking them in order");
+            let mut ids = config_repos.keys().collect::<Vec<&String>>();
+            ids.sort_unstable_by(|a, b| {
+                state_repos
+                    .get(*a)
+                    .unwrap()
+                    .time
+                    .cmp(&state_repos.get(*b).unwrap().time)
+            });
+            debug!("Sorted repository IDs: {:#?}", ids);
+            for id in ids {
+                if needs_update(id.to_string(), &mut state.states, &config_repos)? {
+                    return Ok(StateStatus::NextRepo(id.to_string()));
+                }
+            }
+            Ok(StateStatus::NothingToDo)
+        }
     }
 }
 
