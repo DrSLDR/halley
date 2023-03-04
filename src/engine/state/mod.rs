@@ -272,6 +272,7 @@ fn needs_update(
     Ok(need)
 }
 
+/// Calls to `dasher` and updates the passed-in `RepoState` accordingly
 fn dash_check_and_update(state: &mut RepoState, paths: Vec<PathBuf>) -> Result<bool, StateError> {
     trace_call!(
         "dash_check_and_update",
