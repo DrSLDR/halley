@@ -63,6 +63,7 @@ pub(crate) enum StateError {
     IO(std::io::Error),
     TOMLD(toml::de::Error),
     TOMLS(toml::ser::Error),
+    Dasher(dasher::HashError),
     Internal(ErrorKind),
 }
 
@@ -76,6 +77,7 @@ impl Display for StateError {
             StateError::IO(ref err) => err.fmt(f),
             StateError::TOMLD(ref err) => err.fmt(f),
             StateError::TOMLS(ref err) => err.fmt(f),
+            StateError::Dasher(ref err) => err.fmt(f),
         }
     }
 }
@@ -101,6 +103,12 @@ impl From<toml::ser::Error> for StateError {
 impl From<glob::GlobError> for StateError {
     fn from(err: glob::GlobError) -> StateError {
         StateError::Glob(err)
+    }
+}
+
+impl From<dasher::HashError> for StateError {
+    fn from(err: dasher::HashError) -> StateError {
+        StateError::Dasher(err)
     }
 }
 

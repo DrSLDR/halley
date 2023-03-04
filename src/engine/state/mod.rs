@@ -13,7 +13,7 @@ use crate::trace_call;
 
 pub(crate) use self::types::{CheckArgs, ErrorKind, RepoState, State, StateError, StateStatus};
 
-use directory_hasher;
+use dasher;
 use glob;
 use shellexpand;
 use toml;
