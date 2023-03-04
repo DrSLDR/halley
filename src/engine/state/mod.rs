@@ -234,7 +234,7 @@ fn needs_update(
         config
     );
 
-    let repo_state = state.get(&id).unwrap();
+    let repo_state = state.get_mut(&id).unwrap();
     let repo_paths = &config.get(&id).unwrap().paths;
     debug!(
         "Got the relevant repo-state {:?} and paths {:?}",
@@ -262,11 +262,13 @@ fn needs_update(
             "Repository {} has an uninitialized state - short circuiting it for update",
             id
         );
+        debug!("Updating state first, though...");
+        dash_check_and_update(repo_state, paths)?;
         return Ok(true);
     }
 
     debug!("Checking digest of repo {}, calling dasher...", id);
-    let need = dash_check_and_update(state.get_mut(&id).unwrap(), paths)?;
+    let need = dash_check_and_update(repo_state, paths)?;
     if need {
         info!(
             "Digest match - Repository {} is NOT in need of an update",
