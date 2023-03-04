@@ -118,4 +118,5 @@ impl Error for StateError {}
 #[derive(Clone, Debug)]
 pub(crate) enum ErrorKind {
     StateFileDoesNotExist,
+    BadPath,
 }

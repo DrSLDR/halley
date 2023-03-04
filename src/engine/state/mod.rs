@@ -4,6 +4,9 @@
 //! reading the Halley state files. It also includes scheduling logic, as it determines
 //! which repo will be updated next, if any.
 
+#[cfg(test)]
+mod tests;
+
 use std::path::PathBuf;
 use std::{collections::HashMap, fs, time};
 
@@ -62,6 +65,9 @@ pub(crate) fn check(args: CheckArgs) -> anyhow::Result<StateStatus> {
 /// Ensures a statefile exists and is readable
 fn usable_state_file(path: &PathBuf) -> Result<&PathBuf, StateError> {
     trace_call!("usable_state_file", "called on path {:?}", path);
+    if !path.is_file() {
+        return Err(StateError::Internal(ErrorKind::BadPath));
+    }
     match fs::File::open(path) {
         Ok(_) => Ok(path),
         Err(e) => match e.kind() {
