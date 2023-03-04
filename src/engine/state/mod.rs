@@ -260,12 +260,12 @@ fn needs_update(
     let need = dash_check_and_update(repo_state, paths)?;
     if need {
         info!(
-            "Digest match - Repository {} is NOT in need of an update",
+            "Digest mismatch - Repository {} is in need of an update!",
             id
         );
     } else {
         info!(
-            "Digest mismatch - Repository {} is in need of an update!",
+            "Digest match - Repository {} is NOT in need of an update",
             id
         );
     }
@@ -296,5 +296,5 @@ fn dash_check_and_update(state: &mut RepoState, paths: Vec<PathBuf>) -> Result<b
     state.digest = new_digest.clone();
     state.time = timestamp;
     debug!("Updated repository state to {:?}", state);
-    Ok(current_digest == new_digest)
+    Ok(current_digest != new_digest)
 }
