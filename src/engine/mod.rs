@@ -15,6 +15,11 @@ use anyhow::anyhow;
 use tracing::{debug, info};
 
 /// Entrypoint to the Engine
+///
+/// The first step of Engine operations is to call the `state` handler to check if any
+/// of the repositories actually need to be backed up. If nothing has changed, then
+/// there's nothing to do, and the engine returns. If there have been changes, however,
+/// then the next step will depend on the repository backend.
 pub(crate) fn run(spec: RunSpec) -> anyhow::Result<()> {
     trace_call!("run", "called with conf {:?}", spec);
 
