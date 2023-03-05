@@ -7,7 +7,8 @@ mod state;
 
 use state::StateStatus;
 
-use crate::config;
+use crate::config::{self, Config};
+use crate::types::*;
 use crate::{trace_call, RunSpec};
 
 use anyhow::anyhow;
@@ -47,8 +48,21 @@ pub(crate) fn run(spec: RunSpec) -> anyhow::Result<()> {
         }
         Ok(StateStatus::NextRepo(id)) => {
             info!("State manager reports repository '{}' is up next", id);
-            unimplemented!()
+            backup_cycle(id, conf)
         }
         Err(e) => Err(e),
+    }
+}
+
+/// Run a backup cycle on the repository specified by `id`
+fn backup_cycle(id: String, conf: Config) -> anyhow::Result<()> {
+    trace_call!("backup_cycle", "called with id {:?}, conf {:?}", id, conf);
+    let repo = conf
+        .repositories
+        .get(&id)
+        .expect("Failed to get repository from configuration");
+    match &repo.restic {
+        Repo::Local { data } => todo!(),
+        Repo::S3 { data } => todo!(),
     }
 }
