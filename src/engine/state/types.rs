@@ -45,7 +45,7 @@ impl Default for RepoState {
 /// `dasher` will be producing internally, anyway.
 ///
 /// May also be an excuse to learn how to write a proper `serde` implementation.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(PartialEq, Eq)]
 pub(crate) struct HexDigest {
     data: Vec<u8>,
 }
@@ -83,6 +83,12 @@ impl HexDigest {
 impl Display for HexDigest {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.to_string())
+    }
+}
+
+impl std::fmt::Debug for HexDigest {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "\"{}\"", self.to_string())
     }
 }
 
