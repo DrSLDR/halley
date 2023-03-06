@@ -69,16 +69,6 @@ impl HexDigest {
             .map(|b| format!("{:02x}", b))
             .collect::<String>()
     }
-
-    /// Helper function used in string decoding
-    fn decode(b: u8, index: usize) -> anyhow::Result<u8> {
-        match b {
-            b'A'..=b'F' => Ok(b - b'A' + 10),
-            b'a'..=b'f' => Ok(b - b'a' + 10),
-            b'0'..=b'9' => Ok(b - b'0'),
-            _ => Err(anyhow!("Illegal hex character {:?} at {:?}", b, index)),
-        }
-    }
 }
 
 impl Display for HexDigest {
@@ -104,9 +94,14 @@ impl FromStr for HexDigest {
 
         let vector: Vec<u8> = hex
             .chunks(2)
-            .enumerate()
-            .map(|(i, pair)| {
-                Ok(Self::decode(pair[0], 2 * i)? << 4 | Self::decode(pair[1], 2 * i + 1)?)
+            .map(|pair| {
+                match u8::from_str_radix(
+                    std::str::from_utf8(pair).expect("String somehow did not contain valid UTF-8"),
+                    16,
+                ) {
+                    Ok(b) => Ok(b),
+                    Err(e) => Err(anyhow!(e.to_string())),
+                }
             })
             .collect::<Result<Vec<u8>, Self::Err>>()?;
 
