@@ -77,11 +77,26 @@ fn hexdigest_from_str_simple() {
     log_init();
     let h = HexDigest::from_str("0");
     assert!(h.is_err());
+    let h = HexDigest::from_str("0v");
+    assert!(h.is_err());
     let h = HexDigest::from_str("00").unwrap();
     let v: Vec<u8> = vec![0];
     assert_eq!(h.get(), &v);
     let v: Vec<u8> = vec![0, 1];
     assert_ne!(h.get(), &v);
     let h = HexDigest::from_str("0001").unwrap();
+    assert_eq!(h.get(), &v);
+}
+
+#[test]
+fn hexdigest_from_str_complex() {
+    log_init();
+    let h = HexDigest::from_str("a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a")
+        .unwrap();
+    let v: Vec<u8> = vec![
+        0xa7, 0xff, 0xc6, 0xf8, 0xbf, 0x1e, 0xd7, 0x66, 0x51, 0xc1, 0x47, 0x56, 0xa0, 0x61, 0xd6,
+        0x62, 0xf5, 0x80, 0xff, 0x4d, 0xe4, 0x3b, 0x49, 0xfa, 0x82, 0xd8, 0x0a, 0x4b, 0x80, 0xf8,
+        0x43, 0x4a,
+    ];
     assert_eq!(h.get(), &v);
 }
