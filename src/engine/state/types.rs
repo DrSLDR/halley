@@ -1,7 +1,8 @@
 //! Types belonging to the statefile processor
 
-use std::{collections::HashMap, error::Error, fmt::Display, path::PathBuf};
+use std::{collections::HashMap, error::Error, fmt::Display, path::PathBuf, str::FromStr};
 
+use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -33,8 +34,60 @@ impl Default for RepoState {
     fn default() -> Self {
         Self {
             time: 0,
-            digest: "xxx".to_string(),
+            digest: "c0ffee".to_string(),
         }
+    }
+}
+
+/// Hexadecimal digest representation
+///
+/// `String` isn't sufficiently narrow, and we'd rather just handle the `Vec<u8>` that
+/// `dasher` will be producing internally, anyway.
+///
+/// May also be an excuse to learn how to write a proper `serde` implementation.
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) struct HexDigest {
+    data: Vec<u8>,
+}
+
+impl HexDigest {
+    /// Creates a Digest from a given vector
+    pub fn new(data: Vec<u8>) -> Self {
+        Self { data }
+    }
+
+    pub fn get(&self) -> &Vec<u8> {
+        &self.data
+    }
+
+    fn decode(b: u8, index: usize) -> anyhow::Result<u8> {
+        match b {
+            b'A'..=b'F' => Ok(b - b'A' + 10),
+            b'a'..=b'f' => Ok(b - b'a' + 10),
+            b'0'..=b'9' => Ok(b - b'0'),
+            _ => Err(anyhow!("Illegal hex character {:?} at {:?}", b, index)),
+        }
+    }
+}
+
+impl FromStr for HexDigest {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> anyhow::Result<Self> {
+        let hex = s.as_bytes();
+        if hex.len() & 2 != 0 {
+            return Err(anyhow!("Odd length of hex digest"));
+        }
+
+        let vector: Vec<u8> = hex
+            .chunks(2)
+            .enumerate()
+            .map(|(i, pair)| {
+                Ok(Self::decode(pair[0], 2 * i)? << 4 | Self::decode(pair[1], 2 * i + 1)?)
+            })
+            .collect::<Result<Vec<u8>, Self::Err>>()?;
+
+        Ok(Self::new(vector))
     }
 }
 

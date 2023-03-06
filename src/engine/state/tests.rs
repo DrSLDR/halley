@@ -1,4 +1,6 @@
-use super::*;
+use std::str::FromStr;
+
+use super::{types::HexDigest, *};
 use crate::util::test_utils::*;
 
 #[test]
@@ -60,4 +62,12 @@ fn integration_create_statefile_one_repo_three_ways() {
     let read_state: State = toml::from_str(&fs::read_to_string(&fpath).unwrap()).unwrap();
     assert_eq!(state, read_state);
     assert_eq!(read_state, create_state);
+}
+
+#[test]
+fn hexdigest_from_str_null() {
+    log_init();
+    let h = HexDigest::from_str("").unwrap();
+    let v: Vec<u8> = vec![];
+    assert_eq!(h.get(), &v);
 }
