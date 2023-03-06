@@ -57,6 +57,7 @@ impl HexDigest {
     }
 
     /// Returns a reference to the internal vector
+    #[cfg(test)]
     pub fn get(&self) -> &Vec<u8> {
         &self.data
     }
