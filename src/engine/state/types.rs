@@ -56,6 +56,7 @@ impl HexDigest {
         Self { data }
     }
 
+    /// Returns a reference to the internal vector
     pub fn get(&self) -> &Vec<u8> {
         &self.data
     }
@@ -75,7 +76,7 @@ impl FromStr for HexDigest {
 
     fn from_str(s: &str) -> anyhow::Result<Self> {
         let hex = s.as_bytes();
-        if hex.len() & 2 != 0 {
+        if hex.len() % 2 != 0 {
             return Err(anyhow!("Odd length of hex digest"));
         }
 

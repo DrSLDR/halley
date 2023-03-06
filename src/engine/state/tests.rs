@@ -71,3 +71,17 @@ fn hexdigest_from_str_null() {
     let v: Vec<u8> = vec![];
     assert_eq!(h.get(), &v);
 }
+
+#[test]
+fn hexdigest_from_str_simple() {
+    log_init();
+    let h = HexDigest::from_str("0");
+    assert!(h.is_err());
+    let h = HexDigest::from_str("00").unwrap();
+    let v: Vec<u8> = vec![0];
+    assert_eq!(h.get(), &v);
+    let v: Vec<u8> = vec![0, 1];
+    assert_ne!(h.get(), &v);
+    let h = HexDigest::from_str("0001").unwrap();
+    assert_eq!(h.get(), &v);
+}
