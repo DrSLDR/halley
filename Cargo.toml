@@ -11,22 +11,22 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "^1.0"
-async-recursion = "^1.0"
-clap = { version = "^4.0", features = ["derive"]}
-dasher = "^0.3"
-figment = { version = "^0.10", features = ["toml", "env"]}
-glob = "^0.3"
-rusoto_core = "^0.48"
-rusoto_s3 = "^0.48"
-serde = "^1.0"
-shellexpand = "^2.1"
-tokio = "^1.20"
-toml = "^0.5"
-tracing = "^0.1"
-tracing-subscriber = "^0.3"
+anyhow = "~1.0"
+async-recursion = "~1.0"
+clap = { version = "~4.0", features = ["derive"]}
+dasher = "~0.3"
+figment = { version = "~0.10", features = ["toml", "env"]}
+glob = "~0.3"
+rusoto_core = "~0.48"
+rusoto_s3 = "~0.48"
+serde = "~1.0"
+shellexpand = "~2.1"
+tokio = "~1.20"
+toml = "~0.5"
+tracing = "~0.1"
+tracing-subscriber = "~0.3"
 
 [dev-dependencies]
-assert_fs = "^1.0"
-predicates = "^2.1"
-rusoto_mock = "^0.48"
+assert_fs = "~1.0"
+predicates = "~2.1"
+rusoto_mock = "~0.48"
