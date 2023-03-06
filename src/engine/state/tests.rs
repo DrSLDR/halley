@@ -27,7 +27,7 @@ fn integration_create_statefile_no_repos() {
     let r = create_statefile(&fpath, &repos);
     assert!(r.is_ok());
     let state = r.unwrap();
-    let read_state: State = toml::from_slice(fs::read(fpath).unwrap().as_slice()).unwrap();
+    let read_state: State = toml::from_str(&fs::read_to_string(&fpath).unwrap()).unwrap();
     assert_eq!(state, read_state);
 }
 
@@ -52,12 +52,12 @@ fn integration_create_statefile_one_repo_three_ways() {
     let create_state = create_statefile(&fpath, &repos).unwrap();
     assert_eq!(state, create_state);
 
-    let read_state: State = toml::from_slice(fs::read(&fpath).unwrap().as_slice()).unwrap();
+    let read_state: State = toml::from_str(&fs::read_to_string(&fpath).unwrap()).unwrap();
     assert_eq!(state, read_state);
     assert_eq!(read_state, create_state);
 
     write_statefile(&fpath, &state).unwrap();
-    let read_state: State = toml::from_slice(fs::read(&fpath).unwrap().as_slice()).unwrap();
+    let read_state: State = toml::from_str(&fs::read_to_string(&fpath).unwrap()).unwrap();
     assert_eq!(state, read_state);
     assert_eq!(read_state, create_state);
 }

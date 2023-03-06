@@ -125,8 +125,8 @@ fn open_statefile<'a>(
         repos
     );
 
-    let data = fs::read(path)?;
-    let mut state: State = toml::from_slice(&data)?;
+    let data = fs::read_to_string(path)?;
+    let mut state: State = toml::from_str(&data)?;
     info!("Read statefile with {} repositories", state.states.len());
 
     // Check if all configured states are present
