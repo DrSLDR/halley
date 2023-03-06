@@ -14,7 +14,9 @@ use crate::config::types::Repo;
 use crate::config::Config;
 use crate::trace_call;
 
-pub(crate) use self::types::{CheckArgs, ErrorKind, RepoState, State, StateError, StateStatus};
+pub(crate) use self::types::{
+    CheckArgs, ErrorKind, HexDigest, RepoState, State, StateError, StateStatus,
+};
 
 use dasher;
 use glob;
@@ -287,11 +289,8 @@ fn dash_check_and_update(state: &mut RepoState, paths: Vec<PathBuf>) -> Result<b
         paths
     );
 
-    let current_digest = state.digest.clone();
-    let new_digest = dasher::hash_directories(paths)?
-        .iter()
-        .map(|b| format!("{:02x}", b))
-        .collect::<String>();
+    let current_digest = &state.digest;
+    let new_digest = HexDigest::new(dasher::hash_directories(paths)?);
     let timestamp = time::SystemTime::now()
         .duration_since(time::SystemTime::UNIX_EPOCH)
         .expect("EPOCH ERROR")
@@ -300,8 +299,9 @@ fn dash_check_and_update(state: &mut RepoState, paths: Vec<PathBuf>) -> Result<b
         "Got digests:\nFrom state:  {}\nFrom dasher: {}",
         current_digest, new_digest
     );
-    state.digest = new_digest.clone();
+    let result = current_digest != &new_digest;
+    state.digest = new_digest;
     state.time = timestamp;
     debug!("Updated repository state to {:?}", state);
-    Ok(current_digest != new_digest)
+    Ok(result)
 }

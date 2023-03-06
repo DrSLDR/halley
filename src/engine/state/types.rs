@@ -80,6 +80,12 @@ impl HexDigest {
     }
 }
 
+impl Display for HexDigest {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.to_string())
+    }
+}
+
 impl FromStr for HexDigest {
     type Err = anyhow::Error;
 
