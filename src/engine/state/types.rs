@@ -115,7 +115,7 @@ impl<'de> Deserialize<'de> for HexDigest {
     where
         D: serde::Deserializer<'de>,
     {
-        todo!()
+        deserializer.deserialize_string(HexDigestVisitor)
     }
 }
 

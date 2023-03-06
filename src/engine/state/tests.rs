@@ -100,3 +100,30 @@ fn hexdigest_from_str_complex() {
     ];
     assert_eq!(h.get(), &v);
 }
+
+#[test]
+fn hexdigest_to_from_string() {
+    log_init();
+    let s = String::from("");
+    assert_eq!(s, HexDigest::from_str(&s).unwrap().to_string());
+    let s = String::from("c0ffee");
+    assert_eq!(s, HexDigest::from_str(&s).unwrap().to_string());
+}
+
+#[test]
+fn toml_parse_to_hexdigest() {
+    log_init();
+    let s = String::from(
+        "
+    version = 1
+    [states.foo]
+    time = 1
+    digest = 'c0ffee'
+    ",
+    );
+    let state: State = toml::from_str(&s).unwrap();
+    assert_eq!(
+        HexDigest::from_str("c0ffee").unwrap(),
+        state.states.get("foo").unwrap().digest
+    );
+}
