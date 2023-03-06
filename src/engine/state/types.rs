@@ -3,7 +3,7 @@
 use std::{collections::HashMap, error::Error, fmt::Display, path::PathBuf, str::FromStr};
 
 use anyhow::anyhow;
-use serde::{Deserialize, Serialize};
+use serde::{de, de::Visitor, Deserialize, Serialize};
 
 use crate::config::Config;
 
@@ -27,14 +27,14 @@ impl Default for State {
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub(crate) struct RepoState {
     pub(crate) time: u64,
-    pub(crate) digest: String,
+    pub(crate) digest: HexDigest,
 }
 
 impl Default for RepoState {
     fn default() -> Self {
         Self {
             time: 0,
-            digest: "c0ffee".to_string(),
+            digest: HexDigest::from_str("c0ffee").unwrap(),
         }
     }
 }
@@ -61,6 +61,15 @@ impl HexDigest {
         &self.data
     }
 
+    /// Converts the `HexDigest` back into a `String`
+    pub fn to_string(&self) -> String {
+        self.data
+            .iter()
+            .map(|b| format!("{:02x}", b))
+            .collect::<String>()
+    }
+
+    /// Helper function used in string decoding
     fn decode(b: u8, index: usize) -> anyhow::Result<u8> {
         match b {
             b'A'..=b'F' => Ok(b - b'A' + 10),
@@ -89,6 +98,51 @@ impl FromStr for HexDigest {
             .collect::<Result<Vec<u8>, Self::Err>>()?;
 
         Ok(Self::new(vector))
+    }
+}
+
+impl Serialize for HexDigest {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl<'de> Deserialize<'de> for HexDigest {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        todo!()
+    }
+}
+
+struct HexDigestVisitor;
+
+impl<'de> Visitor<'de> for HexDigestVisitor {
+    type Value = HexDigest;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("a hexadecimal-encoded string")
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        match HexDigest::from_str(v) {
+            Ok(h) => Ok(h),
+            Err(e) => Err(E::custom(e.to_string())),
+        }
+    }
+
+    fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        self.visit_str(&v)
     }
 }
 
