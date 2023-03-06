@@ -4,7 +4,7 @@ use crate::trace_call;
 
 pub use rusoto_core::Region;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::{fmt::Display, path::PathBuf};
 use tracing::{trace, trace_span};
 
 // First off, the entire restic group of Repo types.
@@ -88,4 +88,43 @@ pub struct RunSpec {
     pub specific_repo: Option<String>,
     pub config: PathBuf,
     pub state_dir: PathBuf,
+}
+
+/// Wrapper around a `PathBuf` that is known to exist
+///
+/// Exists so that we don't have to represent paths as `PathBuf` or, worse, `String`
+/// without knowing that they actually exist.
+#[derive(Debug, PartialEq)]
+pub struct VerifiedPath {
+    path: PathBuf,
+}
+
+impl VerifiedPath {
+    /// Takes a PathBuf and makes damn sure it actually exists
+    pub fn from_pathbuf(p: PathBuf) -> Result<Self, VerifiedPathError> {
+        if !p.is_absolute() {
+            return Err(VerifiedPathError::NotAbsolute);
+        } else if !p.exists() {
+            return Err(VerifiedPathError::DoesNotExist);
+        }
+
+        todo!()
+    }
+}
+
+/// Error types for the Verified Path
+pub enum VerifiedPathError {
+    NotAbsolute,
+    DoesNotExist,
+}
+
+impl Display for VerifiedPathError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            VerifiedPathError::NotAbsolute => write!(f, "The path was not absolute!"),
+            VerifiedPathError::DoesNotExist => {
+                write!(f, "The path points to a location that does not exist!")
+            }
+        }
+    }
 }
