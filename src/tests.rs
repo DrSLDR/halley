@@ -61,10 +61,19 @@ fn verified_path_verify_on_get() {
 #[test]
 fn verified_path_from_string() {
     log_init();
-    let glob = "*.tooml".to_string();
+    let glob = "*.rs".to_string();
     let v = VerifiedPath::from_string(glob).unwrap();
-    assert_eq!(v.len(), 0);
+    assert_eq!(v.len(), 1);
     let glob = "*.toml".to_string();
     let v = VerifiedPath::from_string(glob).unwrap();
     assert_eq!(v.len(), 2);
+}
+
+#[test]
+fn verified_path_from_bad_string() {
+    log_init();
+    let v = VerifiedPath::from_string("".to_string());
+    assert!(v.is_err());
+    let v = VerifiedPath::from_string("./nonexistent".to_string());
+    assert!(v.is_err());
 }

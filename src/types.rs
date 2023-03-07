@@ -123,6 +123,9 @@ impl VerifiedPath {
 
     /// Takes a globbed string, expands it, and returns a vec of VerifiedPaths
     pub fn from_glob(s: String) -> Result<Vec<Self>, VerifiedPathError> {
+        if s.len() == 0 {
+            return Err(VerifiedPathError::EmptyInput);
+        }
         let expanded = shellexpand::tilde(&s).into_owned();
         let mut result: Vec<VerifiedPath> = Vec::new();
         for glob in glob::glob(&expanded).expect("Glob read error") {
@@ -134,7 +137,11 @@ impl VerifiedPath {
                 Err(e) => Err(e),
             }?;
         }
-        Ok(result)
+        if result.is_empty() {
+            Err(VerifiedPathError::EmptyOutput)
+        } else {
+            Ok(result)
+        }
     }
 
     /// Alias for `from_glob`, for less brain-hurting
@@ -158,6 +165,8 @@ impl VerifiedPath {
 pub enum VerifiedPathError {
     NotAbsolute,
     DoesNotExist,
+    EmptyInput,
+    EmptyOutput,
     Glob(glob::GlobError),
     IO(std::io::Error),
 }
@@ -181,6 +190,8 @@ impl Display for VerifiedPathError {
             VerifiedPathError::DoesNotExist => {
                 write!(f, "The path points to a location that does not exist!")
             }
+            VerifiedPathError::EmptyInput => write!(f, "Input string was empty!"),
+            VerifiedPathError::EmptyOutput => write!(f, "Verification gave no output!"),
             VerifiedPathError::Glob(e) => e.fmt(f),
             VerifiedPathError::IO(e) => e.fmt(f),
         }
@@ -192,6 +203,8 @@ impl PartialEq for VerifiedPathError {
         match (self, other) {
             (Self::DoesNotExist, Self::DoesNotExist) => true,
             (Self::NotAbsolute, Self::NotAbsolute) => true,
+            (Self::EmptyInput, Self::EmptyInput) => true,
+            (Self::EmptyOutput, Self::EmptyOutput) => true,
             (Self::Glob(_), Self::Glob(_)) => true,
             (Self::IO(_), Self::IO(_)) => true,
             (_, _) => false,
