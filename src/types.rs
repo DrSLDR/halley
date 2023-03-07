@@ -2,8 +2,10 @@
 
 use crate::trace_call;
 
+use glob;
 pub use rusoto_core::Region;
 use serde::{Deserialize, Serialize};
+use shellexpand;
 use std::{fmt::Display, path::PathBuf};
 use tracing::{trace, trace_span};
 
@@ -119,6 +121,27 @@ impl VerifiedPath {
         })
     }
 
+    /// Takes a globbed string, expands it, and returns a vec of VerifiedPaths
+    pub fn from_glob(s: String) -> Result<Vec<Self>, VerifiedPathError> {
+        let expanded = shellexpand::tilde(&s).into_owned();
+        let mut result: Vec<VerifiedPath> = Vec::new();
+        for glob in glob::glob(&expanded).expect("Glob read error") {
+            match glob {
+                Ok(p) => {
+                    result.push(Self::from_pathbuf(p)?);
+                    Ok(())
+                }
+                Err(e) => Err(e),
+            }?;
+        }
+        Ok(result)
+    }
+
+    /// Alias for `from_glob`, for less brain-hurting
+    pub fn from_string(s: String) -> Result<Vec<Self>, VerifiedPathError> {
+        Self::from_glob(s)
+    }
+
     fn verify_pathbuf(p: PathBuf) -> Result<PathBuf, VerifiedPathError> {
         if !p.is_absolute() {
             Err(VerifiedPathError::NotAbsolute)
@@ -131,10 +154,17 @@ impl VerifiedPath {
 }
 
 /// Error types for the Verified Path
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub enum VerifiedPathError {
     NotAbsolute,
     DoesNotExist,
+    Glob(glob::GlobError),
+}
+
+impl From<glob::GlobError> for VerifiedPathError {
+    fn from(value: glob::GlobError) -> Self {
+        Self::Glob(value)
+    }
 }
 
 impl Display for VerifiedPathError {
@@ -144,6 +174,18 @@ impl Display for VerifiedPathError {
             VerifiedPathError::DoesNotExist => {
                 write!(f, "The path points to a location that does not exist!")
             }
+            VerifiedPathError::Glob(e) => e.fmt(f),
+        }
+    }
+}
+
+impl PartialEq for VerifiedPathError {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::DoesNotExist, Self::DoesNotExist) => true,
+            (Self::NotAbsolute, Self::NotAbsolute) => true,
+            (Self::Glob(_), Self::Glob(_)) => true,
+            (_, _) => false,
         }
     }
 }
