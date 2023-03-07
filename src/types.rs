@@ -107,8 +107,7 @@ impl VerifiedPath {
         } else if !p.exists() {
             return Err(VerifiedPathError::DoesNotExist);
         }
-
-        todo!()
+        Ok(Self { path: p })
     }
 }
 
