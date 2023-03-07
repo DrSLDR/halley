@@ -38,3 +38,11 @@ fn verified_path_file() {
     let v = VerifiedPath::from_pathbuf(fp);
     assert_eq!(v.err().unwrap(), VerifiedPathError::DoesNotExist);
 }
+
+#[test]
+fn verified_path_relative() {
+    log_init();
+    let p = PathBuf::from("./src");
+    let v = VerifiedPath::from_pathbuf(p);
+    assert_eq!(v.err().unwrap(), VerifiedPathError::NotAbsolute);
+}
