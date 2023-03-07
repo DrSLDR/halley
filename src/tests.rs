@@ -1,4 +1,4 @@
-use crate::types::VerifiedPath;
+use crate::types::{VerifiedPath, VerifiedPathError};
 
 use super::*;
 
@@ -13,4 +13,5 @@ fn verified_path_dir() {
     drop(td);
     let v = VerifiedPath::from_pathbuf(p);
     assert!(v.is_err());
+    assert_eq!(v.err().unwrap(), VerifiedPathError::DoesNotExist);
 }

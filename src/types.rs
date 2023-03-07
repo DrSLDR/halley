@@ -112,6 +112,7 @@ impl VerifiedPath {
 }
 
 /// Error types for the Verified Path
+#[derive(Debug, PartialEq)]
 pub enum VerifiedPathError {
     NotAbsolute,
     DoesNotExist,
