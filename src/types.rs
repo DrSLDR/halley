@@ -6,7 +6,7 @@ use glob;
 pub use rusoto_core::Region;
 use serde::{Deserialize, Serialize};
 use shellexpand;
-use std::{fmt::Display, path::PathBuf};
+use std::{fmt::Display, fs, path::PathBuf};
 use tracing::{trace, trace_span};
 
 // First off, the entire restic group of Repo types.
@@ -128,7 +128,7 @@ impl VerifiedPath {
         for glob in glob::glob(&expanded).expect("Glob read error") {
             match glob {
                 Ok(p) => {
-                    result.push(Self::from_pathbuf(p)?);
+                    result.push(Self::from_pathbuf(fs::canonicalize(p)?)?);
                     Ok(())
                 }
                 Err(e) => Err(e),
@@ -159,11 +159,18 @@ pub enum VerifiedPathError {
     NotAbsolute,
     DoesNotExist,
     Glob(glob::GlobError),
+    IO(std::io::Error),
 }
 
 impl From<glob::GlobError> for VerifiedPathError {
     fn from(value: glob::GlobError) -> Self {
         Self::Glob(value)
+    }
+}
+
+impl From<std::io::Error> for VerifiedPathError {
+    fn from(value: std::io::Error) -> Self {
+        Self::IO(value)
     }
 }
 
@@ -175,6 +182,7 @@ impl Display for VerifiedPathError {
                 write!(f, "The path points to a location that does not exist!")
             }
             VerifiedPathError::Glob(e) => e.fmt(f),
+            VerifiedPathError::IO(e) => e.fmt(f),
         }
     }
 }
@@ -185,6 +193,7 @@ impl PartialEq for VerifiedPathError {
             (Self::DoesNotExist, Self::DoesNotExist) => true,
             (Self::NotAbsolute, Self::NotAbsolute) => true,
             (Self::Glob(_), Self::Glob(_)) => true,
+            (Self::IO(_), Self::IO(_)) => true,
             (_, _) => false,
         }
     }

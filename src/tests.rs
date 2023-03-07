@@ -57,3 +57,14 @@ fn verified_path_verify_on_get() {
     let p = v.get_inner();
     assert_eq!(p.err().unwrap(), VerifiedPathError::DoesNotExist);
 }
+
+#[test]
+fn verified_path_from_string() {
+    log_init();
+    let glob = "*.tooml".to_string();
+    let v = VerifiedPath::from_string(glob).unwrap();
+    assert_eq!(v.len(), 0);
+    let glob = "*.toml".to_string();
+    let v = VerifiedPath::from_string(glob).unwrap();
+    assert_eq!(v.len(), 2);
+}
