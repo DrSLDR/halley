@@ -4,6 +4,9 @@
 //! also manages moving the relevant repository in and out of cold storage, for cost
 //! saving.
 
+#[cfg(test)]
+mod tests;
+
 mod config;
 mod engine;
 mod restic;
