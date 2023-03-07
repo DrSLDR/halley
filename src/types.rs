@@ -94,20 +94,39 @@ pub struct RunSpec {
 ///
 /// Exists so that we don't have to represent paths as `PathBuf` or, worse, `String`
 /// without knowing that they actually exist.
+///
+/// The guarantee is not absolute --- the path may cease to exist while Halley is
+/// running --- but `VerifiedPath` tries its best to ensure the path is still good when
+/// returning it.
 #[derive(Debug, PartialEq)]
 pub struct VerifiedPath {
     path: PathBuf,
 }
 
 impl VerifiedPath {
+    /// Consumes the `VerifiedPath` to return the `PathBuf`
+    ///
+    /// This is the only way to mutably access the contained path, as there is no way to
+    /// guarantee "verified" status once the path has been mutated.
+    pub fn get_inner(self) -> Result<PathBuf, VerifiedPathError> {
+        Self::verify_pathbuf(self.path)
+    }
+
     /// Takes a PathBuf and makes damn sure it actually exists
     pub fn from_pathbuf(p: PathBuf) -> Result<Self, VerifiedPathError> {
+        Ok(Self {
+            path: Self::verify_pathbuf(p)?,
+        })
+    }
+
+    fn verify_pathbuf(p: PathBuf) -> Result<PathBuf, VerifiedPathError> {
         if !p.is_absolute() {
-            return Err(VerifiedPathError::NotAbsolute);
+            Err(VerifiedPathError::NotAbsolute)
         } else if !p.exists() {
-            return Err(VerifiedPathError::DoesNotExist);
+            Err(VerifiedPathError::DoesNotExist)
+        } else {
+            Ok(p)
         }
-        Ok(Self { path: p })
     }
 }
 

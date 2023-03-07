@@ -46,3 +46,14 @@ fn verified_path_relative() {
     let v = VerifiedPath::from_pathbuf(p);
     assert_eq!(v.err().unwrap(), VerifiedPathError::NotAbsolute);
 }
+
+#[test]
+fn verified_path_verify_on_get() {
+    log_init();
+    let tf = assert_fs::TempDir::new().unwrap();
+    let p = PathBuf::from(tf.as_os_str());
+    let v = VerifiedPath::from_pathbuf(p).unwrap();
+    drop(tf);
+    let p = v.get_inner();
+    assert_eq!(p.err().unwrap(), VerifiedPathError::DoesNotExist);
+}
